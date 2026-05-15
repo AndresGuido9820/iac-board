@@ -1,0 +1,67 @@
+.app-shell {
+  display: grid;
+  gap: 32px;
+  margin: 0 auto;
+  max-width: 1040px;
+  min-height: 100svh;
+  padding: 56px 24px;
+}
+
+.hero {
+  align-content: center;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 18px;
+  min-height: 54svh;
+  padding-bottom: 40px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.hero-copy {
+  color: var(--text);
+  font-size: 1.25rem;
+  max-width: 680px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hero-actions a {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: white;
+  font-weight: 700;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+.hero-actions a:last-child {
+  background: transparent;
+  color: var(--accent);
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.panel ul {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding-left: 20px;
+}
