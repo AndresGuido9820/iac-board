@@ -1,0 +1,25 @@
+name: Terraform parser support
+description: Request support for Terraform resources or patterns.
+title: 'parser: support '
+labels: ['area:parser', 'type:feature']
+body:
+  - type: input
+    id: resource
+    attributes:
+      label: Terraform resource or pattern
+      placeholder: aws_lambda_function, module usage, variable interpolation
+    validations:
+      required: true
+  - type: textarea
+    id: terraform
+    attributes:
+      label: Minimal Terraform example
+      render: hcl
+    validations:
+      required: true
+  - type: textarea
+    id: diagram
+    attributes:
+      label: Expected graph or diagram behavior
+    validations:
+      required: true
