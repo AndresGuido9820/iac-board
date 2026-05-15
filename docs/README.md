@@ -18,6 +18,7 @@ infrastructure-as-code into editable cloud architecture diagrams.
 - [Test Strategy](testing/test-strategy.md): unit, integration, visual, parser, and regression tests.
 - [Roadmap](product/roadmap.md): phased delivery plan from MVP to open source-ready product.
 - [Attribution And Licensing](engineering/attribution-and-licensing.md): license obligations and attribution model.
+- [Open Source Structure Review](engineering/open-source-structure-review.md): structure patterns from tldraw, Excalidraw, Drawnix, InfraMap, and Blast Radius.
 - [ADR 0001](adr/0001-use-drawnix-plait-as-visual-engine.md): initial architecture decision.
 
 ## Current Product Name

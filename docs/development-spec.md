@@ -85,6 +85,9 @@ rewriting the product.
 
 ## Repository Layout
 
+The target layout follows patterns reviewed in
+[Open Source Structure Review](engineering/open-source-structure-review.md).
+
 Target layout:
 
 ```text
