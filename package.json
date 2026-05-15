@@ -1,0 +1,79 @@
+{
+  "name": "iac-board",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generate editable cloud architecture diagrams from infrastructure-as-code.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "check": "run-s format:check lint typecheck test",
+    "check:ci": "run-s format:check lint typecheck test:coverage build",
+    "dev": "vite",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#dist\" \"#coverage\" \"#playwright-report\" \"#test-results\"",
+    "preview": "vite preview",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:audit-ci": "audit-ci --moderate",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "lint-staged": {
+    "*.{css,html,json,md,ts,tsx,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.60.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.12.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.6",
+    "audit-ci": "^7.1.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-testing-library": "^7.16.2",
+    "eslint-plugin-vitest": "^0.5.4",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "knip": "^6.13.1",
+    "lint-staged": "^17.0.4",
+    "markdownlint-cli2": "^0.22.1",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "^3.8.3",
+    "prettier-plugin-packagejson": "^3.0.2",
+    "start-server-and-test": "^3.0.5",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2",
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
+  }
+}
