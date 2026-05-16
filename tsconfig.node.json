@@ -20,5 +20,10 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "apps/web/vite.config.ts",
+    "eslint.config.js",
+    "playwright.config.ts",
+    "vitest.config.ts"
+  ]
 }

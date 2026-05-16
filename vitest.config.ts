@@ -8,10 +8,11 @@ export default defineConfig({
     globals: true,
     include: [
       'src/**/*.test.{ts,tsx}',
+      'apps/**/*.test.{ts,tsx}',
       'packages/**/*.test.{ts,tsx}',
       'tests/integration/**/*.test.{ts,tsx}',
     ],
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./apps/web/src/test/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html', 'lcov'],
