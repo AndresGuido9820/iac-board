@@ -1,0 +1,16 @@
+{
+  "name": "@iac-board/visual-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@iac-board/core-types": "0.0.0",
+    "@iac-board/canvas-engine": "0.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

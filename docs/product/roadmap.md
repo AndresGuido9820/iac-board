@@ -18,25 +18,40 @@ Deliverable:
 
 - Repo can be shared publicly as a real project, even before full MVP.
 
-## Phase 1: Canvas Proof
+## Phase 1: Visual Engine — Own Canvas
 
-Purpose: prove Drawnix/Plait can power our own product.
+Purpose: build our own SVG canvas engine inspired by Drawnix/Plait architecture,
+without taking it as a dependency. Copy patterns, not code.
+
+Decision: no `@drawnix/drawnix` or `@plait/*` npm deps.
+Build `packages/visual-engine` from scratch with React + SVG:
+- element-tree state model (nodes, groups, edges)
+- viewport transform matrix for infinite pan/zoom
+- per-type renderer components
+
+No external AWS icon asset repo found locally. Icons will be inline SVG paths
+inside `packages/visual-engine/src/icons/`. GCP/Azure as stubs for now.
 
 Tasks:
 
-- Install Drawnix/Plait packages.
-- Render canvas inside our own UI.
-- Create `canvas-engine` adapter.
-- Insert a generated sample graph.
-- Export generated diagram.
-
-Example button:
-
-> Insert AWS Serverless API
+- [x] Static SVG renderer (DiagramCanvas — baseline)
+- [ ] `packages/visual-engine` package scaffold
+- [ ] Infinite canvas: pan (drag background) + zoom (wheel)
+- [ ] Cloud node templates: accent bar + inline SVG icon + service type + resource name
+- [ ] AWS service icons — inline SVG paths by category (compute, storage, db, network, security, integration)
+- [ ] GCP / Azure icon stubs (placeholder shapes)
+- [ ] Group container renderer (VPC, subnet — dashed border + label)
+- [ ] Edge/arrow renderer (straight line + arrowhead `<marker>`)
+- [ ] Real edges in `cloud-graph` from Terraform resource references
+- [ ] Adapter: pipeline output → CloudBoard elements
+- [ ] Node drag to reposition
+- [ ] Export as PNG
+- [ ] Replace DiagramCanvas in web with CloudBoard
 
 Deliverable:
 
-- A user sees a generated cloud diagram on the board.
+- Interactive pannable/zoomable diagram with styled cloud nodes,
+  group containers, and directional arrows between related resources.
 
 ## Phase 2: Cloud Graph Model
 

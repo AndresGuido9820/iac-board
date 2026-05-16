@@ -1,4 +1,4 @@
-import type { CloudGraph, CloudGroup, CloudNode } from '@iac-board/core-types'
+import type { CloudEdge, CloudGraph, CloudGroup, CloudNode } from '@iac-board/core-types'
 import type {
   TerraformParseResult,
   TerraformResource,
@@ -29,10 +29,11 @@ const awsCategories: Record<string, CloudNode['category']> = {
 export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
   const nodes = parseResult.resources.map(resourceToNode)
   const groups = buildNetworkGroups(parseResult.resources)
+  const edges = buildEdges(parseResult.resources)
 
   return {
     nodes,
-    edges: [],
+    edges,
     groups,
     diagnostics: [
       ...parseResult.diagnostics,
@@ -136,6 +137,38 @@ function buildNetworkGroups(resources: TerraformResource[]): CloudGroup[] {
       },
     })),
   ].filter((group) => group.children.length > 0)
+}
+
+function buildEdges(resources: TerraformResource[]): CloudEdge[] {
+  const addressSet = new Set(resources.map((r) => r.address))
+  const edges: CloudEdge[] = []
+
+  for (const resource of resources) {
+    const refs = extractReferences(resource).filter((ref) => addressSet.has(ref))
+    for (const ref of refs) {
+      edges.push({
+        id: `edge:${resource.address}→${ref}`,
+        from: resource.address,
+        to: ref,
+        relation: inferRelation(resource.type, ref),
+        confidence: 'inferred',
+        metadata: {},
+      })
+    }
+  }
+
+  return edges
+}
+
+function inferRelation(
+  fromType: string,
+  _toAddress: string,
+): CloudEdge['relation'] {
+  if (fromType === 'aws_lambda_function') return 'invokes'
+  if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
+  if (fromType === 'aws_api_gateway_rest_api' || fromType === 'aws_apigatewayv2_api')
+    return 'connects'
+  return 'depends-on'
 }
 
 function extractReferences(resource: TerraformResource): string[] {
