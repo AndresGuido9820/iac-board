@@ -159,7 +159,7 @@ export function EdgeRenderer({
         const lw = shouldLabel && mid ? labelWidth(labelText) : 0
 
         return (
-          <g key={edge.id}>
+          <g data-testid="iac-edge" key={edge.id}>
             <path
               d={d}
               fill="none"
