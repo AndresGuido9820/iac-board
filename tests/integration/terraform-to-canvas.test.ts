@@ -33,7 +33,7 @@ describe('Terraform to canvas pipeline', () => {
         id: 'aws_lambda_function.handler',
         source: expect.objectContaining({
           filePath: 'examples/terraform/aws-serverless-api/main.tf',
-          line: 5,
+          line: 12,
         }),
       }),
     )

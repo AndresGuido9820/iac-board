@@ -27,7 +27,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('aws_lambda_function.handler')).toBeInTheDocument()
     expect(
-      screen.getByText('examples/terraform/aws-serverless-api/main.tf:5'),
+      screen.getByText('examples/terraform/aws-serverless-api/main.tf:12'),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 2, name: 'Parser diagnostics' }),

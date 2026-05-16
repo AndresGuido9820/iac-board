@@ -1,4 +1,7 @@
 import type { Diagnostic, SourceLocation } from '@iac-board/core-types'
+import { tokenize } from './lexer'
+import { parseHclFile } from './parser'
+import { extractFromFile } from './extractor'
 
 export type TerraformResource = {
   address: string
@@ -6,6 +9,7 @@ export type TerraformResource = {
   name: string
   source: SourceLocation
   body: string
+  refs: string[]
 }
 
 export type TerraformParseResult = {
@@ -17,9 +21,6 @@ export type TerraformFile = {
   path: string
   content: string
 }
-
-const resourceBlockPattern =
-  /resource\s+"(?<type>[^"]+)"\s+"(?<name>[^"]+)"\s*\{/g
 
 export function parseTerraformFiles(
   files: TerraformFile[],
@@ -38,35 +39,13 @@ export function parseTerraformFiles(
       continue
     }
 
-    for (const match of file.content.matchAll(resourceBlockPattern)) {
-      const type = match.groups?.type
-      const name = match.groups?.name
-      if (!type || !name) {
-        continue
-      }
+    const tokens = tokenize(file.content)
+    const { file: hclFile, diagnostics: parseDiags } = parseHclFile(tokens, file.path)
+    diagnostics.push(...parseDiags)
 
-      resources.push({
-        address: `${type}.${name}`,
-        type,
-        name,
-        source: {
-          filePath: file.path,
-          line: getLineNumber(file.content, match.index ?? 0),
-        },
-        body: extractBlockBody(file.content, match.index ?? 0),
-      })
-    }
+    const fileResources = extractFromFile(hclFile, diagnostics)
+    resources.push(...fileResources)
   }
 
   return { resources, diagnostics }
-}
-
-function getLineNumber(content: string, index: number) {
-  return content.slice(0, index).split('\n').length
-}
-
-function extractBlockBody(content: string, startIndex: number) {
-  const nextResourceIndex = content.indexOf('\nresource ', startIndex + 1)
-  const endIndex = nextResourceIndex === -1 ? content.length : nextResourceIndex
-  return content.slice(startIndex, endIndex).trim()
 }

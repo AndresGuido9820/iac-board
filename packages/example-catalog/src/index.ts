@@ -12,21 +12,36 @@ const awsServerlessApi: ExampleProject = {
   id: 'aws-serverless-api',
   name: 'AWS Serverless API',
   description:
-    'API Gateway, Lambda, and DynamoDB example for the first Terraform diagram pipeline.',
+    'API Gateway, Lambda, IAM, and DynamoDB — a complete serverless REST backend.',
   userStoryIds: ['HU-002', 'HU-005'],
   files: [
     {
       path: 'examples/terraform/aws-serverless-api/main.tf',
-      content: `resource "aws_api_gateway_rest_api" "public_api" {
-  name = "public-api"
-}
-
-resource "aws_lambda_function" "handler" {
-  function_name = "handler"
+      content: `resource "aws_iam_role" "lambda_exec" {
+  name               = "lambda-exec-role"
+  assume_role_policy = "{}"
 }
 
 resource "aws_dynamodb_table" "sessions" {
-  name = "sessions"
+  name         = "sessions"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+}
+
+resource "aws_lambda_function" "handler" {
+  function_name = "api-handler"
+  role          = aws_iam_role.lambda_exec.arn
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.sessions.name
+    }
+  }
+}
+
+resource "aws_api_gateway_rest_api" "public_api" {
+  name            = "public-api"
+  integration_uri = aws_lambda_function.handler.invoke_arn
 }
 `,
     },
@@ -37,21 +52,31 @@ const awsIotPipeline: ExampleProject = {
   id: 'aws-iot-pipeline',
   name: 'AWS IoT Pipeline',
   description:
-    'IoT Core, Kinesis, Lambda, S3, Glue, and Athena example for event ingestion and analytics.',
+    'IoT Core → Kinesis → Lambda → S3 → Glue → Athena event ingestion and analytics pipeline.',
   userStoryIds: ['HU-002', 'HU-007'],
   files: [
     {
       path: 'examples/terraform/aws-iot-pipeline/main.tf',
       content: `resource "aws_iot_topic_rule" "telemetry_ingest" {
-  name = "telemetry-ingest"
+  name           = "telemetry-ingest"
+  kinesis_stream = aws_kinesis_stream.telemetry_events.arn
 }
 
 resource "aws_kinesis_stream" "telemetry_events" {
-  name = "telemetry-events"
+  name        = "telemetry-events"
+  shard_count = 1
+}
+
+resource "aws_lambda_event_source_mapping" "kinesis_trigger" {
+  event_source_arn  = aws_kinesis_stream.telemetry_events.arn
+  function_name     = aws_lambda_function.normalizer.arn
+  starting_position = "LATEST"
 }
 
 resource "aws_lambda_function" "normalizer" {
   function_name = "telemetry-normalizer"
+  output_bucket = aws_s3_bucket.data_lake.bucket
+  glue_database = aws_glue_catalog_database.telemetry_catalog.name
 }
 
 resource "aws_s3_bucket" "data_lake" {
@@ -63,7 +88,8 @@ resource "aws_glue_catalog_database" "telemetry_catalog" {
 }
 
 resource "aws_athena_workgroup" "analytics" {
-  name = "telemetry-analytics"
+  name                  = "telemetry-analytics"
+  glue_catalog_database = aws_glue_catalog_database.telemetry_catalog.name
 }
 `,
     },

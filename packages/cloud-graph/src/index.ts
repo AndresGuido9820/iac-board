@@ -16,6 +16,7 @@ const awsCategories: Record<string, CloudNode['category']> = {
   aws_internet_gateway: 'network',
   aws_iot_topic_rule: 'integration',
   aws_kinesis_stream: 'integration',
+  aws_lambda_event_source_mapping: 'integration',
   aws_lambda_function: 'compute',
   aws_nat_gateway: 'network',
   aws_s3_bucket: 'storage',
@@ -141,16 +142,18 @@ function buildNetworkGroups(resources: TerraformResource[]): CloudGroup[] {
 
 function buildEdges(resources: TerraformResource[]): CloudEdge[] {
   const addressSet = new Set(resources.map((r) => r.address))
+  const typeMap = new Map(resources.map((r) => [r.address, r.type]))
   const edges: CloudEdge[] = []
 
   for (const resource of resources) {
     const refs = extractReferences(resource).filter((ref) => addressSet.has(ref))
     for (const ref of refs) {
+      const toType = typeMap.get(ref) ?? ''
       edges.push({
         id: `edge:${resource.address}→${ref}`,
         from: resource.address,
         to: ref,
-        relation: inferRelation(resource.type, ref),
+        relation: inferRelation(resource.type, toType),
         confidence: 'inferred',
         metadata: {},
       })
@@ -160,21 +163,40 @@ function buildEdges(resources: TerraformResource[]): CloudEdge[] {
   return edges
 }
 
-function inferRelation(
-  fromType: string,
-  _toAddress: string,
-): CloudEdge['relation'] {
-  if (fromType === 'aws_lambda_function') return 'invokes'
+/** Infer edge semantic from both source and target resource types. */
+function inferRelation(fromType: string, toType: string): CloudEdge['relation'] {
+  // Event-source mapping bridges a stream/queue to a Lambda
+  if (fromType === 'aws_lambda_event_source_mapping') return 'triggers'
+
+  // API Gateway / IoT publish to downstream compute
+  if (fromType === 'aws_api_gateway_rest_api' || fromType === 'aws_apigatewayv2_api') return 'connects'
   if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
-  if (fromType === 'aws_api_gateway_rest_api' || fromType === 'aws_apigatewayv2_api')
-    return 'connects'
+
+  // Lambda: distinguish role assumption, storage writes, and generic invocations
+  if (fromType === 'aws_lambda_function') {
+    if (toType === 'aws_iam_role') return 'uses-role'
+    if (
+      toType === 'aws_s3_bucket' ||
+      toType === 'aws_dynamodb_table' ||
+      toType === 'aws_kinesis_stream' ||
+      toType === 'aws_sns_topic' ||
+      toType === 'aws_sqs_queue'
+    )
+      return 'writes-to'
+    return 'invokes'
+  }
+
+  // Network resources reference VPC/subnet as placement context
+  if (toType === 'aws_vpc' || toType === 'aws_subnet' || toType === 'aws_db_subnet_group')
+    return 'deployed-in'
+  if (toType === 'aws_security_group') return 'secured-by'
+  if (toType === 'aws_iam_role') return 'uses-role'
+
   return 'depends-on'
 }
 
 function extractReferences(resource: TerraformResource): string[] {
-  return [...resource.body.matchAll(/\b(aws_[a-z0-9_]+)\.([A-Za-z0-9_-]+)\b/g)]
-    .map((match) => `${match[1]}.${match[2]}`)
-    .filter((reference) => reference !== resource.address)
+  return resource.refs ?? []
 }
 
 function networkGroupId(kind: 'vpc' | 'subnet', address: string): string {
