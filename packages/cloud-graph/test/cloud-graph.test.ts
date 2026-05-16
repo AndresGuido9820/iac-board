@@ -58,4 +58,49 @@ resource "aws_nat_gateway" "egress" {}`,
       },
     ])
   })
+
+  it('builds VPC and subnet groups from Terraform references', () => {
+    const parseResult = parseTerraformFiles([
+      {
+        path: 'main.tf',
+        content: `resource "aws_vpc" "main" {}
+
+resource "aws_subnet" "public" {
+  vpc_id = aws_vpc.main.id
+  map_public_ip_on_launch = true
+}
+
+resource "aws_nat_gateway" "egress" {
+  subnet_id = aws_subnet.public.id
+}`,
+      },
+    ])
+
+    const graph = buildCloudGraph(parseResult)
+
+    expect(graph.groups).toContainEqual(
+      expect.objectContaining({
+        id: 'group:vpc:aws_vpc.main',
+        label: 'VPC main',
+        kind: 'vpc',
+        children: [
+          'aws_vpc.main',
+          'aws_subnet.public',
+          'aws_nat_gateway.egress',
+        ],
+      }),
+    )
+    expect(graph.groups).toContainEqual(
+      expect.objectContaining({
+        id: 'group:subnet:aws_subnet.public',
+        label: 'Public subnet public',
+        kind: 'subnet',
+        children: ['aws_subnet.public', 'aws_nat_gateway.egress'],
+        metadata: expect.objectContaining({
+          visibility: 'public',
+          vpcAddress: 'aws_vpc.main',
+        }),
+      }),
+    )
+  })
 })

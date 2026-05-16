@@ -8,14 +8,6 @@ import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import './App.css'
 
-const qualityGates = [
-  'Terraform parser',
-  'Cloud graph',
-  'Deterministic layout',
-  'Canvas adapter',
-  'CI and security checks',
-]
-
 type ProductShellProps = {
   examples: ExampleProject[]
   example: ExampleProject
@@ -34,6 +26,12 @@ export function ProductShell({
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
   )
+  const nodeDrafts = generatedDiagram.canvasDrafts.filter(
+    (draft) => draft.type === 'node',
+  )
+  const groupDrafts = generatedDiagram.canvasDrafts.filter(
+    (draft) => draft.type === 'group',
+  )
 
   return (
     <main className="app-shell">
@@ -48,15 +46,6 @@ export function ProductShell({
           <a href="/docs/product/user-stories.md">User stories</a>
           <a href="/docs/development-spec.md">Development spec</a>
         </div>
-      </section>
-
-      <section className="panel" aria-labelledby="quality-title">
-        <h2 id="quality-title">Engineering gates</h2>
-        <ul>
-          {qualityGates.map((gate) => (
-            <li key={gate}>{gate}</li>
-          ))}
-        </ul>
       </section>
 
       <section className="panel" aria-labelledby="examples-title">
@@ -107,12 +96,26 @@ export function ProductShell({
             <dd>{generatedDiagram.canvasDrafts.length}</dd>
           </div>
           <div>
+            <dt>Groups</dt>
+            <dd>{generatedDiagram.graph.groups.length}</dd>
+          </div>
+          <div>
             <dt>Diagnostics</dt>
             <dd>{generatedDiagram.diagnostics.length}</dd>
           </div>
         </dl>
+        {groupDrafts.length > 0 ? (
+          <ul className="group-list" aria-label="Generated network groups">
+            {groupDrafts.map((draft) => (
+              <li key={draft.id}>
+                <strong>{draft.label}</strong>
+                <span>{draft.id}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <ul className="resource-list" aria-label="Generated resources">
-          {generatedDiagram.canvasDrafts.map((draft) => {
+          {nodeDrafts.map((draft) => {
             const node = nodesById.get(draft.id)
             const sourceLabel = node?.source
               ? `${node.source.filePath}:${node.source.line ?? 1}`

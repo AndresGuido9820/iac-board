@@ -131,7 +131,7 @@
 .metrics {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 24px 0;
 }
 
@@ -156,11 +156,13 @@
   margin: 2px 0 0;
 }
 
+.group-list,
 .resource-list {
   list-style: none;
   padding: 0;
 }
 
+.group-list li,
 .resource-list li {
   align-items: center;
   border-top: 1px solid var(--border);
@@ -175,10 +177,15 @@
   gap: 4px;
 }
 
+.group-list span,
 .resource-list span {
   color: var(--text);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 0.9rem;
+}
+
+.group-list strong {
+  color: var(--accent);
 }
 
 .resource-list small,
@@ -222,6 +229,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .group-list li,
   .resource-list li {
     align-items: flex-start;
     flex-direction: column;

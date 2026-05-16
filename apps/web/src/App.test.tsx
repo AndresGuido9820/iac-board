@@ -11,7 +11,6 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'IaC Board' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Terraform parser')).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Development spec' }),
     ).toHaveAttribute('href', '/docs/development-spec.md')
@@ -76,5 +75,20 @@ describe('App', () => {
     expect(
       screen.getByText('examples/terraform/aws-iot-pipeline/main.tf:1'),
     ).toBeInTheDocument()
+  })
+
+  it('shows generated network groups for the VPC example', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: /AWS VPC \+ RDS/ }))
+
+    expect(screen.getByLabelText('Generated network groups')).toHaveTextContent(
+      'VPC main',
+    )
+    expect(screen.getByLabelText('Generated network groups')).toHaveTextContent(
+      'Private subnet private',
+    )
+    expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
   })
 })

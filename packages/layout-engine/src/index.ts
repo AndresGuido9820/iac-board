@@ -39,5 +39,33 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
     }
   })
 
+  for (const group of [...graph.groups].sort((a, b) =>
+    a.kind.localeCompare(b.kind),
+  )) {
+    const childRectangles = group.children
+      .map((childId) => layout[childId])
+      .filter((rectangle): rectangle is Rectangle => Boolean(rectangle))
+
+    if (childRectangles.length === 0) {
+      continue
+    }
+
+    const left = Math.min(...childRectangles.map((rectangle) => rectangle.x))
+    const top = Math.min(...childRectangles.map((rectangle) => rectangle.y))
+    const right = Math.max(
+      ...childRectangles.map((rectangle) => rectangle.x + rectangle.width),
+    )
+    const bottom = Math.max(
+      ...childRectangles.map((rectangle) => rectangle.y + rectangle.height),
+    )
+
+    layout[group.id] = {
+      x: left - 32,
+      y: top - 40,
+      width: right - left + 64,
+      height: bottom - top + 80,
+    }
+  }
+
   return { ...graph, layout }
 }

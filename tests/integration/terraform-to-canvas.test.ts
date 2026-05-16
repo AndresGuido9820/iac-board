@@ -53,4 +53,20 @@ describe('Terraform to canvas pipeline', () => {
       0, 0, 0,
     ])
   })
+
+  it('keeps network topology groups in canvas output', () => {
+    const example = getExampleProject('aws-vpc-rds')
+    const result = generateDiagramFromTerraformFiles(example.files)
+
+    expect(result.graph.groups.map((group) => group.id)).toEqual([
+      'group:vpc:aws_vpc.main',
+      'group:subnet:aws_subnet.public',
+      'group:subnet:aws_subnet.private',
+    ])
+    expect(result.canvasDrafts[0]).toMatchObject({
+      id: 'group:vpc:aws_vpc.main',
+      type: 'group',
+      label: 'VPC main',
+    })
+  })
 })

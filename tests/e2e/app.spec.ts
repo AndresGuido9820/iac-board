@@ -4,7 +4,6 @@ test('loads the IaC Board product shell', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByRole('heading', { name: 'IaC Board' })).toBeVisible()
-  await expect(page.getByText('Terraform parser')).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'AWS Serverless API' }),
   ).toBeVisible()
@@ -25,8 +24,14 @@ test('loads the IaC Board product shell', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'AWS VPC + RDS' }),
   ).toBeVisible()
+  await expect(page.getByLabel('Generated network groups')).toContainText(
+    'VPC main',
+  )
+  await expect(page.getByLabel('Generated network groups')).toContainText(
+    'Private subnet private',
+  )
   await expect(page.getByText('aws_db_instance.primary')).toBeVisible()
   await expect(
-    page.getByText('examples/terraform/aws-vpc-rds/main.tf:27'),
+    page.getByText('examples/terraform/aws-vpc-rds/main.tf:34'),
   ).toBeVisible()
 })

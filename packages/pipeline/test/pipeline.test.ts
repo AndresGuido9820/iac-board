@@ -50,4 +50,28 @@ describe('generateDiagramFromTerraformFiles', () => {
       },
     ])
   })
+
+  it('generates network groups for the VPC and RDS example', () => {
+    const example = getExampleProject('aws-vpc-rds')
+    const result = generateDiagramFromTerraformFiles(example.files)
+
+    expect(result.graph.groups).toContainEqual(
+      expect.objectContaining({
+        id: 'group:vpc:aws_vpc.main',
+        label: 'VPC main',
+      }),
+    )
+    expect(result.graph.groups).toContainEqual(
+      expect.objectContaining({
+        id: 'group:subnet:aws_subnet.private',
+        label: 'Private subnet private',
+      }),
+    )
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({
+        id: 'group:vpc:aws_vpc.main',
+        type: 'group',
+      }),
+    )
+  })
 })

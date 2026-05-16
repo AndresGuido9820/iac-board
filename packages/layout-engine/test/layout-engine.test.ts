@@ -55,4 +55,45 @@ describe('layoutCloudGraph', () => {
     expect(positioned.layout['aws_vpc.main']?.x).toBe(80)
     expect(positioned.layout['aws_lambda_function.api']?.x).toBe(340)
   })
+
+  it('adds group bounds around child node positions', () => {
+    const positioned = layoutCloudGraph({
+      nodes: [
+        {
+          id: 'aws_vpc.main',
+          provider: 'aws',
+          kind: 'aws_vpc',
+          label: 'main',
+          category: 'network',
+          metadata: {},
+        },
+        {
+          id: 'aws_subnet.public',
+          provider: 'aws',
+          kind: 'aws_subnet',
+          label: 'public',
+          category: 'network',
+          metadata: {},
+        },
+      ],
+      edges: [],
+      groups: [
+        {
+          id: 'group:vpc:aws_vpc.main',
+          label: 'VPC main',
+          kind: 'vpc',
+          children: ['aws_vpc.main', 'aws_subnet.public'],
+          metadata: {},
+        },
+      ],
+      diagnostics: [],
+    })
+
+    expect(positioned.layout['group:vpc:aws_vpc.main']).toEqual({
+      x: 48,
+      y: 40,
+      width: 524,
+      height: 176,
+    })
+  })
 })
