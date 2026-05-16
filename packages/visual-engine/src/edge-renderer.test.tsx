@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { EdgeRenderer } from './edge-renderer'
 import type { BoardEdge, BoardNode } from './types'
@@ -46,7 +46,7 @@ describe('EdgeRenderer — edge labels', () => {
   })
 
   it('renders label text for labeled relations when showLabels=true', () => {
-    const { getByText } = render(
+    render(
       <svg>
         <EdgeRenderer
           edges={[edge('writes-to')]}
@@ -55,11 +55,11 @@ describe('EdgeRenderer — edge labels', () => {
         />
       </svg>,
     )
-    expect(getByText('writes to')).toBeTruthy()
+    expect(screen.getByText('writes to')).toBeTruthy()
   })
 
   it('does not render label when showLabels=false', () => {
-    const { queryByText } = render(
+    render(
       <svg>
         <EdgeRenderer
           edges={[edge('writes-to')]}
@@ -68,11 +68,11 @@ describe('EdgeRenderer — edge labels', () => {
         />
       </svg>,
     )
-    expect(queryByText('writes to')).toBeNull()
+    expect(screen.queryByText('writes to')).toBeNull()
   })
 
   it('does not render label for deployed-in (structural/noisy)', () => {
-    const { queryByText } = render(
+    render(
       <svg>
         <EdgeRenderer
           edges={[edge('deployed-in')]}
@@ -81,12 +81,12 @@ describe('EdgeRenderer — edge labels', () => {
         />
       </svg>,
     )
-    expect(queryByText('deployed-in')).toBeNull()
-    expect(queryByText('deployed in')).toBeNull()
+    expect(screen.queryByText('deployed-in')).toBeNull()
+    expect(screen.queryByText('deployed in')).toBeNull()
   })
 
   it('renders triggers label for triggers relation', () => {
-    const { getByText } = render(
+    render(
       <svg>
         <EdgeRenderer
           edges={[edge('triggers')]}
@@ -95,7 +95,7 @@ describe('EdgeRenderer — edge labels', () => {
         />
       </svg>,
     )
-    expect(getByText('triggers')).toBeTruthy()
+    expect(screen.getByText('triggers')).toBeTruthy()
   })
 
   it('skips rendering when source or target node is missing', () => {
