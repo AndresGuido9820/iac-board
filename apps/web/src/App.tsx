@@ -53,7 +53,7 @@ export function ProductShell({
             {t.terraform_examples}
           </a>
           {onToggleLang ? (
-            <button onClick={onToggleLang} type="button">
+            <button className="lang-btn" onClick={onToggleLang} type="button">
               {t.lang_toggle}
             </button>
           ) : null}

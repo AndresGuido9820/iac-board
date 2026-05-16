@@ -48,9 +48,19 @@
   text-decoration: none;
 }
 
-.hero-actions a:last-child {
+.hero-actions a:last-of-type {
   background: transparent;
   color: var(--accent);
+}
+
+.lang-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 14px;
 }
 
 .panel {
