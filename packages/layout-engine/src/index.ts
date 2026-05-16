@@ -15,8 +15,8 @@ export type PositionedCloudGraph = CloudGraph & {
 
 const NODE_W = 220
 const NODE_H = 92
-const COL_GAP = 80   // horizontal gap between columns
-const ROW_GAP = 28   // vertical gap between rows in same column
+const COL_GAP = 80 // horizontal gap between columns
+const ROW_GAP = 28 // vertical gap between rows in same column
 const PAD_X = 60
 const PAD_Y = 60
 
@@ -44,7 +44,15 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   }
 
   // Sort each layer by category order then name for stable output
-  const categoryOrder = ['network', 'security', 'integration', 'compute', 'database', 'storage', 'unknown']
+  const categoryOrder = [
+    'network',
+    'security',
+    'integration',
+    'compute',
+    'database',
+    'storage',
+    'unknown',
+  ]
   const nodeCategory = new Map(graph.nodes.map((n) => [n.id, n.category]))
 
   for (const [, ids] of byLayer) {
@@ -56,7 +64,10 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   }
 
   // Find tallest column to centre shorter ones vertically
-  const maxCount = Math.max(...[...byLayer.values()].map((ids) => ids.length), 1)
+  const maxCount = Math.max(
+    ...[...byLayer.values()].map((ids) => ids.length),
+    1,
+  )
   const totalCanvasH = (maxCount - 1) * (NODE_H + ROW_GAP) + NODE_H
 
   // Assign node positions
@@ -78,16 +89,18 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   }
 
   // Compute group bounds from children rects
-  for (const group of [...graph.groups].sort((a, b) => a.kind.localeCompare(b.kind))) {
+  for (const group of [...graph.groups].sort((a, b) =>
+    a.kind.localeCompare(b.kind),
+  )) {
     const childRects = group.children
       .map((cid) => layout[cid])
       .filter((r): r is Rectangle => Boolean(r))
 
     if (childRects.length === 0) continue
 
-    const left   = Math.min(...childRects.map((r) => r.x))
-    const top    = Math.min(...childRects.map((r) => r.y))
-    const right  = Math.max(...childRects.map((r) => r.x + r.width))
+    const left = Math.min(...childRects.map((r) => r.x))
+    const top = Math.min(...childRects.map((r) => r.y))
+    const right = Math.max(...childRects.map((r) => r.x + r.width))
     const bottom = Math.max(...childRects.map((r) => r.y + r.height))
 
     layout[group.id] = {

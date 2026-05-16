@@ -25,7 +25,7 @@ const PROVIDER_PREFIXES = [
 ]
 
 const REF_PATTERN = new RegExp(
-  `\\b((?:${PROVIDER_PREFIXES.map(p => p.replace('_', '_')).join('|')})[a-z0-9_]+)\\.([a-zA-Z0-9_][a-zA-Z0-9_-]*)`,
+  `\\b((?:${PROVIDER_PREFIXES.map((p) => p.replace('_', '_')).join('|')})[a-z0-9_]+)\\.([a-zA-Z0-9_][a-zA-Z0-9_-]*)`,
   'g',
 )
 
@@ -80,9 +80,14 @@ export function bodyToText(body: HclBody): string {
     if (isAttribute(stmt)) {
       lines.push(`  ${stmt.name} = ${exprToRaw(stmt.value)}`)
     } else if (isBlock(stmt)) {
-      const header = [stmt.type, ...stmt.labels.map(l => `"${l}"`)].join(' ')
+      const header = [stmt.type, ...stmt.labels.map((l) => `"${l}"`)].join(' ')
       lines.push(`  ${header} {`)
-      lines.push(bodyToText(stmt.body).split('\n').map(l => '  ' + l).join('\n'))
+      lines.push(
+        bodyToText(stmt.body)
+          .split('\n')
+          .map((l) => '  ' + l)
+          .join('\n'),
+      )
       lines.push('  }')
     }
   }

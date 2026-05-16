@@ -13,13 +13,9 @@
 
 import type { Diagnostic } from '@iac-board/core-types'
 import type { HclFile, HclBlock, HclBody, HclExpr } from './ast'
-import {
-  isAttribute, isBlock,
-  bodyAttr, bodyBlocks,
-  exprToString, exprToRaw,
-} from './ast'
-import type { TerraformResource, TerraformParseResult } from './index'
-import { refsFromBody, refsFromString, bodyToText } from './refs'
+import { isAttribute, isBlock, bodyAttr, exprToString } from './ast'
+import type { TerraformResource } from './index'
+import { refsFromBody, bodyToText } from './refs'
 
 export function extractFromFile(
   file: HclFile,
@@ -67,8 +63,15 @@ export function extractFromFile(
         continue
       }
       resources.push(
-        buildResource(block, resourceType, resourceName, filePath,
-                      varDefaults, localValues, false),
+        buildResource(
+          block,
+          resourceType,
+          resourceName,
+          filePath,
+          varDefaults,
+          localValues,
+          false,
+        ),
       )
     }
 
@@ -78,8 +81,15 @@ export function extractFromFile(
       if (!dataType || !dataName) continue
       // Represent data sources as resources with a "data." prefix address
       resources.push(
-        buildResource(block, `data.${dataType}`, dataName, filePath,
-                      varDefaults, localValues, true),
+        buildResource(
+          block,
+          `data.${dataType}`,
+          dataName,
+          filePath,
+          varDefaults,
+          localValues,
+          true,
+        ),
       )
     }
 
@@ -87,7 +97,8 @@ export function extractFromFile(
       const moduleName = block.labels[0] ?? 'unknown'
       const sourceExpr = bodyAttr(block.body, 'source')
       const sourceVal = sourceExpr ? exprToString(sourceExpr) : undefined
-      const isLocal = sourceVal?.startsWith('./') || sourceVal?.startsWith('../')
+      const isLocal =
+        sourceVal?.startsWith('./') || sourceVal?.startsWith('../')
       allDiagnostics.push({
         code: isLocal ? 'TF003' : 'TF004',
         severity: 'info',
@@ -109,7 +120,7 @@ function buildResource(
   filePath: string,
   varDefaults: Map<string, string>,
   localValues: Map<string, string>,
-  isData: boolean,
+  _isData: boolean,
 ): TerraformResource {
   const address = `${resourceType}.${resourceName}`
 
@@ -117,7 +128,9 @@ function buildResource(
   const resolvedBody = resolveBody(block.body, varDefaults, localValues)
 
   // Extract all resource-to-resource references
-  const refs = refsFromBody(resolvedBody).filter(r => r !== address && !r.startsWith('data.'))
+  const refs = refsFromBody(resolvedBody).filter(
+    (r) => r !== address && !r.startsWith('data.'),
+  )
 
   // Reconstruct body as text for backward compatibility
   const bodyText = bodyToText(resolvedBody)
@@ -142,9 +155,12 @@ function resolveBody(
   varDefaults: Map<string, string>,
   localValues: Map<string, string>,
 ): HclBody {
-  return body.map(stmt => {
+  return body.map((stmt) => {
     if (isAttribute(stmt)) {
-      return { ...stmt, value: resolveExpr(stmt.value, varDefaults, localValues) }
+      return {
+        ...stmt,
+        value: resolveExpr(stmt.value, varDefaults, localValues),
+      }
     }
     if (isBlock(stmt)) {
       return { ...stmt, body: resolveBody(stmt.body, varDefaults, localValues) }
@@ -177,16 +193,26 @@ function resolveExpr(
       const resolved = expr.value.replace(
         /\$\{(var|local)\.([^}]+)\}/g,
         (_, kind, name) => {
-          const val = kind === 'var' ? varDefaults.get(name) : localValues.get(name)
+          const val =
+            kind === 'var' ? varDefaults.get(name) : localValues.get(name)
           return val ?? `\${${kind}.${name}}`
         },
       )
       return { kind: 'string', value: resolved }
     }
     case 'list':
-      return { kind: 'list', items: expr.items.map(i => resolveExpr(i, varDefaults, localValues)) }
+      return {
+        kind: 'list',
+        items: expr.items.map((i) => resolveExpr(i, varDefaults, localValues)),
+      }
     case 'object':
-      return { kind: 'object', entries: expr.entries.map(([k, v]) => [k, resolveExpr(v, varDefaults, localValues)]) }
+      return {
+        kind: 'object',
+        entries: expr.entries.map(([k, v]) => [
+          k,
+          resolveExpr(v, varDefaults, localValues),
+        ]),
+      }
     default:
       return expr
   }

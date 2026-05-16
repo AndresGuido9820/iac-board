@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test'
 
 const examples = [
   { name: 'AWS Serverless API', label: 'serverless-api' },
-  { name: 'AWS IoT Pipeline',   label: 'iot-pipeline'   },
-  { name: 'AWS VPC + RDS',      label: 'vpc-rds'        },
+  { name: 'AWS IoT Pipeline', label: 'iot-pipeline' },
+  { name: 'AWS VPC + RDS', label: 'vpc-rds' },
 ]
 
 test('diagram: hero default (first example pre-selected)', async ({ page }) => {

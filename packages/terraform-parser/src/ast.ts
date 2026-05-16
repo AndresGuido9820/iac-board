@@ -49,26 +49,34 @@ export type HclAttribute = {
  * For 'unknown', we still extract resource references from raw text.
  */
 export type HclExpr =
-  | { kind: 'string';  value: string }
-  | { kind: 'number';  value: number }
-  | { kind: 'bool';    value: boolean }
+  | { kind: 'string'; value: string }
+  | { kind: 'number'; value: number }
+  | { kind: 'bool'; value: boolean }
   | { kind: 'null' }
-  | { kind: 'ref';     path: string[] }          // e.g. ["aws_vpc","main","id"]
-  | { kind: 'list';    items: HclExpr[] }
-  | { kind: 'object';  entries: [string, HclExpr][] }
-  | { kind: 'unknown'; raw: string }              // complex expression, raw text kept
+  | { kind: 'ref'; path: string[] } // e.g. ["aws_vpc","main","id"]
+  | { kind: 'list'; items: HclExpr[] }
+  | { kind: 'object'; entries: [string, HclExpr][] }
+  | { kind: 'unknown'; raw: string } // complex expression, raw text kept
 
 /** Flatten all raw text and refs out of an expression for reference extraction */
 export function exprToRaw(expr: HclExpr): string {
   switch (expr.kind) {
-    case 'string':  return `"${expr.value}"`
-    case 'number':  return String(expr.value)
-    case 'bool':    return String(expr.value)
-    case 'null':    return 'null'
-    case 'ref':     return expr.path.join('.')
-    case 'unknown': return expr.raw
-    case 'list':    return expr.items.map(exprToRaw).join(' ')
-    case 'object':  return expr.entries.map(([k, v]) => `${k} = ${exprToRaw(v)}`).join(' ')
+    case 'string':
+      return `"${expr.value}"`
+    case 'number':
+      return String(expr.value)
+    case 'bool':
+      return String(expr.value)
+    case 'null':
+      return 'null'
+    case 'ref':
+      return expr.path.join('.')
+    case 'unknown':
+      return expr.raw
+    case 'list':
+      return expr.items.map(exprToRaw).join(' ')
+    case 'object':
+      return expr.entries.map(([k, v]) => `${k} = ${exprToRaw(v)}`).join(' ')
   }
 }
 
@@ -76,7 +84,7 @@ export function exprToRaw(expr: HclExpr): string {
 export function exprToString(expr: HclExpr): string | undefined {
   if (expr.kind === 'string') return expr.value
   if (expr.kind === 'number') return String(expr.value)
-  if (expr.kind === 'bool')   return String(expr.value)
+  if (expr.kind === 'bool') return String(expr.value)
   return undefined
 }
 

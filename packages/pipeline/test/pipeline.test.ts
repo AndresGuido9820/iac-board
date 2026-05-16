@@ -8,10 +8,18 @@ describe('generateDiagramFromTerraformFiles', () => {
     const result = generateDiagramFromTerraformFiles(example.files)
 
     expect(result.parsed.resources).toHaveLength(4)
-    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_api_gateway_rest_api.public_api')
-    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_lambda_function.handler')
-    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_dynamodb_table.sessions')
-    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_iam_role.lambda_exec')
+    expect(result.graph.nodes.map((node) => node.id)).toContain(
+      'aws_api_gateway_rest_api.public_api',
+    )
+    expect(result.graph.nodes.map((node) => node.id)).toContain(
+      'aws_lambda_function.handler',
+    )
+    expect(result.graph.nodes.map((node) => node.id)).toContain(
+      'aws_dynamodb_table.sessions',
+    )
+    expect(result.graph.nodes.map((node) => node.id)).toContain(
+      'aws_iam_role.lambda_exec',
+    )
     expect(result.canvasDrafts).toHaveLength(4)
     expect(result.diagnostics).toEqual([])
     expect(result.graph.nodes).toContainEqual(

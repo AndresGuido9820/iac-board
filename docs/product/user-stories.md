@@ -423,7 +423,7 @@ Three root-cause defects found across the three bundled examples:
 1. **IoT pipeline layout inversion** — `aws_lambda_function.normalizer` was
    modelled with a fake `event_source = kinesis.arn` attribute. Because the
    consumer (Lambda) references the producer (Kinesis), the topology algorithm
-   placed Lambda to the *left* of Kinesis. Real Terraform uses
+   placed Lambda to the _left_ of Kinesis. Real Terraform uses
    `aws_lambda_event_source_mapping` as a dedicated bridge resource; adding it
    produces the correct layout: IoT Rule → Kinesis → (mapping) → Lambda → S3 /
    Glue → Athena.
@@ -431,7 +431,7 @@ Three root-cause defects found across the three bundled examples:
 2. **Undifferentiated edge styles** — all edges from `aws_lambda_function` were
    tagged `invokes`, making role assumptions, storage writes, and function
    triggers visually identical. `inferRelation` needed to consider both the
-   source *and* target resource type to emit the correct semantic relation.
+   source _and_ target resource type to emit the correct semantic relation.
 
 3. **Missing resource type** — `aws_lambda_event_source_mapping` was absent from
    the `awsCategories` map, causing a GRAPH001 diagnostic on every IoT pipeline

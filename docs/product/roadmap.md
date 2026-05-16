@@ -34,9 +34,11 @@ Own SVG canvas (no external canvas deps). Inspired by Drawnix/Plait patterns.
 ## Phase 3: Terraform Parser
 
 ### 3.0 ✅ Basic regex parser
+
 Handles flat `resource` blocks. Works for bundled examples.
 
 ### 3.1 ← NEXT: Proper HCL block parser
+
 The current regex breaks on nested blocks and misses variables/locals.
 
 - [ ] Recursive block parser (handles arbitrary nesting)
@@ -48,11 +50,13 @@ The current regex breaks on nested blocks and misses variables/locals.
 - [ ] Diagnostics for unresolvable expressions (no crash)
 
 ### 3.2 Local module support (HU-025)
+
 - [ ] Detect `module` blocks with local `source = "./path"`
 - [ ] Recurse into child modules
 - [ ] Prefix resource addresses with module path (`module.vpc.aws_vpc.main`)
 
 ### 3.3 Variables from tfvars (HU-026)
+
 - [ ] Parse `.tfvars` files
 - [ ] Override variable defaults with tfvars values
 
@@ -61,9 +65,11 @@ The current regex breaks on nested blocks and misses variables/locals.
 ## Phase 4: Layout Engine
 
 ### 4.0 ✅ Grid layout
+
 4-column grid sorted by category. Works but not readable.
 
 ### 4.1 ← NEXT (after 3.1): Layered flow layout
+
 - [ ] Topological sort of nodes by edge dependencies
 - [ ] Assign nodes to layers (left-to-right data flow)
 - [ ] Group category lanes within layers
@@ -71,6 +77,7 @@ The current regex breaks on nested blocks and misses variables/locals.
 - [ ] Fallback to category grid when no edges
 
 ### 4.2 Saved layout
+
 - [ ] User drag positions stored in `IacBoardDocument.layout`
 - [ ] Regenerating graph reuses saved positions for matching resource IDs
 
@@ -79,9 +86,11 @@ The current regex breaks on nested blocks and misses variables/locals.
 ## Phase 5: Web UX
 
 ### 5.0 ✅ Bundled examples gallery
+
 3 examples, one-click generation, diagnostics panel, source references, i18n ES/EN.
 
 ### 5.1 ← File import (HU-001)
+
 - [ ] Drag & drop `.tf` files onto the diagram area
 - [ ] File picker (multi-select `.tf`)
 - [ ] Paste HCL in a text area
@@ -89,15 +98,18 @@ The current regex breaks on nested blocks and misses variables/locals.
 - [ ] All local — no upload
 
 ### 5.2 Node inspector panel
+
 - [ ] Click node → side panel shows: resource type, name, attributes, source file:line
 - [ ] Edge tooltip: relation type, confidence, source attribute
 
 ### 5.3 Export (HU-016)
+
 - [ ] Export PNG
 - [ ] Export SVG
 - [ ] Export Markdown architecture report (HU-017)
 
 ### 5.4 Save / open
+
 - [ ] Save `.iac-board.json` (graph + layout + diagnostics)
 - [ ] Reopen saved document
 
@@ -106,6 +118,7 @@ The current regex breaks on nested blocks and misses variables/locals.
 ## Phase 6: More Resource Coverage (Phase E)
 
 ### AWS additions
+
 - [ ] `aws_ecs_cluster`, `aws_ecs_service`, `aws_ecs_task_definition`
 - [ ] `aws_eks_cluster`
 - [ ] `aws_lb`, `aws_lb_listener`, `aws_lb_target_group`
@@ -116,10 +129,12 @@ The current regex breaks on nested blocks and misses variables/locals.
 - [ ] `aws_elasticache_cluster`
 
 ### GCP basics
+
 - [ ] `google_cloudfunctions_function`, `google_storage_bucket`, `google_sql_database_instance`
 - [ ] `google_pubsub_topic`, `google_bigquery_dataset`, `google_container_cluster`
 
 ### Azure basics
+
 - [ ] `azurerm_function_app`, `azurerm_storage_account`, `azurerm_virtual_network`
 - [ ] `azurerm_service_bus_namespace`, `azurerm_kubernetes_cluster`
 
