@@ -6,6 +6,8 @@ import {
 import type { ExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
+import { translations } from './translations'
+import type { Lang, Translations } from './translations'
 import './App.css'
 
 type ProductShellProps = {
@@ -14,6 +16,8 @@ type ProductShellProps = {
   generatedDiagram: DiagramPipelineResult
   onSelectExample: (exampleId: string) => void
   selectedExampleId: string
+  t?: Translations
+  onToggleLang?: () => void
 }
 
 export function ProductShell({
@@ -22,6 +26,8 @@ export function ProductShell({
   generatedDiagram,
   onSelectExample,
   selectedExampleId,
+  t = translations.en,
+  onToggleLang,
 }: ProductShellProps) {
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
@@ -36,29 +42,33 @@ export function ProductShell({
   return (
     <main className="app-shell">
       <section className="hero" aria-labelledby="hero-title">
-        <p className="eyebrow">Terraform-first architecture diagrams</p>
+        <p className="eyebrow">{t.eyebrow_hero}</p>
         <h1 id="hero-title">IaC Board</h1>
-        <p className="hero-copy">
-          Generate editable AWS architecture diagrams from Terraform without
-          executing infrastructure code.
-        </p>
-        <div className="hero-actions" aria-label="Project actions">
-          <a href="https://github.com/AndresGuido9820/iac-board">View source</a>
-          <a href="https://github.com/AndresGuido9820/iac-board/tree/main/examples/terraform">
-            Terraform examples
+        <p className="hero-copy">{t.hero_copy}</p>
+        <div className="hero-actions" aria-label={t.aria_project_actions}>
+          <a href="https://github.com/AndresGuido9820/iac-board">
+            {t.view_source}
           </a>
+          <a href="https://github.com/AndresGuido9820/iac-board/tree/main/examples/terraform">
+            {t.terraform_examples}
+          </a>
+          {onToggleLang ? (
+            <button onClick={onToggleLang} type="button">
+              {t.lang_toggle}
+            </button>
+          ) : null}
         </div>
       </section>
 
       <section className="panel" aria-labelledby="examples-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Sample infrastructure</p>
-            <h2 id="examples-title">Example projects</h2>
+            <p className="eyebrow">{t.eyebrow_samples}</p>
+            <h2 id="examples-title">{t.examples_heading}</h2>
           </div>
-          <span className="status-pill">{examples.length} examples</span>
+          <span className="status-pill">{t.examples_count(examples.length)}</span>
         </div>
-        <div className="example-grid" aria-label="Bundled example projects">
+        <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (
             <button
               aria-pressed={project.id === selectedExampleId}
@@ -69,7 +79,7 @@ export function ProductShell({
             >
               <strong>{project.name}</strong>
               <span>{project.description}</span>
-              <small>Generate diagram</small>
+              <small>{t.generate_diagram}</small>
             </button>
           ))}
         </div>
@@ -78,36 +88,36 @@ export function ProductShell({
       <section className="panel" aria-labelledby="example-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Generated architecture</p>
+            <p className="eyebrow">{t.eyebrow_generated}</p>
             <h2 id="example-title">{example.name}</h2>
           </div>
-          <span className="status-pill">Bundled example</span>
+          <span className="status-pill">{t.bundled_example}</span>
         </div>
         <p className="panel-copy">{example.description}</p>
-        <dl className="metrics" aria-label="Generated diagram metrics">
+        <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
-            <dt>Terraform files</dt>
+            <dt>{t.tf_files}</dt>
             <dd>{example.files.length}</dd>
           </div>
           <div>
-            <dt>Resources</dt>
+            <dt>{t.resources}</dt>
             <dd>{generatedDiagram.parsed.resources.length}</dd>
           </div>
           <div>
-            <dt>Canvas drafts</dt>
+            <dt>{t.canvas_drafts}</dt>
             <dd>{generatedDiagram.canvasDrafts.length}</dd>
           </div>
           <div>
-            <dt>Groups</dt>
+            <dt>{t.groups}</dt>
             <dd>{generatedDiagram.graph.groups.length}</dd>
           </div>
           <div>
-            <dt>Diagnostics</dt>
+            <dt>{t.diagnostics_label}</dt>
             <dd>{generatedDiagram.diagnostics.length}</dd>
           </div>
         </dl>
         {groupDrafts.length > 0 ? (
-          <ul className="group-list" aria-label="Generated network groups">
+          <ul className="group-list" aria-label={t.aria_groups}>
             {groupDrafts.map((draft) => (
               <li key={draft.id}>
                 <strong>{draft.label}</strong>
@@ -116,7 +126,7 @@ export function ProductShell({
             ))}
           </ul>
         ) : null}
-        <ul className="resource-list" aria-label="Generated resources">
+        <ul className="resource-list" aria-label={t.aria_resources}>
           {nodeDrafts.map((draft) => {
             const node = nodesById.get(draft.id)
             const sourceLabel = node?.source
@@ -139,17 +149,17 @@ export function ProductShell({
       <section className="panel" aria-labelledby="diagnostics-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Parser output</p>
-            <h2 id="diagnostics-title">Parser diagnostics</h2>
+            <p className="eyebrow">{t.eyebrow_parser}</p>
+            <h2 id="diagnostics-title">{t.parser_diagnostics}</h2>
           </div>
           <span className="status-pill">
-            {generatedDiagram.diagnostics.length} findings
+            {t.findings(generatedDiagram.diagnostics.length)}
           </span>
         </div>
         {generatedDiagram.diagnostics.length === 0 ? (
-          <p className="empty-state">No diagnostics for this example.</p>
+          <p className="empty-state">{t.no_diagnostics}</p>
         ) : (
-          <ul className="diagnostic-list" aria-label="Parser diagnostics">
+          <ul className="diagnostic-list" aria-label={t.aria_diagnostics_list}>
             {generatedDiagram.diagnostics.map((diagnostic) => (
               <li key={`${diagnostic.code}-${diagnostic.message}`}>
                 <strong>{diagnostic.severity}</strong>
@@ -171,6 +181,7 @@ export function ProductShell({
 function App() {
   const examples = useMemo(() => listExampleProjects(), [])
   const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
+  const [lang, setLang] = useState<Lang>('en')
   const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
   const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
 
@@ -180,7 +191,9 @@ function App() {
       examples={examples}
       generatedDiagram={generatedDiagram}
       onSelectExample={setSelectedExampleId}
+      onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
+      t={translations[lang]}
     />
   )
 }
