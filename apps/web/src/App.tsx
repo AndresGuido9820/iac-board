@@ -6,6 +6,7 @@ import {
 import type { ExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
+import { DiagramCanvas } from './DiagramCanvas'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
 import './App.css'
@@ -94,6 +95,7 @@ export function ProductShell({
           <span className="status-pill">{t.bundled_example}</span>
         </div>
         <p className="panel-copy">{example.description}</p>
+        <DiagramCanvas drafts={generatedDiagram.canvasDrafts} />
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>

@@ -63,6 +63,15 @@
   padding: 10px 14px;
 }
 
+.diagram-canvas {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: block;
+  margin-top: 18px;
+  width: 100%;
+}
+
 .panel {
   border: 1px solid var(--border);
   border-radius: 8px;
