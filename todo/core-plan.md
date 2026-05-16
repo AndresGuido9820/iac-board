@@ -1,129 +1,188 @@
-# IaC Board — Core Plan
+# IaC Board — Core Plan (revisado)
 
-## Estado actual (honesto)
+## Lo que existe en el ecosistema y qué nos diferencia
 
-| Componente | Estado | Problema real |
+### Herramientas existentes y sus limitaciones
+
+| Herramienta | Enfoque | Problema |
 |---|---|---|
-| **HCL Parser** | ❌ Regex básico | Solo detecta `resource`. No maneja bloques anidados, `variable`, `locals`, `data`, `module`. Body extraído por heurística de "buscar el siguiente resource". |
-| **Cloud Graph** | ⚠️ Funciona | Edges inferidos de referencias en texto. Soporta ~20 tipos AWS. Sin GCP/Azure. Sin `data` sources. |
-| **Layout Engine** | ❌ Grid fijo | 4 columnas, 160px de alto. No respeta flujo de datos. Los grupos VPC/subnet son calculados pero no posicionan bien a sus hijos. |
-| **Visual Engine** | ⚠️ Funciona | Pan/zoom OK. Drag no ajusta por zoom. `foreignObject` para iconos puede fallar en algunos renderers. Edges rectas sin routing. Sin export. |
-| **Web UX** | ⚠️ Parcial | Solo 3 ejemplos hardcodeados. Sin importar archivos reales. |
-| **Ejemplos** | ✅ Simples | Cubren los casos básicos pero son muy planos (sin nested blocks, sin variables). |
+| **Rover** | Visualiza plan JSON de Terraform | Requiere `terraform plan` ejecutado, credenciales cloud, Go instalado |
+| **Inkdrop** | Diagrama interactivo desde plan file | Requiere plan file pre-generado, CLI, no 100% browser |
+| **Terravision** | Diagramas profesionales AWS/GCP/Azure | Python, requiere `terraform plan` o credenciales |
+| **Inframap** | Grafo desde tfstate o HCL | Go binary, no browser, muestra solo recursos "importantes" |
+| **Blast Radius** | Grafo de dependencias con d3.js | Abandonado, no compatible con Terraform 1.x |
+
+### Nuestra diferenciación real
+
+1. **100% browser** — zero instalación, zero credenciales, zero servidor
+2. **Análisis estático** — parsea `.tf` directamente sin ejecutar Terraform
+3. **Diagrama editable** — mover nodos, anotar, exportar
+4. **Multi-cloud en una vista** — AWS + GCP + Azure simultáneamente
+5. **Persistencia** — guardar layout en `.iac-board.json`, regenerar sin perder posiciones
+6. **Open source** — contribuible, embeddable, CI-friendly
 
 ---
 
-## El core loop
+## Hallazgos de investigación — cambios al plan
+
+### Parser: usar `@cdktf/hcl2json` (WASM, oficial HashiCorp)
+
+En lugar de escribir nuestro propio parser HCL, podemos usar el parser oficial
+de HashiCorp compilado a WASM. Funciona en el browser.
+
+- Paquete: `@cdktf/hcl2json` (npm, ~1.8MB, Apache 2.0)
+- API: `parse(filename, content) → JSON` (async, convierte HCL a JSON estructurado)
+- Resultado: objeto JSON con toda la estructura del `.tf` parseada correctamente
+- Maneja: bloques anidados, variables, locals, interpolaciones, módulos, data sources
+
+Esto reemplaza nuestro parser regex por completo y es la base correcta.
+Después del parse JSON, nosotros construimos el `CloudGraph` — eso sigue siendo nuestro código.
+
+### Layout: usar `dagre` (directed graph layout)
+
+En lugar de escribir nuestro propio algoritmo de layout:
+
+- Paquete: `dagre` (npm, client-side, rendering-agnóstico, 2.8k downloads/semana)
+- API: `dagre.layout(graph)` — recibe nodos con dimensiones y edges, devuelve coordenadas x/y
+- Layout: jerarquía dirigida (izquierda → derecha siguiendo data flow)
+- Alternativa más potente: `elkjs` (842k downloads/semana, más configurable)
+
+Nuestro layout-engine se convierte en un adaptador que:
+1. Traduce `CloudGraph` → formato dagre
+2. Llama `dagre.layout()`
+3. Traduce resultado → `PositionedCloudGraph`
+
+### Input adicional: Terraform Plan JSON (modo enriquecido)
+
+Todos los tools existentes usan `terraform show -json plan.tfplan` como input.
+Este JSON contiene relaciones explícitas (`depends_on`), valores computados,
+y la jerarquía de módulos ya resuelta.
+
+Podemos soportar ambos modos:
+- **Modo estático** (default): solo archivos `.tf` → análisis estático
+- **Modo enriquecido** (opcional): acepta `plan.json` → relaciones exactas de Terraform
+
+El modo enriquecido no requiere credenciales (el usuario genera el plan,
+nosotros solo lo visualizamos). Esto nos pone al nivel de Rover/Inkdrop
+para quienes tienen Terraform instalado.
+
+---
+
+## Fases revisadas
+
+### Fase A — Parser WASM real ← PRÓXIMO
+
+Reemplazar regex con `@cdktf/hcl2json`.
+
+Tareas:
+- [ ] Instalar `@cdktf/hcl2json` en `packages/terraform-parser`
+- [ ] Cambiar `parseTerraformFiles()` para usar `parse()` del WASM
+- [ ] Traducir JSON output → `TerraformResource[]` (nuestro modelo)
+- [ ] Extraer `variable` blocks → tabla de defaults
+- [ ] Extraer `locals` blocks → tabla de valores resueltos
+- [ ] Resolver `var.x` y `local.x` en atributos de recursos
+- [ ] Extraer `data` sources como nodos especiales
+- [ ] Extraer `module` blocks → diagnóstico por ahora (Fase F para expansión)
+- [ ] Mantener todos los tests existentes pasando
+- [ ] Añadir tests con HCL complejo (nested blocks, variables, multi-file)
+
+Resultado: el parser maneja cualquier archivo Terraform real sin crash.
+
+### Fase B — Layout con dagre ← después de A
+
+Reemplazar el grid de 4 columnas.
+
+Tareas:
+- [ ] Instalar `dagre` en `packages/layout-engine`
+- [ ] Adaptar `layoutCloudGraph()` para usar dagre
+- [ ] Configuración: LR (left-to-right), separación de nodos por categoría
+- [ ] Grupos VPC/subnet: dagre soporta subgraphs (clusters)
+- [ ] Fallback a grid si no hay edges
+- [ ] Tests: verificar que el layout no produce coordenadas negativas ni solapamientos
+
+### Fase C — File import en el browser (HU-001)
+
+Tareas:
+- [ ] Drag & drop de archivos `.tf` sobre la app
+- [ ] File picker multi-select (`.tf` y `.tfvars`)
+- [ ] Text area para pegar HCL directamente
+- [ ] Vista de "archivos cargados" con conteo de recursos
+- [ ] Botón "generate diagram" que lanza el pipeline
+
+### Fase D — Modo plan JSON (input enriquecido)
+
+Tareas:
+- [ ] Aceptar `plan.json` (output de `terraform show -json`) como input alternativo
+- [ ] Parser para `plan.json` → `CloudGraph` con relaciones exactas
+- [ ] Mostrar en UI que el diagrama viene de plan (más preciso que análisis estático)
+- [ ] Documentar cómo generar `plan.json` sin credenciales (`-refresh=false`)
+
+### Fase E — Visual polish + Export (HU-016)
+
+Tareas:
+- [ ] Corregir drag ajustado por zoom (multiplicar dx/dy por 1/viewport.zoom)
+- [ ] Reemplazar `foreignObject` por `<image href="data:...">` para iconos (mejor compatibilidad)
+- [ ] Export PNG usando `canvas` + `drawImage` del SVG serializado
+- [ ] Export SVG limpio (remover aria-hidden, añadir viewBox correcto)
+- [ ] Arrowheads con estilo AWS (filled triangle)
+
+### Fase F — Más recursos y providers
+
+AWS adicionales (por frecuencia de uso):
+- [ ] `aws_ecs_cluster`, `aws_ecs_service`, `aws_ecs_task_definition` (containers)
+- [ ] `aws_eks_cluster` (Kubernetes)
+- [ ] `aws_lb`, `aws_lb_listener`, `aws_lb_target_group` (load balancers)
+- [ ] `aws_cloudfront_distribution` (CDN)
+- [ ] `aws_cognito_user_pool` (auth)
+- [ ] `aws_sfn_state_machine` (orchestration)
+- [ ] `aws_elasticache_cluster` (cache)
+- [ ] `aws_sqs_queue` event sources para Lambda (relaciones explícitas)
+
+GCP y Azure: expandir a medida que hay demanda.
+
+### Fase G — Módulos Terraform (HU-025)
+
+- [ ] Expandir módulos locales inline en el grafo
+- [ ] Prefijo de módulo en direcciones (`module.vpc.aws_vpc.main`)
+- [ ] Módulos como grupos visuales en el diagrama
+- [ ] Módulos remotos: diagnóstico "módulo remoto no expandido"
+
+### Fase H — Node inspector + Save (HU-009 completo, HU-013)
+
+- [ ] Click en nodo → panel lateral: atributos parseados, source file:line, relaciones
+- [ ] Guardar `.iac-board.json` (graph + layout + overrides)
+- [ ] Reabrir documento y restaurar posiciones
+- [ ] Regenerar sin perder posiciones manuales
+
+---
+
+## Stack técnico final
 
 ```
-Archivos .tf  →  Parser  →  Cloud Graph  →  Layout  →  Visual Engine  →  Diagrama
+Input
+├── .tf files (static) ─→ @cdktf/hcl2json (WASM) ─→ TerraformParseResult
+└── plan.json (enriched) ─→ plan-parser ─────────────→ TerraformParseResult
+
+Pipeline
+TerraformParseResult ─→ cloud-graph ─→ CloudGraph ─→ layout-engine (dagre) ─→ PositionedCloudGraph
+                                                                              ↓
+                                                                    canvas-engine ─→ CanvasElementDraft[]
+                                                                              ↓
+                                                                    visual-engine ─→ CloudBoard (SVG)
+
+Output
+├── Interactive SVG diagram (pan, zoom, drag)
+├── Export PNG / SVG
+├── Export Markdown report
+└── Save .iac-board.json
 ```
 
-Cada eslabón debe ser suficientemente bueno para que el loop completo funcione con Terraform real.
-
 ---
 
-## Fases (por impacto)
+## Métricas de éxito
 
-### Fase A — Parser HCL propio ← PRÓXIMO
-**Por qué primero**: sin un parser correcto, todo lo demás trabaja con inputs sintéticos.
-Un archivo Terraform real tiene nested blocks, variables, locals, data sources, módulos.
-
-Alcance:
-- Reemplazar regex con un parser recursivo de bloques HCL
-- Bloques soportados: `resource`, `variable`, `locals`, `data`, `module`, `output`, `provider`
-- Extracción correcta de atributos y referencias
-- Resolución de variables simples (las que tienen `default`)
-- Resolución de locals simples (sin expresiones complejas)
-- Soporte multi-archivo real (todos los `.tf` del mismo módulo se combinan)
-- Diagnósticos para expresiones no resolubles (en vez de crashear)
-- Sin ejecutar Terraform — solo análisis estático
-
-No en Fase A:
-- `for_each`, `count`, `dynamic` blocks
-- Módulos remotos (registry, git)
-- Expresiones complejas (`merge()`, `concat()`, etc.)
-
-Tests requeridos:
-- Archivo con nested blocks (tags, environment variables, vpc_config)
-- Archivo con variables referenciadas en recursos
-- Archivo con locals
-- Archivo con data sources
-- Múltiples archivos en el mismo módulo
-- Expresiones no resolubles → diagnóstico, no crash
-
-### Fase B — Layout inteligente
-**Por qué segundo**: el parser mejor alimenta un grafo real, el layout lo tiene que mostrar legible.
-
-Alcance:
-- Layout de capas: izquierda → derecha siguiendo dirección de edges
-- Dentro de cada capa, agrupar por categoría (compute, integration, database, storage)
-- Grupos VPC/subnet como contenedores reales: sus hijos se posicionan dentro
-- Padding inteligente entre nodos y grupos
-- Fallback a grid si no hay edges
-
-No en Fase B:
-- Layout automático con fuerzas (force-directed)
-- Routing de edges ortogonales (Fase D)
-
-### Fase C — Importar archivos reales (HU-001)
-**Por qué tercero**: de nada sirve el parser si el usuario no puede cargar sus archivos.
-
-Alcance:
-- Drag & drop de archivos `.tf` individuales sobre el diagrama
-- File picker para seleccionar múltiples `.tf`
-- Text area para pegar HCL directamente
-- Mostrar cuántos archivos cargados y cuántos recursos detectados
-- No enviar archivos al servidor — todo local en el browser
-
-No en Fase C:
-- Folder picker / File System Access API (experimental, poco soporte)
-- Import desde GitHub URL
-
-### Fase D — Visual polish + Export (HU-016)
-Alcance:
-- Corregir drag ajustado por zoom
-- Reemplazar `foreignObject` por `<image>` + data URI para los iconos (más compatible)
-- Edges con routing básico (evitar atravesar nodos)
-- Arrowheads con forma AWS-style
-- Export a PNG (canvas + XMLSerializer)
-- Export a SVG limpio
-
-### Fase E — Más tipos de recursos y providers
-Alcance:
-- Ampliar AWS: EC2, ECS, EKS/Fargate, ALB/NLB, CloudFront, SES, Cognito, Step Functions
-- GCP básico: Cloud Functions, GCS, Cloud SQL, Pub/Sub, BigQuery, GKE
-- Azure básico: Functions, Storage Account, Service Bus, VNet, AKS
-- Añadir iconos correspondientes al registry
-
-### Fase F — Módulos y variables (HU-025, HU-026)
-Alcance:
-- Resolver módulos locales (source = "./modules/vpc")
-- Expandir recursos de módulos en el grafo con prefijo de módulo
-- Resolver variables con tfvars si se proveen
-- Mostrar módulo como grupo en el diagrama
-
-### Fase G — UX producto (HU-005 completo, HU-008, HU-017)
-Alcance:
-- Panel lateral: inspector de nodo (atributos parseados, source file)
-- Summary generado: providers, regiones detectadas, conteo de recursos, flows principales
-- Export Markdown report
-- Guardar/abrir `.iac-board.json`
-
----
-
-## Qué NO hacer por ahora
-- Integración con Terraform Cloud / Registry
-- Ejecución de `terraform plan`
-- IA / explicaciones generadas
-- GitHub Actions / CLI
-- Editor de diagramas completo (resize, multi-select, undo)
-- Soporte OpenTofu (fácil de agregar después, mismo parser)
-
----
-
-## Métricas de éxito para "suficientemente bueno"
 - Parsear un módulo Terraform real de 5-10 archivos sin crash
-- El diagrama resultante es legible sin mover nodos
-- Un engineer puede cargar sus `.tf`, ver el diagrama, y entender la infra en < 30 segundos
-- Export PNG usable para un README
+- El diagrama muestra las relaciones en el orden correcto (izquierda = entrada, derecha = salida)
+- Un engineer carga `.tf`, ve el diagrama y entiende su infra en < 30 segundos
+- Export PNG usable en un README
+- Diferencia clara vs Rover/Inkdrop: cero instalación, cero credenciales, 100% browser
