@@ -70,7 +70,6 @@ export function extractFromFile(
           filePath,
           varDefaults,
           localValues,
-          false,
         ),
       )
     }
@@ -88,7 +87,6 @@ export function extractFromFile(
           filePath,
           varDefaults,
           localValues,
-          true,
         ),
       )
     }
@@ -120,7 +118,6 @@ function buildResource(
   filePath: string,
   varDefaults: Map<string, string>,
   localValues: Map<string, string>,
-  _isData: boolean,
 ): TerraformResource {
   const address = `${resourceType}.${resourceName}`
 
