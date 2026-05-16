@@ -13,6 +13,8 @@ function right(rect: Rect) {
   return rect.x + rect.width
 }
 
+type Point = { x: number; y: number }
+
 /** Cubic bezier S-curve path string from source right-center to target left-center. */
 function bezierPath(from: Rect, to: Rect): string {
   const x1 = right(from)
@@ -30,6 +32,29 @@ function bezierPath(from: Rect, to: Rect): string {
   return `M ${x1},${y1} C ${x1 + offset},${y1} ${x2 - offset},${y2} ${x2},${y2}`
 }
 
+/**
+ * Midpoint of the bezier at t=0.5.
+ * For our symmetric S-curve the analytical midpoint simplifies to the linear average of endpoints.
+ * For feedback edges the midpoint is placed at the bottom of the arc.
+ */
+function bezierMidpoint(from: Rect, to: Rect): Point {
+  const x1 = right(from)
+  const y1 = cy(from)
+  const x2 = to.x
+  const y2 = cy(to)
+
+  if (x2 < x1 + 20) {
+    // Feedback arc — label at the bottom of the arc
+    const midY = Math.max(cy(from), cy(to)) + 80
+    return {
+      x: cx(from) + (cx(to) - cx(from)) / 2,
+      y: midY + 14,
+    }
+  }
+
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
+}
+
 const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
   triggers: { color: '#8b5cf6' }, // purple — event-source mapping fires lambda
   invokes: { color: '#f97316' }, // orange — direct invoke / call
@@ -45,9 +70,35 @@ const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
 
 const DEFAULT_STYLE = { color: '#94a3b8', dash: '5 3' }
 
+/** Relations that get a visible text label — structural/placement edges are skipped. */
+const LABELED_RELATIONS = new Set([
+  'triggers',
+  'invokes',
+  'publishes-to',
+  'connects',
+  'writes-to',
+  'uses-role',
+])
+
+/** Human-readable label text per relation. */
+const RELATION_LABEL: Record<string, string> = {
+  'triggers':     'triggers',
+  'invokes':      'invokes',
+  'publishes-to': 'publishes to',
+  'connects':     'connects',
+  'writes-to':    'writes to',
+  'uses-role':    'uses role',
+}
+
+/** Approximate pixel width of a monospace label at 9px. */
+function labelWidth(text: string): number {
+  return text.length * 5.5 + 8
+}
+
 type EdgeRendererProps = {
   edges: BoardEdge[]
   nodeMap: Map<string, BoardNode>
+  showLabels?: boolean
 }
 
 export function ArrowMarker() {
@@ -81,7 +132,7 @@ export function ArrowMarker() {
   )
 }
 
-export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
+export function EdgeRenderer({ edges, nodeMap, showLabels = true }: EdgeRendererProps) {
   return (
     <>
       {edges.map((edge) => {
@@ -96,17 +147,50 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
         const d = bezierPath(fromNode.rect, toNode.rect)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
+        const shouldLabel = showLabels && LABELED_RELATIONS.has(edge.relation)
+        const labelText = RELATION_LABEL[edge.relation] ?? edge.relation
+        const mid = shouldLabel ? bezierMidpoint(fromNode.rect, toNode.rect) : null
+        const lw = shouldLabel && mid ? labelWidth(labelText) : 0
+
         return (
-          <path
-            key={edge.id}
-            d={d}
-            fill="none"
-            markerEnd={`url(#${markerId})`}
-            stroke={style.color}
-            strokeDasharray={style.dash}
-            strokeWidth={1.5}
-            style={{ color: style.color }}
-          />
+          <g key={edge.id}>
+            <path
+              d={d}
+              fill="none"
+              markerEnd={`url(#${markerId})`}
+              stroke={style.color}
+              strokeDasharray={style.dash}
+              strokeWidth={1.5}
+              style={{ color: style.color }}
+            />
+            {shouldLabel && mid && (
+              <>
+                <rect
+                  fill="white"
+                  fillOpacity={0.88}
+                  height={14}
+                  rx={3}
+                  stroke={style.color}
+                  strokeOpacity={0.4}
+                  strokeWidth={0.5}
+                  width={lw}
+                  x={mid.x - lw / 2}
+                  y={mid.y - 9}
+                />
+                <text
+                  dominantBaseline="middle"
+                  fill={style.color}
+                  fontFamily="ui-monospace, monospace"
+                  fontSize={9}
+                  textAnchor="middle"
+                  x={mid.x}
+                  y={mid.y - 1}
+                >
+                  {labelText}
+                </text>
+              </>
+            )}
+          </g>
         )
       })}
     </>

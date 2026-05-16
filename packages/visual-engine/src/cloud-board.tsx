@@ -21,6 +21,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     useViewport()
   const [overrides, setOverrides] = useState<Record<string, Rect>>({})
   const [selected, setSelected] = useState<string | null>(null)
+  const [showLabels, setShowLabels] = useState(true)
 
   const dragging = useRef<{
     id: string
@@ -113,6 +114,26 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
         width: '100%',
       }}
     >
+      {/* Toolbar overlay */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, display: 'flex', gap: 6 }}>
+        <button
+          aria-label="Toggle edge labels"
+          onClick={(e) => { e.stopPropagation(); setShowLabels((v) => !v) }}
+          style={{
+            background: showLabels ? '#1e293b' : '#f1f5f9',
+            border: '1px solid #e2e8f0',
+            borderRadius: 6,
+            color: showLabels ? '#f8fafc' : '#64748b',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontFamily: 'ui-monospace, monospace',
+            padding: '3px 8px',
+          }}
+          title={showLabels ? 'Hide edge labels' : 'Show edge labels'}
+        >
+          labels
+        </button>
+      </div>
       <svg
         aria-hidden="true"
         className="cloud-canvas"
@@ -151,7 +172,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
             <GroupRenderer group={g} key={g.id} />
           ))}
           {/* Edges below nodes */}
-          <EdgeRenderer edges={edges} nodeMap={nodeMap} />
+          <EdgeRenderer edges={edges} nodeMap={nodeMap} showLabels={showLabels} />
           {/* Nodes on top */}
           {resolvedNodes.map((n) => (
             <NodeRenderer
