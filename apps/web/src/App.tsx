@@ -9,6 +9,8 @@ import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
+import { ImportZone } from './import-zone'
+import type { LoadedFile } from './import-zone'
 import './App.css'
 
 type ProductShellProps = {
@@ -19,6 +21,10 @@ type ProductShellProps = {
   selectedExampleId: string
   t?: Translations
   onToggleLang?: () => void
+  importedFiles?: LoadedFile[]
+  onFilesLoaded?: (files: LoadedFile[]) => void
+  onClearImport?: () => void
+  mode?: 'example' | 'imported'
 }
 
 export function ProductShell({
@@ -29,6 +35,10 @@ export function ProductShell({
   selectedExampleId,
   t = translations.en,
   onToggleLang,
+  importedFiles = [],
+  onFilesLoaded,
+  onClearImport,
+  mode = 'example',
 }: ProductShellProps) {
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
@@ -61,6 +71,31 @@ export function ProductShell({
         </div>
       </section>
 
+      {/* Import section */}
+      <section className="panel" aria-labelledby="import-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Your Terraform</p>
+            <h2 id="import-title">Import .tf files</h2>
+          </div>
+          {mode === 'imported' && (
+            <button
+              className="status-pill"
+              onClick={onClearImport}
+              style={{ cursor: 'pointer', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' }}
+              type="button"
+            >
+              {importedFiles.length} file{importedFiles.length !== 1 ? 's' : ''} loaded — clear
+            </button>
+          )}
+        </div>
+        <ImportZone
+          loadedFiles={importedFiles}
+          onFilesLoaded={onFilesLoaded ?? (() => {})}
+        />
+      </section>
+
+      {/* Examples section */}
       <section className="panel" aria-labelledby="examples-title">
         <div className="panel-header">
           <div>
@@ -74,7 +109,7 @@ export function ProductShell({
         <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (
             <button
-              aria-pressed={project.id === selectedExampleId}
+              aria-pressed={project.id === selectedExampleId && mode === 'example'}
               className="example-card"
               key={project.id}
               onClick={() => onSelectExample(project.id)}
@@ -92,9 +127,13 @@ export function ProductShell({
         <div className="panel-header">
           <div>
             <p className="eyebrow">{t.eyebrow_generated}</p>
-            <h2 id="example-title">{example.name}</h2>
+            <h2 id="example-title">
+              {mode === 'imported' ? 'Your infrastructure' : example.name}
+            </h2>
           </div>
-          <span className="status-pill">{t.bundled_example}</span>
+          <span className="status-pill">
+            {mode === 'imported' ? 'Imported' : t.bundled_example}
+          </span>
         </div>
         <p className="panel-copy">{example.description}</p>
         <CloudBoard
@@ -193,15 +232,37 @@ function App() {
   const examples = useMemo(() => listExampleProjects(), [])
   const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
   const [lang, setLang] = useState<Lang>('en')
+  const [importedFiles, setImportedFiles] = useState<LoadedFile[]>([])
+  const [mode, setMode] = useState<'example' | 'imported'>('example')
+
   const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
-  const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
+  const activeFiles = mode === 'imported' ? importedFiles : example.files
+  const generatedDiagram = useMemo(
+    () => generateDiagramFromTerraformFiles(activeFiles),
+    [activeFiles],
+  )
+
+  const handleFilesLoaded = (files: LoadedFile[]) => {
+    setImportedFiles(files)
+    setMode('imported')
+  }
+
+  const handleClearImport = () => {
+    setImportedFiles([])
+    setMode('example')
+  }
 
   return (
     <ProductShell
       example={example}
       examples={examples}
       generatedDiagram={generatedDiagram}
-      onSelectExample={setSelectedExampleId}
+      importedFiles={importedFiles}
+      mode={mode}
+      onClearImport={handleClearImport}
+      onFilesLoaded={handleFilesLoaded}
+      onSelectExample={(id) => { setSelectedExampleId(id); setMode('example') }}
       onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
       t={translations[lang]}

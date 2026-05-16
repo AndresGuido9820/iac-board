@@ -239,6 +239,109 @@
   text-transform: uppercase;
 }
 
+/* ── Import Zone ────────────────────────────────────────────── */
+
+.import-zone-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.import-drop-zone {
+  align-items: center;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.import-drop-zone--active {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+.import-drop-icon {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.import-drop-label {
+  color: var(--text);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.import-drop-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.import-pick-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 6px 16px;
+}
+
+.import-pick-btn:hover {
+  opacity: 0.85;
+}
+
+.import-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0;
+  padding: 8px 12px;
+}
+
+.import-file-list {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.import-file-list li {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.import-file-list li:first-child {
+  border-top: none;
+}
+
+.import-file-name {
+  color: var(--text);
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+.import-file-size {
+  color: var(--muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 760px) {
   .example-grid {
     grid-template-columns: 1fr;
