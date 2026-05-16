@@ -4,6 +4,8 @@ test('loads the IaC Board product shell', async ({ page }) => {
   await page.goto('/')
 
   await expect(page.getByRole('heading', { name: 'IaC Board' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View source' })).toBeVisible()
+  await expect(page.getByText(/HU-\d+/)).toHaveCount(0)
   await expect(
     page.getByRole('heading', { name: 'AWS Serverless API' }),
   ).toBeVisible()

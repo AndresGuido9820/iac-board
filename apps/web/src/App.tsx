@@ -43,15 +43,17 @@ export function ProductShell({
           executing infrastructure code.
         </p>
         <div className="hero-actions" aria-label="Project actions">
-          <a href="/docs/product/user-stories.md">User stories</a>
-          <a href="/docs/development-spec.md">Development spec</a>
+          <a href="https://github.com/AndresGuido9820/iac-board">View source</a>
+          <a href="https://github.com/AndresGuido9820/iac-board/tree/main/examples/terraform">
+            Terraform examples
+          </a>
         </div>
       </section>
 
       <section className="panel" aria-labelledby="examples-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">HU-002</p>
+            <p className="eyebrow">Sample infrastructure</p>
             <h2 id="examples-title">Example projects</h2>
           </div>
           <span className="status-pill">{examples.length} examples</span>
@@ -67,7 +69,7 @@ export function ProductShell({
             >
               <strong>{project.name}</strong>
               <span>{project.description}</span>
-              <small>{project.userStoryIds.join(' / ')}</small>
+              <small>Generate diagram</small>
             </button>
           ))}
         </div>
@@ -76,7 +78,7 @@ export function ProductShell({
       <section className="panel" aria-labelledby="example-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">HU-002 / HU-005</p>
+            <p className="eyebrow">Generated architecture</p>
             <h2 id="example-title">{example.name}</h2>
           </div>
           <span className="status-pill">Bundled example</span>
@@ -137,7 +139,7 @@ export function ProductShell({
       <section className="panel" aria-labelledby="diagnostics-title">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">HU-010</p>
+            <p className="eyebrow">Parser output</p>
             <h2 id="diagnostics-title">Parser diagnostics</h2>
           </div>
           <span className="status-pill">

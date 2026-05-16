@@ -11,9 +11,11 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'IaC Board' }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: 'Development spec' }),
-    ).toHaveAttribute('href', '/docs/development-spec.md')
+    expect(screen.getByRole('link', { name: 'View source' })).toHaveAttribute(
+      'href',
+      'https://github.com/AndresGuido9820/iac-board',
+    )
+    expect(screen.queryByText(/HU-\d+/)).not.toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 2, name: 'AWS Serverless API' }),
     ).toBeInTheDocument()
