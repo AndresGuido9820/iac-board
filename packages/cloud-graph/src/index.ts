@@ -10,26 +10,54 @@ import type {
 } from '@iac-board/terraform-parser'
 
 const awsCategories: Record<string, CloudNode['category']> = {
-  aws_api_gateway_rest_api: 'integration',
-  aws_apigatewayv2_api: 'integration',
+  // Compute
+  aws_ecs_cluster: 'compute',
+  aws_ecs_service: 'compute',
+  aws_ecs_task_definition: 'compute',
+  aws_eks_cluster: 'compute',
+  aws_lambda_function: 'compute',
+  // Storage
+  aws_ecr_repository: 'storage',
+  aws_s3_bucket: 'storage',
+  // Database
   aws_athena_workgroup: 'database',
   aws_db_instance: 'database',
-  aws_db_subnet_group: 'network',
   aws_dynamodb_table: 'database',
+  aws_elasticache_cluster: 'database',
+  aws_elasticache_replication_group: 'database',
   aws_glue_catalog_database: 'database',
-  aws_iam_role: 'security',
-  aws_internet_gateway: 'network',
+  // Integration
+  aws_api_gateway_rest_api: 'integration',
+  aws_apigatewayv2_api: 'integration',
+  aws_cloudfront_distribution: 'integration',
   aws_iot_topic_rule: 'integration',
   aws_kinesis_stream: 'integration',
   aws_lambda_event_source_mapping: 'integration',
-  aws_lambda_function: 'compute',
-  aws_nat_gateway: 'network',
-  aws_s3_bucket: 'storage',
-  aws_security_group: 'security',
+  aws_sfn_state_machine: 'integration',
   aws_sns_topic: 'integration',
   aws_sqs_queue: 'integration',
+  // Network
+  aws_alb: 'network',
+  aws_alb_listener: 'network',
+  aws_alb_target_group: 'network',
+  aws_db_subnet_group: 'network',
+  aws_internet_gateway: 'network',
+  aws_lb: 'network',
+  aws_lb_listener: 'network',
+  aws_lb_target_group: 'network',
+  aws_nat_gateway: 'network',
+  aws_route53_record: 'network',
+  aws_route53_zone: 'network',
   aws_subnet: 'network',
   aws_vpc: 'network',
+  // Security
+  aws_acm_certificate: 'security',
+  aws_cognito_user_pool: 'security',
+  aws_cognito_user_pool_client: 'security',
+  aws_iam_policy: 'security',
+  aws_iam_role: 'security',
+  aws_security_group: 'security',
+  aws_wafv2_web_acl: 'security',
 }
 
 export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
@@ -178,10 +206,21 @@ function inferRelation(
   // Event-source mapping bridges a stream/queue to a Lambda
   if (fromType === 'aws_lambda_event_source_mapping') return 'triggers'
 
-  // API Gateway / IoT publish to downstream compute
+  // Step Functions: assumes an IAM role to execute, orchestrates everything else
+  if (fromType === 'aws_sfn_state_machine') {
+    if (toType === 'aws_iam_role') return 'uses-role'
+    return 'triggers'
+  }
+
+  // API Gateway / CloudFront / IoT route traffic to downstream compute
   if (
     fromType === 'aws_api_gateway_rest_api' ||
-    fromType === 'aws_apigatewayv2_api'
+    fromType === 'aws_apigatewayv2_api' ||
+    fromType === 'aws_cloudfront_distribution' ||
+    fromType === 'aws_lb' ||
+    fromType === 'aws_alb' ||
+    fromType === 'aws_lb_listener' ||
+    fromType === 'aws_alb_listener'
   )
     return 'connects'
   if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
@@ -194,11 +233,27 @@ function inferRelation(
       toType === 'aws_dynamodb_table' ||
       toType === 'aws_kinesis_stream' ||
       toType === 'aws_sns_topic' ||
-      toType === 'aws_sqs_queue'
+      toType === 'aws_sqs_queue' ||
+      toType === 'aws_elasticache_cluster' ||
+      toType === 'aws_elasticache_replication_group'
     )
       return 'writes-to'
     return 'invokes'
   }
+
+  // ECS service: IAM → uses-role; task definition → depends-on (handled by general)
+  if (fromType === 'aws_ecs_service' && toType === 'aws_iam_role')
+    return 'uses-role'
+
+  // Cognito client depends on user pool
+  if (
+    fromType === 'aws_cognito_user_pool_client' &&
+    toType === 'aws_cognito_user_pool'
+  )
+    return 'depends-on'
+
+  // WAF attached to CloudFront/ALB = security
+  if (fromType === 'aws_wafv2_web_acl') return 'secured-by'
 
   // Network resources reference VPC/subnet as placement context
   if (
@@ -209,6 +264,7 @@ function inferRelation(
     return 'deployed-in'
   if (toType === 'aws_security_group') return 'secured-by'
   if (toType === 'aws_iam_role') return 'uses-role'
+  if (toType === 'aws_acm_certificate') return 'secured-by'
 
   return 'depends-on'
 }
