@@ -1,15 +1,15 @@
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ImportZone } from './import-zone'
 
 describe('ImportZone', () => {
   it('renders drop zone with instructions', () => {
-    const { getByRole, getByText } = render(
-      <ImportZone loadedFiles={[]} onFilesLoaded={() => {}} />,
-    )
-    expect(getByRole('region', { name: /drop terraform files/i })).toBeTruthy()
-    expect(getByText(/Drop/)).toBeTruthy()
-    expect(getByText(/Browse files/i)).toBeTruthy()
+    render(<ImportZone loadedFiles={[]} onFilesLoaded={() => {}} />)
+    expect(
+      screen.getByRole('region', { name: /drop terraform files/i }),
+    ).toBeTruthy()
+    expect(screen.getByText(/Drop/)).toBeTruthy()
+    expect(screen.getByText(/Browse files/i)).toBeTruthy()
   })
 
   it('shows loaded file list when files are provided', () => {
@@ -17,18 +17,14 @@ describe('ImportZone', () => {
       { path: 'main.tf', content: 'resource "aws_s3_bucket" "b" {}\n' },
       { path: 'variables.tf', content: 'variable "region" {}\n' },
     ]
-    const { getByText } = render(
-      <ImportZone loadedFiles={files} onFilesLoaded={() => {}} />,
-    )
-    expect(getByText('main.tf')).toBeTruthy()
-    expect(getByText('variables.tf')).toBeTruthy()
+    render(<ImportZone loadedFiles={files} onFilesLoaded={() => {}} />)
+    expect(screen.getByText('main.tf')).toBeTruthy()
+    expect(screen.getByText('variables.tf')).toBeTruthy()
   })
 
   it('shows drag-active style on dragover', () => {
-    const { getByRole } = render(
-      <ImportZone loadedFiles={[]} onFilesLoaded={() => {}} />,
-    )
-    const zone = getByRole('region')
+    render(<ImportZone loadedFiles={[]} onFilesLoaded={() => {}} />)
+    const zone = screen.getByRole('region')
     fireEvent.dragOver(zone)
     expect(zone.className).toContain('import-drop-zone--active')
 
@@ -38,10 +34,8 @@ describe('ImportZone', () => {
 
   it('calls onFilesLoaded=noop when no files provided', () => {
     const handler = vi.fn()
-    const { getByRole } = render(
-      <ImportZone loadedFiles={[]} onFilesLoaded={handler} />,
-    )
-    const zone = getByRole('region')
+    render(<ImportZone loadedFiles={[]} onFilesLoaded={handler} />)
+    const zone = screen.getByRole('region')
     // Drop with empty fileList — should not call handler
     fireEvent.drop(zone, { dataTransfer: { files: [] } })
     expect(handler).not.toHaveBeenCalled()
