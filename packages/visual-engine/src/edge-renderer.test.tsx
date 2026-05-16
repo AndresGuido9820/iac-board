@@ -36,13 +36,13 @@ const edge = (relation: BoardEdge['relation']): BoardEdge => ({
 })
 
 describe('EdgeRenderer — edge labels', () => {
-  it('renders a path for each edge', () => {
-    const { container } = render(
+  it('renders an edge group for each valid edge', () => {
+    render(
       <svg>
         <EdgeRenderer edges={[edge('writes-to')]} nodeMap={nodeMap} />
       </svg>,
     )
-    expect(container.querySelectorAll('path').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByTestId('iac-edge').length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders label text for labeled relations when showLabels=true', () => {
@@ -100,7 +100,7 @@ describe('EdgeRenderer — edge labels', () => {
 
   it('skips rendering when source or target node is missing', () => {
     const emptyMap = new Map<string, BoardNode>()
-    const { container } = render(
+    render(
       <svg>
         <EdgeRenderer
           edges={[edge('triggers')]}
@@ -109,6 +109,6 @@ describe('EdgeRenderer — edge labels', () => {
         />
       </svg>,
     )
-    expect(container.querySelectorAll('path').length).toBe(0)
+    expect(screen.queryAllByTestId('iac-edge')).toHaveLength(0)
   })
 })
