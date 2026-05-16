@@ -1,3 +1,9 @@
+# Claude Code project settings (local hooks, analyst script)
+.claude/
+
+# Auto-generated product analysis reports
+reports/
+
 # Logs
 logs
 *.log
