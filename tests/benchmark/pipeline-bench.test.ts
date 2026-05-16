@@ -71,10 +71,10 @@ function measureMs(fn: () => void): number {
 // ── Thresholds (ms) — CI-safe, measured on a modest developer machine ────────
 
 const THRESHOLDS = {
-  10: 100,    // trivially fast
-  50: 500,    // small module
-  100: 1500,  // medium module
-  200: 4000,  // large monolith
+  10: 100, // trivially fast
+  50: 500, // small module
+  100: 1500, // medium module
+  200: 4000, // large monolith
 } as const
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -94,7 +94,9 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
       })
 
       // Log for visibility in CI output
-      console.log(`[bench] ${size} resources: ${elapsed.toFixed(1)}ms (limit ${maxMs}ms)`)
+      console.log(
+        `[bench] ${size} resources: ${elapsed.toFixed(1)}ms (limit ${maxMs}ms)`,
+      )
 
       expect(elapsed).toBeLessThan(maxMs)
     })
@@ -112,13 +114,23 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
     const ids2 = r2.graph.nodes.map((n) => n.id).sort()
     expect(ids1).toEqual(ids2)
 
-    const pos1 = r1.positionedGraph.nodes.map((n) => ({ id: n.id, x: n.x, y: n.y }))
-    const pos2 = r2.positionedGraph.nodes.map((n) => ({ id: n.id, x: n.x, y: n.y }))
+    const pos1 = r1.positionedGraph.nodes.map((n) => ({
+      id: n.id,
+      x: n.x,
+      y: n.y,
+    }))
+    const pos2 = r2.positionedGraph.nodes.map((n) => ({
+      id: n.id,
+      x: n.x,
+      y: n.y,
+    }))
     expect(pos1).toEqual(pos2)
   })
 
   it('does not crash on empty input', () => {
-    const result = generateDiagramFromTerraformFiles([{ path: 'empty.tf', content: '' }])
+    const result = generateDiagramFromTerraformFiles([
+      { path: 'empty.tf', content: '' },
+    ])
     expect(result.graph.nodes).toHaveLength(0)
     expect(result.graph.edges).toHaveLength(0)
     expect(result.canvasDrafts).toHaveLength(0)
@@ -128,10 +140,16 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
     const small = generateSyntheticTf(20)
     const large = generateSyntheticTf(200)
 
-    const tSmall = measureMs(() => generateDiagramFromTerraformFiles([{ path: 'main.tf', content: small }]))
-    const tLarge = measureMs(() => generateDiagramFromTerraformFiles([{ path: 'main.tf', content: large }]))
+    const tSmall = measureMs(() =>
+      generateDiagramFromTerraformFiles([{ path: 'main.tf', content: small }]),
+    )
+    const tLarge = measureMs(() =>
+      generateDiagramFromTerraformFiles([{ path: 'main.tf', content: large }]),
+    )
 
-    console.log(`[bench] scaling ratio: ${(tLarge / tSmall).toFixed(1)}× (200 vs 20 resources)`)
+    console.log(
+      `[bench] scaling ratio: ${(tLarge / tSmall).toFixed(1)}× (200 vs 20 resources)`,
+    )
 
     // 200 resources (10×) should take less than 10× the time — roughly linear
     expect(tLarge).toBeLessThan(tSmall * 20) // 20× is generous; catches quadratic regressions
