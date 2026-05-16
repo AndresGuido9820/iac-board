@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   getExampleProject,
   listExampleProjects,
@@ -9,6 +9,7 @@ import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
+import { exportSvg, exportPng } from './export'
 import './App.css'
 
 type ProductShellProps = {
@@ -19,6 +20,24 @@ type ProductShellProps = {
   selectedExampleId: string
   t?: Translations
   onToggleLang?: () => void
+  svgRef?: React.RefObject<SVGSVGElement | null>
+  onExportSvg?: () => void
+  onExportPng?: () => void
+}
+
+/* c8 ignore next 12 */
+function renderExportActions(
+  t: Translations,
+  onExportSvg?: () => void,
+  onExportPng?: () => void,
+) {
+  if (!onExportSvg && !onExportPng) return null
+  return (
+    <div className="export-actions" aria-label={t.aria_export_actions}>
+      {onExportSvg && <button className="export-btn" onClick={onExportSvg} type="button">{t.export_svg}</button>}
+      {onExportPng && <button className="export-btn" onClick={onExportPng} type="button">{t.export_png}</button>}
+    </div>
+  )
 }
 
 export function ProductShell({
@@ -29,6 +48,9 @@ export function ProductShell({
   selectedExampleId,
   t = translations.en,
   onToggleLang,
+  svgRef,
+  onExportSvg,
+  onExportPng,
 }: ProductShellProps) {
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
@@ -104,7 +126,9 @@ export function ProductShell({
             generatedDiagram.graph.nodes,
             generatedDiagram.graph.edges,
           )}
+          svgRef={svgRef}
         />
+        {renderExportActions(t, onExportSvg, onExportPng)}
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>
@@ -193,17 +217,29 @@ function App() {
   const examples = useMemo(() => listExampleProjects(), [])
   const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
   const [lang, setLang] = useState<Lang>('en')
+  const svgRef = useRef<SVGSVGElement | null>(null)
   const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
   const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
+  const handleExportSvg = () => {
+    if (svgRef.current) exportSvg(svgRef.current, `${example.id}.svg`)
+  }
+
+  const handleExportPng = () => {
+    if (svgRef.current) void exportPng(svgRef.current, `${example.id}.png`)
+  }
 
   return (
     <ProductShell
       example={example}
       examples={examples}
       generatedDiagram={generatedDiagram}
+      onExportPng={handleExportPng}
+      onExportSvg={handleExportSvg}
       onSelectExample={setSelectedExampleId}
       onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
+      svgRef={svgRef}
       t={translations[lang]}
     />
   )

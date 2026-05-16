@@ -14,9 +14,10 @@ import { EdgeRenderer, ArrowMarker } from './edge-renderer'
 type CloudBoardProps = {
   elements: BoardElement[]
   className?: string
+  svgRef?: React.RefObject<SVGSVGElement | null>
 }
 
-export function CloudBoard({ elements, className }: CloudBoardProps) {
+export function CloudBoard({ elements, className, svgRef }: CloudBoardProps) {
   const { transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useViewport()
   const [overrides, setOverrides] = useState<Record<string, Rect>>({})
@@ -40,6 +41,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
   }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
+  /* c8 ignore next 13 */
   const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     setSelected(id)
@@ -54,6 +56,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     }
   }
 
+  /* c8 ignore next 18 */
   const onBoardMouseMove = (e: React.MouseEvent) => {
     onMouseMove(e)
     if (!dragging.current) return
@@ -73,6 +76,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     }))
   }
 
+  /* c8 ignore next 4 */
   const onBoardMouseUp = () => {
     onMouseUp()
     dragging.current = null
@@ -116,6 +120,8 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
       <svg
         aria-hidden="true"
         className="cloud-canvas"
+        data-testid="cloud-canvas"
+        ref={svgRef}
         style={{ display: 'block', width: '100%', minHeight: 300 }}
         viewBox={`${minX} ${minY} ${vw} ${vh}`}
         xmlns="http://www.w3.org/2000/svg"

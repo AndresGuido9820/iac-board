@@ -63,6 +63,28 @@
   padding: 10px 14px;
 }
 
+.export-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.export-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.export-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .cloud-board {
   background: #f8fafc;
   border: 1px solid var(--border);

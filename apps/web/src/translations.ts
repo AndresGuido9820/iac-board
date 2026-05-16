@@ -27,6 +27,9 @@ export interface Translations {
   aria_resources: string
   aria_diagnostics_list: string
   lang_toggle: string
+  export_svg: string
+  export_png: string
+  aria_export_actions: string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -58,6 +61,9 @@ export const translations: Record<Lang, Translations> = {
     aria_resources: 'Generated resources',
     aria_diagnostics_list: 'Parser diagnostics',
     lang_toggle: 'Español',
+    export_svg: 'Export SVG',
+    export_png: 'Export PNG',
+    aria_export_actions: 'Diagram export actions',
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -87,5 +93,8 @@ export const translations: Record<Lang, Translations> = {
     aria_resources: 'Recursos generados',
     aria_diagnostics_list: 'Diagnósticos del parser',
     lang_toggle: 'English',
+    export_svg: 'Exportar SVG',
+    export_png: 'Exportar PNG',
+    aria_export_actions: 'Acciones de exportación del diagrama',
   },
 }

@@ -2,7 +2,13 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { getExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
+import { vi } from 'vitest'
 import App, { ProductShell } from './App'
+
+vi.mock('./export', () => ({
+  exportSvg: vi.fn(),
+  exportPng: vi.fn().mockResolvedValue(undefined),
+}))
 
 describe('App', () => {
   it('renders the product shell', () => {
@@ -92,5 +98,37 @@ describe('App', () => {
       'Private subnet private',
     )
     expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
+  })
+
+  it('calls exportSvg when Export SVG button is clicked', async () => {
+    const { exportSvg } = await import('./export')
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Export SVG' }))
+    expect(exportSvg).toHaveBeenCalledOnce()
+  })
+
+  it('calls exportPng when Export PNG button is clicked', async () => {
+    const { exportPng } = await import('./export')
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Export PNG' }))
+    expect(exportPng).toHaveBeenCalledOnce()
+  })
+
+  it('toggles language between EN and ES', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // Default is English
+    expect(screen.getByRole('heading', { level: 2, name: 'Example projects' })).toBeInTheDocument()
+
+    // Toggle to Spanish
+    await user.click(screen.getByRole('button', { name: 'Español' }))
+    expect(screen.getByRole('heading', { level: 2, name: 'Proyectos de ejemplo' })).toBeInTheDocument()
+
+    // Toggle back to English
+    await user.click(screen.getByRole('button', { name: 'English' }))
+    expect(screen.getByRole('heading', { level: 2, name: 'Example projects' })).toBeInTheDocument()
   })
 })
