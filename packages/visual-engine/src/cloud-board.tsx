@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import type {
   BoardElement,
   BoardNode,
@@ -40,49 +40,43 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
   }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
-  const onNodeMouseDown = useCallback(
-    (e: React.MouseEvent, id: string) => {
-      e.stopPropagation()
-      setSelected(id)
-      const node = resolvedNodes.find((n) => n.id === id)
-      if (!node) return
-      dragging.current = {
-        id,
-        startMouseX: e.clientX,
-        startMouseY: e.clientY,
-        startRectX: node.rect.x,
-        startRectY: node.rect.y,
-      }
-    },
-    [resolvedNodes],
-  )
+  const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setSelected(id)
+    const node = resolvedNodes.find((n) => n.id === id)
+    if (!node) return
+    dragging.current = {
+      id,
+      startMouseX: e.clientX,
+      startMouseY: e.clientY,
+      startRectX: node.rect.x,
+      startRectY: node.rect.y,
+    }
+  }
 
-  const onBoardMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      onMouseMove(e)
-      if (!dragging.current) return
-      const { id, startMouseX, startMouseY, startRectX, startRectY } =
-        dragging.current
-      const dx = e.clientX - startMouseX
-      const dy = e.clientY - startMouseY
-      const node = nodes.find((n) => n.id === id)
-      if (!node) return
-      setOverrides((prev) => ({
-        ...prev,
-        [id]: {
-          ...(overrides[id] ?? node.rect),
-          x: startRectX + dx,
-          y: startRectY + dy,
-        },
-      }))
-    },
-    [onMouseMove, nodes, overrides],
-  )
+  const onBoardMouseMove = (e: React.MouseEvent) => {
+    onMouseMove(e)
+    if (!dragging.current) return
+    const { id, startMouseX, startMouseY, startRectX, startRectY } =
+      dragging.current
+    const dx = e.clientX - startMouseX
+    const dy = e.clientY - startMouseY
+    const node = nodes.find((n) => n.id === id)
+    if (!node) return
+    setOverrides((prev) => ({
+      ...prev,
+      [id]: {
+        ...(overrides[id] ?? node.rect),
+        x: startRectX + dx,
+        y: startRectY + dy,
+      },
+    }))
+  }
 
-  const onBoardMouseUp = useCallback(() => {
+  const onBoardMouseUp = () => {
     onMouseUp()
     dragging.current = null
-  }, [onMouseUp])
+  }
 
   // Compute viewBox from all rects with generous padding
   const allRects = [
