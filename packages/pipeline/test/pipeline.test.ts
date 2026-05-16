@@ -15,5 +15,39 @@ describe('generateDiagramFromTerraformFiles', () => {
     ])
     expect(result.canvasDrafts).toHaveLength(3)
     expect(result.diagnostics).toEqual([])
+    expect(result.graph.nodes[1]).toMatchObject({
+      id: 'aws_lambda_function.handler',
+      source: {
+        filePath: 'examples/terraform/aws-serverless-api/main.tf',
+        line: 5,
+      },
+    })
+  })
+
+  it('keeps unsupported Terraform resources visible with diagnostics', () => {
+    const result = generateDiagramFromTerraformFiles([
+      {
+        path: 'infra/main.tf',
+        content: 'resource "custom_service" "thing" {}',
+      },
+    ])
+
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({
+        id: 'custom_service.thing',
+        label: 'thing',
+      }),
+    )
+    expect(result.diagnostics).toMatchObject([
+      {
+        code: 'GRAPH001',
+        message: 'Unsupported Terraform resource type: custom_service',
+        severity: 'warning',
+        source: {
+          filePath: 'infra/main.tf',
+          line: 1,
+        },
+      },
+    ])
   })
 })

@@ -25,5 +25,14 @@ describe('Terraform to canvas pipeline', () => {
         label: 'sessions',
       }),
     )
+    expect(result.graph.nodes).toContainEqual(
+      expect.objectContaining({
+        id: 'aws_lambda_function.handler',
+        source: expect.objectContaining({
+          filePath: 'examples/terraform/aws-serverless-api/main.tf',
+          line: 5,
+        }),
+      }),
+    )
   })
 })
