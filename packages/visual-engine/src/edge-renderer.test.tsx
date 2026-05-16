@@ -48,7 +48,11 @@ describe('EdgeRenderer — edge labels', () => {
   it('renders label text for labeled relations when showLabels=true', () => {
     const { getByText } = render(
       <svg>
-        <EdgeRenderer edges={[edge('writes-to')]} nodeMap={nodeMap} showLabels={true} />
+        <EdgeRenderer
+          edges={[edge('writes-to')]}
+          nodeMap={nodeMap}
+          showLabels={true}
+        />
       </svg>,
     )
     expect(getByText('writes to')).toBeTruthy()
@@ -57,7 +61,11 @@ describe('EdgeRenderer — edge labels', () => {
   it('does not render label when showLabels=false', () => {
     const { queryByText } = render(
       <svg>
-        <EdgeRenderer edges={[edge('writes-to')]} nodeMap={nodeMap} showLabels={false} />
+        <EdgeRenderer
+          edges={[edge('writes-to')]}
+          nodeMap={nodeMap}
+          showLabels={false}
+        />
       </svg>,
     )
     expect(queryByText('writes to')).toBeNull()
@@ -66,7 +74,11 @@ describe('EdgeRenderer — edge labels', () => {
   it('does not render label for deployed-in (structural/noisy)', () => {
     const { queryByText } = render(
       <svg>
-        <EdgeRenderer edges={[edge('deployed-in')]} nodeMap={nodeMap} showLabels={true} />
+        <EdgeRenderer
+          edges={[edge('deployed-in')]}
+          nodeMap={nodeMap}
+          showLabels={true}
+        />
       </svg>,
     )
     expect(queryByText('deployed-in')).toBeNull()
@@ -76,7 +88,11 @@ describe('EdgeRenderer — edge labels', () => {
   it('renders triggers label for triggers relation', () => {
     const { getByText } = render(
       <svg>
-        <EdgeRenderer edges={[edge('triggers')]} nodeMap={nodeMap} showLabels={true} />
+        <EdgeRenderer
+          edges={[edge('triggers')]}
+          nodeMap={nodeMap}
+          showLabels={true}
+        />
       </svg>,
     )
     expect(getByText('triggers')).toBeTruthy()
@@ -86,7 +102,11 @@ describe('EdgeRenderer — edge labels', () => {
     const emptyMap = new Map<string, BoardNode>()
     const { container } = render(
       <svg>
-        <EdgeRenderer edges={[edge('triggers')]} nodeMap={emptyMap} showLabels={true} />
+        <EdgeRenderer
+          edges={[edge('triggers')]}
+          nodeMap={emptyMap}
+          showLabels={true}
+        />
       </svg>,
     )
     expect(container.querySelectorAll('path').length).toBe(0)
