@@ -1,3 +1,5 @@
+import { getExampleProject } from '@iac-board/example-catalog'
+import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import './App.css'
 
 const qualityGates = [
@@ -9,6 +11,9 @@ const qualityGates = [
 ]
 
 function App() {
+  const example = getExampleProject('aws-serverless-api')
+  const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
   return (
     <main className="app-shell">
       <section className="hero" aria-labelledby="hero-title">
@@ -29,6 +34,43 @@ function App() {
         <ul>
           {qualityGates.map((gate) => (
             <li key={gate}>{gate}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="panel" aria-labelledby="example-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">HU-002 / HU-005</p>
+            <h2 id="example-title">{example.name}</h2>
+          </div>
+          <span className="status-pill">Bundled example</span>
+        </div>
+        <p className="panel-copy">{example.description}</p>
+        <dl className="metrics" aria-label="Generated diagram metrics">
+          <div>
+            <dt>Terraform files</dt>
+            <dd>{example.files.length}</dd>
+          </div>
+          <div>
+            <dt>Resources</dt>
+            <dd>{generatedDiagram.parsed.resources.length}</dd>
+          </div>
+          <div>
+            <dt>Canvas drafts</dt>
+            <dd>{generatedDiagram.canvasDrafts.length}</dd>
+          </div>
+          <div>
+            <dt>Diagnostics</dt>
+            <dd>{generatedDiagram.diagnostics.length}</dd>
+          </div>
+        </dl>
+        <ul className="resource-list" aria-label="Generated resources">
+          {generatedDiagram.canvasDrafts.map((draft) => (
+            <li key={draft.id}>
+              <strong>{draft.label}</strong>
+              <span>{draft.id}</span>
+            </li>
           ))}
         </ul>
       </section>

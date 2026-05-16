@@ -12,5 +12,9 @@ describe('App', () => {
     expect(
       screen.getByRole('link', { name: 'Development spec' }),
     ).toHaveAttribute('href', '/docs/development-spec.md')
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'AWS Serverless API' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('aws_lambda_function.handler')).toBeInTheDocument()
   })
 })
