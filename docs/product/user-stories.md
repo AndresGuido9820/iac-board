@@ -408,6 +408,196 @@ Acceptance criteria:
 - Tool suggests README section text.
 - Suggestions can be copied, not auto-committed.
 
+## Epic 10: Diagram Visual Quality
+
+### HU-031: Correct Data Flow Layout and Edge Semantics
+
+As a cloud engineer, I want the generated diagram to show resources in correct
+left-to-right data flow order with meaningful edge styles, so that I can
+understand architecture intent without having to manually rearrange every node.
+
+**Diagnosis (from visual audit 2026-05-16):**
+
+Three root-cause defects found across the three bundled examples:
+
+1. **IoT pipeline layout inversion** — `aws_lambda_function.normalizer` was
+   modelled with a fake `event_source = kinesis.arn` attribute. Because the
+   consumer (Lambda) references the producer (Kinesis), the topology algorithm
+   placed Lambda to the *left* of Kinesis. Real Terraform uses
+   `aws_lambda_event_source_mapping` as a dedicated bridge resource; adding it
+   produces the correct layout: IoT Rule → Kinesis → (mapping) → Lambda → S3 /
+   Glue → Athena.
+
+2. **Undifferentiated edge styles** — all edges from `aws_lambda_function` were
+   tagged `invokes`, making role assumptions, storage writes, and function
+   triggers visually identical. `inferRelation` needed to consider both the
+   source *and* target resource type to emit the correct semantic relation.
+
+3. **Missing resource type** — `aws_lambda_event_source_mapping` was absent from
+   the `awsCategories` map, causing a GRAPH001 diagnostic on every IoT pipeline
+   diagram.
+
+Acceptance criteria:
+
+- IoT pipeline diagram shows left-to-right flow: IoT Rule → Kinesis → Lambda →
+  S3 / Glue → Athena (visual audit screenshot passes).
+- Edges between Lambda and IAM Role use style `uses-role` (gray dashed).
+- Edges between Lambda and storage (S3, DynamoDB, Kinesis) use style `writes-to`
+  (green).
+- Edges between an event-source mapping and its function use style `triggers`
+  (purple).
+- No GRAPH001 diagnostic for `aws_lambda_event_source_mapping`.
+- All existing unit and integration tests pass (40/40).
+
+### HU-032: Minimize Edge Crossings (Sugiyama Barycenter)
+
+As a cloud engineer, I want diagram arrows to avoid unnecessary crossings, so
+that I can follow data flow without visual confusion.
+
+Acceptance criteria:
+
+- Zero edge crossings for the Serverless API example (4 nodes, 3 edges).
+- At most one crossing for the IoT Pipeline example (7 nodes, 6 edges).
+- At most three crossings for the VPC+RDS example (8 nodes, 8 edges).
+- Layout is deterministic (same input always produces same output).
+- Layout of 50 nodes + 60 edges completes in under 50 ms.
+
+### HU-033: Group-Constrained Node Placement
+
+As a cloud engineer working with VPCs, I want nodes inside the same VPC or
+subnet to be placed in adjacent columns, so that network topology is obvious at
+a glance.
+
+Acceptance criteria:
+
+- Children of the same VPC group span at most two adjacent columns.
+- Children of the same subnet group share one column.
+- VPC group rectangle has aspect ratio at most 3:1 (width:height).
+- No regressions in examples without groups (Serverless API, IoT Pipeline).
+
+### HU-034: Intelligent Edge Routing Around Obstacles
+
+As a cloud engineer, I want diagram arrows to route around nodes and group
+boundaries instead of passing over them, so that diagrams remain readable with
+many connections.
+
+Acceptance criteria:
+
+- No edge passes through the interior of a node that is not its source or target.
+- Edges that cross a group boundary follow the group border, not its interior.
+- Feedback edges (right-to-left) route above or below the graph, not through it.
+- Bezier curves remain visually smooth (no abrupt straight segments).
+
+### HU-035: Edge Labels Showing Relation Semantics
+
+As a cloud engineer, I want every arrow to show its relationship type (triggers,
+writes to, deployed in), so that I understand architecture intent without
+guessing from color alone.
+
+Acceptance criteria:
+
+- Each edge displays its relation as a text label near the bezier midpoint.
+- Labels are legible (at least 8 px, sufficient contrast).
+- Labels do not overlap source or target nodes.
+- Labels can be toggled on/off in the UI (default: visible).
+
+### HU-036: AWS Resource Type Expansion (20 New Types)
+
+As a cloud engineer, I want ECS, EKS, ALB, CloudFront, Cognito, Step Functions,
+ElastiCache, and other common services to appear with correct icons and
+categories, so that real-world diagrams have no gray unknown boxes.
+
+Acceptance criteria:
+
+- Twenty new resource types supported with correct category in cloud-graph.
+- Each type has a real SVG icon or uses category fallback without crash.
+- A new bundled example uses at least five of the new types.
+- Zero GRAPH001 diagnostics for any of the newly supported types.
+
+### HU-037: Export Diagram as PNG and SVG
+
+As a cloud engineer, I want to download the diagram as a PNG or SVG file, so
+that I can embed it in documentation, pull requests, and presentations.
+
+Acceptance criteria:
+
+- Export PNG button downloads a .png of the visible diagram at 2× resolution.
+- Export SVG button downloads a clean .svg (no scripts, valid XML, correct viewBox).
+- Both formats include all visible elements (nodes, edges, groups, labels).
+- File name includes the example or project name.
+
+### HU-038: Import Local Terraform Files
+
+As a cloud engineer, I want to drag and drop my .tf files into the browser to
+generate a diagram of my own infrastructure, so that I am not limited to bundled
+examples.
+
+Acceptance criteria:
+
+- Drag-and-drop zone accepts .tf files and folders.
+- File picker allows multi-select of .tf files.
+- Text area allows pasting HCL directly.
+- Files are never sent to a remote server (verifiable in browser Network tab).
+- After import the diagram generates automatically.
+- Non-.tf files are ignored with a diagnostic, not an error.
+
+### HU-039: Node Inspector Panel
+
+As a cloud engineer, I want to click a diagram node to see its details (type,
+parsed attributes, source file and line, relationships), so that I understand
+each resource without leaving the diagram.
+
+Acceptance criteria:
+
+- Click on a node opens a sidebar panel with details.
+- Panel shows resource address, type, name, and source file:line.
+- Panel shows parsed body attributes as key-value pairs.
+- Panel lists incoming and outgoing edges with their relation.
+- Panel closes on outside click or Escape key.
+
+### HU-040: Local Terraform Module Expansion
+
+As a platform engineer with real repositories, I want IaC Board to expand local
+modules (source = "./modules/vpc"), so that diagrams include all resources
+instead of only root-module ones.
+
+Acceptance criteria:
+
+- Module blocks with local source paths are recursively expanded.
+- Expanded resources have addresses prefixed with module path.
+- Module input variables are resolved from the module block arguments.
+- Nested modules expand up to three levels deep.
+- Remote modules continue to emit diagnostic TF004 (not expanded).
+- Missing module paths emit diagnostic TF005 without crashing.
+
+### HU-041: Pipeline Performance Benchmark and Budget
+
+As a project developer, I want automated benchmarks measuring each pipeline
+phase, so that performance regressions are caught before deployment.
+
+Acceptance criteria:
+
+- Parse 20 .tf files totaling 500 resources in under 200 ms.
+- Build cloud graph from 500 resources in under 50 ms.
+- Layout 200 nodes with 300 edges in under 100 ms.
+- Full pipeline from parse to canvas for 500 resources in under 500 ms.
+- Benchmarks run in CI and fail when budget is exceeded by 2×.
+
+### HU-042: Expanded Visual Regression Harness
+
+As a developer using AI-assisted workflows, I want automated screenshots of each
+example in multiple states (default, zoomed, after drag), so that Claude can
+evaluate visual quality after every code change.
+
+Acceptance criteria:
+
+- Screenshot of each example at default view (already exists).
+- Screenshot of each example at 150% zoom.
+- Screenshot of the largest diagram with one node dragged.
+- Screenshot of a new large example with fifteen or more nodes.
+- All screenshots stored as baselines in the repository.
+- Playwright visual tests pass when running the visual project.
+
 ## MVP Cut
 
 The first MVP should include:

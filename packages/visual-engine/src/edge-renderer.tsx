@@ -1,49 +1,75 @@
 import type { BoardEdge, BoardNode, Rect } from './types'
 
 const MARKER_ID = 'iac-arrowhead'
+const MARKER_ID_DASHED = 'iac-arrowhead-dashed'
 
-function centerOf(rect: Rect) {
-  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+function cx(rect: Rect) { return rect.x + rect.width / 2 }
+function cy(rect: Rect) { return rect.y + rect.height / 2 }
+function right(rect: Rect) { return rect.x + rect.width }
+
+/** Cubic bezier S-curve path string from source right-center to target left-center. */
+function bezierPath(from: Rect, to: Rect): string {
+  const x1 = right(from)
+  const y1 = cy(from)
+  const x2 = to.x
+  const y2 = cy(to)
+
+  // If target is to the left (feedback edge), draw a curved arc going under
+  if (x2 < x1 + 20) {
+    const midY = Math.max(cy(from), cy(to)) + 80
+    return `M ${x1},${y1} C ${x1 + 60},${y1} ${x1 + 60},${midY} ${cx(from) + (cx(to) - cx(from)) / 2},${midY} S ${x2 - 60},${y2} ${x2},${y2}`
+  }
+
+  const offset = Math.max(60, (x2 - x1) * 0.45)
+  return `M ${x1},${y1} C ${x1 + offset},${y1} ${x2 - offset},${y2} ${x2},${y2}`
 }
 
-/** Find the point on the rect border closest to the target center */
-function borderPoint(rect: Rect, target: { x: number; y: number }) {
-  const cx = rect.x + rect.width / 2
-  const cy = rect.y + rect.height / 2
-  const dx = target.x - cx
-  const dy = target.y - cy
-  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return { x: cx, y: cy }
-
-  const scaleX = (rect.width / 2) / Math.abs(dx)
-  const scaleY = (rect.height / 2) / Math.abs(dy)
-  const scale = Math.min(scaleX, scaleY)
-
-  return { x: cx + dx * scale, y: cy + dy * scale }
+const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
+  'triggers':     { color: '#8b5cf6' },          // purple — event-source mapping fires lambda
+  'invokes':      { color: '#f97316' },          // orange — direct invoke / call
+  'publishes-to': { color: '#8b5cf6' },          // purple — async pub
+  'connects':     { color: '#2563eb' },          // blue — API gateway
+  'writes-to':    { color: '#16a34a' },          // green — storage write
+  'uses-role':    { color: '#94a3b8', dash: '4 3' },   // gray dashed — IAM
+  'deployed-in':  { color: '#cbd5e1', dash: '3 5' },   // very light — network placement
+  'secured-by':   { color: '#f59e0b', dash: '5 3' },   // amber dashed — security group
+  'depends-on':   { color: '#94a3b8', dash: '6 3' },
+  'inferred':     { color: '#cbd5e1', dash: '4 3' },
 }
+
+const DEFAULT_STYLE = { color: '#94a3b8', dash: '5 3' }
 
 type EdgeRendererProps = {
   edges: BoardEdge[]
   nodeMap: Map<string, BoardNode>
 }
 
-const RELATION_DASH: Record<string, string | undefined> = {
-  'depends-on': '6 3',
-  'inferred': '6 3',
-}
-
 export function ArrowMarker() {
   return (
     <defs>
+      {/* Solid arrowhead */}
       <marker
         id={MARKER_ID}
-        markerHeight={8}
+        markerHeight={7}
         markerUnits="strokeWidth"
-        markerWidth={8}
+        markerWidth={7}
         orient="auto"
-        refX={8}
-        refY={3}
+        refX={7}
+        refY={3.5}
       >
-        <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8" />
+        <path d="M0,0 L0,7 L7,3.5 z" fill="currentColor" />
+      </marker>
+      {/* Dashed arrowhead — lighter */}
+      <marker
+        id={MARKER_ID_DASHED}
+        markerHeight={7}
+        markerUnits="strokeWidth"
+        markerWidth={7}
+        orient="auto"
+        refX={7}
+        refY={3.5}
+      >
+        <path d="M0,0 L0,7 L7,3.5 z" fill="#94a3b8" />
       </marker>
     </defs>
   )
@@ -57,24 +83,20 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
         const toNode = nodeMap.get(edge.to)
         if (!fromNode || !toNode) return null
 
-        const toCenter = centerOf(toNode.rect)
-        const fromCenter = centerOf(fromNode.rect)
-        const start = borderPoint(fromNode.rect, toCenter)
-        const end = borderPoint(toNode.rect, fromCenter)
-
-        const dash = RELATION_DASH[edge.relation] ?? RELATION_DASH[edge.confidence] ?? undefined
+        const style = RELATION_STYLE[edge.relation] ?? RELATION_STYLE[edge.confidence] ?? DEFAULT_STYLE
+        const d = bezierPath(fromNode.rect, toNode.rect)
+        const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
         return (
-          <line
+          <path
             key={edge.id}
-            markerEnd={`url(#${MARKER_ID})`}
-            stroke="#94a3b8"
-            strokeDasharray={dash}
+            d={d}
+            fill="none"
+            markerEnd={`url(#${markerId})`}
+            stroke={style.color}
+            strokeDasharray={style.dash}
             strokeWidth={1.5}
-            x1={start.x}
-            x2={end.x}
-            y1={start.y}
-            y2={end.y}
+            style={{ color: style.color }}
           />
         )
       })}

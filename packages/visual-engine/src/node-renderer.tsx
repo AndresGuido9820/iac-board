@@ -4,9 +4,16 @@ import { categoryColors } from './icons/aws'
 import type { AwsCategory } from './icons/aws'
 import { getIcon } from './icons/registry'
 
-const NODE_W = 180
-const NODE_H = 88
-const ICON_SIZE = 32
+export const NODE_W = 220
+export const NODE_H = 92
+const ICON_SIZE = 36
+const ICON_PAD = 14
+const TEXT_X_OFFSET = ICON_PAD + ICON_SIZE + 12
+
+/** Strip cloud provider prefix: aws_ / google_ / azurerm_ / azuread_ / etc. */
+function stripProvider(type: string): string {
+  return type.replace(/^(?:aws|google|azurerm|azuread|kubernetes|helm|random|tls|null|local|time|http)_/, '')
+}
 
 function truncate(s: string, max: number) {
   return s.length > max ? s.slice(0, max - 1) + '…' : s
@@ -23,31 +30,30 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
   const cat = (category as AwsCategory) in categoryColors ? (category as AwsCategory) : 'unknown'
   const color = categoryColors[cat]
   const iconSvg = getIcon(resourceType)
-  const cx = rect.x + rect.width / 2
-  const iconX = rect.x + 12
+  const iconX = rect.x + ICON_PAD
   const iconY = rect.y + (rect.height - ICON_SIZE) / 2
+  const textX = rect.x + TEXT_X_OFFSET
+  const typeLabel = truncate(stripProvider(resourceType), 26)
+  const nameLabel = truncate(label, 18)
 
   return (
-    <g
-      cursor="grab"
-      onMouseDown={(e) => onMouseDown?.(e, node.id)}
-    >
+    <g cursor="grab" onMouseDown={(e) => onMouseDown?.(e, node.id)}>
       {/* Drop shadow */}
       <rect
-        fill="rgba(0,0,0,0.07)"
+        fill="rgba(0,0,0,0.06)"
         height={rect.height}
-        rx={8}
+        rx={10}
         width={rect.width}
         x={rect.x + 2}
-        y={rect.y + 3}
+        y={rect.y + 4}
       />
       {/* Card background */}
       <rect
         fill="white"
         height={rect.height}
-        rx={8}
+        rx={10}
         stroke={selected ? color : '#e2e8f0'}
-        strokeWidth={selected ? 2.5 : 1.5}
+        strokeWidth={selected ? 2 : 1}
         width={rect.width}
         x={rect.x}
         y={rect.y}
@@ -55,20 +61,15 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
       {/* Left accent bar */}
       <rect
         fill={color}
-        height={rect.height - 2}
-        rx={7}
+        height={rect.height - 4}
+        rx={9}
         width={5}
         x={rect.x + 1}
-        y={rect.y + 1}
+        y={rect.y + 2}
       />
-      {/* Service icon — real SVG from tf2d2/icons if available, else colored box */}
+      {/* Service icon */}
       {iconSvg ? (
-        <foreignObject
-          height={ICON_SIZE}
-          width={ICON_SIZE}
-          x={iconX}
-          y={iconY}
-        >
+        <foreignObject height={ICON_SIZE} width={ICON_SIZE} x={iconX} y={iconY}>
           <div
             // @ts-expect-error xmlns required for foreignObject
             xmlns="http://www.w3.org/1999/xhtml"
@@ -78,43 +79,41 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
         </foreignObject>
       ) : (
         <rect
-          fill={`${color}22`}
+          fill={`${color}1a`}
           height={ICON_SIZE}
-          rx={6}
-          stroke={color}
+          rx={8}
+          stroke={`${color}55`}
           strokeWidth={1}
           width={ICON_SIZE}
           x={iconX}
           y={iconY}
         />
       )}
-      {/* Resource type */}
+      {/* Service type — small, colored, above name */}
       <text
         dominantBaseline="middle"
         fill={color}
-        fontSize={9}
+        fontSize={9.5}
+        fontFamily="system-ui, sans-serif"
         fontWeight={700}
-        letterSpacing="0.04em"
-        textAnchor="middle"
-        x={cx + 16}
-        y={rect.y + 26}
+        letterSpacing="0.03em"
+        x={textX}
+        y={rect.y + rect.height / 2 - 12}
       >
-        {truncate(resourceType, 22)}
+        {typeLabel}
       </text>
-      {/* Resource name */}
+      {/* Resource name — large, dark */}
       <text
         dominantBaseline="middle"
-        fill="#1e293b"
-        fontSize={13}
+        fill="#0f172a"
+        fontSize={14}
+        fontFamily="system-ui, sans-serif"
         fontWeight={700}
-        textAnchor="middle"
-        x={cx + 16}
-        y={rect.y + 52}
+        x={textX}
+        y={rect.y + rect.height / 2 + 7}
       >
-        {truncate(label, 16)}
+        {nameLabel}
       </text>
     </g>
   )
 }
-
-export { NODE_W, NODE_H }

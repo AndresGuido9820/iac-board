@@ -70,37 +70,54 @@ para quienes tienen Terraform instalado.
 
 ## Fases revisadas
 
-### Fase A — Parser WASM real ← PRÓXIMO
+### Fase A — Parser propio ✅ COMPLETADA
 
-Reemplazar regex con `@cdktf/hcl2json`.
+Construimos parser HCL recursive-descent propio (sin WASM externo).
 
-Tareas:
-- [ ] Instalar `@cdktf/hcl2json` en `packages/terraform-parser`
-- [ ] Cambiar `parseTerraformFiles()` para usar `parse()` del WASM
-- [ ] Traducir JSON output → `TerraformResource[]` (nuestro modelo)
-- [ ] Extraer `variable` blocks → tabla de defaults
-- [ ] Extraer `locals` blocks → tabla de valores resueltos
-- [ ] Resolver `var.x` y `local.x` en atributos de recursos
-- [ ] Extraer `data` sources como nodos especiales
-- [ ] Extraer `module` blocks → diagnóstico por ahora (Fase F para expansión)
-- [ ] Mantener todos los tests existentes pasando
-- [ ] Añadir tests con HCL complejo (nested blocks, variables, multi-file)
+Tareas completadas:
+- [x] Lexer character-by-character (237 líneas) — tokens, strings, heredocs, comments
+- [x] Parser recursive descent (344 líneas) — blocks, attributes, expressions, tolerant
+- [x] AST types (93 líneas) — HclFile, HclBlock, HclAttribute, HclExpr
+- [x] Extractor (193 líneas) — 2-pass: variable/locals resolution → resource extraction
+- [x] Reference extraction (90 líneas) — provider-prefix regex, body/string/expr scanning
+- [x] Wiring en index.ts — tokenize → parseHclFile → extractFromFile pipeline
+- [x] TerraformResource.refs field — refs parsed, no más regex sobre body
+- [x] 14 tests unitarios cubriendo nested blocks, variables, locals, data sources, modules, heredocs
+- [x] Todos los tests pasando (40/40)
 
-Resultado: el parser maneja cualquier archivo Terraform real sin crash.
+### Fase B — Layout topológico ✅ COMPLETADA (base)
 
-### Fase B — Layout con dagre ← después de A
+Reemplazamos grid de 4 columnas con longest-path layering.
 
-Reemplazar el grid de 4 columnas.
+Tareas completadas:
+- [x] Longest-path DP para asignar capas por dependencia
+- [x] Cycle detection con guard (layer=0 para ciclos)
+- [x] Category sort dentro de cada capa
+- [x] Centrado vertical de columnas
+- [x] Group bounds post-computation
+- [x] 4 tests: single node, unconnected sort, dependency placement, group bounds
 
-Tareas:
-- [ ] Instalar `dagre` en `packages/layout-engine`
-- [ ] Adaptar `layoutCloudGraph()` para usar dagre
-- [ ] Configuración: LR (left-to-right), separación de nodos por categoría
-- [ ] Grupos VPC/subnet: dagre soporta subgraphs (clusters)
-- [ ] Fallback a grid si no hay edges
-- [ ] Tests: verificar que el layout no produce coordenadas negativas ni solapamientos
+Tareas pendientes (ver HU-032, HU-033):
+- [ ] Barycenter crossing minimization (Sugiyama fase 2)
+- [ ] Group-constrained placement (nodos del mismo grupo en columnas adyacentes)
 
-### Fase C — File import en el browser (HU-001)
+### Fase B.2 — Diagram Quality Plan (NUEVO — ver todo/diagram-quality-plan.md)
+
+11 HUs detalladas (HU-032 a HU-042) para llevar la calidad visual al nivel
+de herramientas profesionales. Incluye:
+- Minimización de cruces (HU-032)
+- Layout consciente de grupos (HU-033)
+- Edge routing inteligente (HU-034)
+- Edge labels (HU-035)
+- 20 tipos AWS nuevos (HU-036)
+- Export PNG/SVG (HU-037)
+- Import .tf (HU-038)
+- Node inspector (HU-039)
+- Módulos locales (HU-040)
+- Performance benchmark (HU-041)
+- Visual regression expandido (HU-042)
+
+### Fase C — File import en el browser (HU-001, HU-038)
 
 Tareas:
 - [ ] Drag & drop de archivos `.tf` sobre la app

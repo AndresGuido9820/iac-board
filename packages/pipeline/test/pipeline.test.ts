@@ -7,21 +7,22 @@ describe('generateDiagramFromTerraformFiles', () => {
     const example = getExampleProject('aws-serverless-api')
     const result = generateDiagramFromTerraformFiles(example.files)
 
-    expect(result.parsed.resources).toHaveLength(3)
-    expect(result.graph.nodes.map((node) => node.id)).toEqual([
-      'aws_api_gateway_rest_api.public_api',
-      'aws_lambda_function.handler',
-      'aws_dynamodb_table.sessions',
-    ])
-    expect(result.canvasDrafts).toHaveLength(3)
+    expect(result.parsed.resources).toHaveLength(4)
+    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_api_gateway_rest_api.public_api')
+    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_lambda_function.handler')
+    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_dynamodb_table.sessions')
+    expect(result.graph.nodes.map((node) => node.id)).toContain('aws_iam_role.lambda_exec')
+    expect(result.canvasDrafts).toHaveLength(4)
     expect(result.diagnostics).toEqual([])
-    expect(result.graph.nodes[1]).toMatchObject({
-      id: 'aws_lambda_function.handler',
-      source: {
-        filePath: 'examples/terraform/aws-serverless-api/main.tf',
-        line: 5,
-      },
-    })
+    expect(result.graph.nodes).toContainEqual(
+      expect.objectContaining({
+        id: 'aws_lambda_function.handler',
+        source: expect.objectContaining({
+          filePath: 'examples/terraform/aws-serverless-api/main.tf',
+          line: 12,
+        }),
+      }),
+    )
   })
 
   it('keeps unsupported Terraform resources visible with diagnostics', () => {

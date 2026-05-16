@@ -23,14 +23,11 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     startRectY: number
   } | null>(null)
 
-  const nodes = elements.filter((e): e is BoardNode => e.type === 'node')
+  const nodes  = elements.filter((e): e is BoardNode  => e.type === 'node')
   const groups = elements.filter((e): e is BoardGroup => e.type === 'group')
-  const edges = elements.filter((e): e is BoardEdge => e.type === 'edge')
+  const edges  = elements.filter((e): e is BoardEdge  => e.type === 'edge')
 
-  const resolvedNodes = nodes.map((n) => ({
-    ...n,
-    rect: overrides[n.id] ?? n.rect,
-  }))
+  const resolvedNodes = nodes.map((n) => ({ ...n, rect: overrides[n.id] ?? n.rect }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
   const onNodeMouseDown = useCallback(
@@ -61,11 +58,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
       if (!node) return
       setOverrides((prev) => ({
         ...prev,
-        [id]: {
-          ...(overrides[id] ?? node.rect),
-          x: startRectX + dx,
-          y: startRectY + dy,
-        },
+        [id]: { ...(overrides[id] ?? node.rect), x: startRectX + dx, y: startRectY + dy },
       }))
     },
     [onMouseMove, nodes, overrides],
@@ -76,16 +69,17 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     dragging.current = null
   }, [onMouseUp])
 
-  // Compute viewBox from all element rects
-  const allRects = [
-    ...resolvedNodes.map((n) => n.rect),
-    ...groups.map((g) => g.rect),
-  ]
-  const PAD = 48
+  // Compute viewBox from all rects with generous padding
+  const allRects = [...resolvedNodes.map((n) => n.rect), ...groups.map((g) => g.rect)]
+  const PAD = 56
   const minX = allRects.length ? Math.min(...allRects.map((r) => r.x)) - PAD : 0
   const minY = allRects.length ? Math.min(...allRects.map((r) => r.y)) - PAD : 0
-  const maxX = allRects.length ? Math.max(...allRects.map((r) => r.x + r.width)) + PAD : 800
-  const maxY = allRects.length ? Math.max(...allRects.map((r) => r.y + r.height)) + PAD : 600
+  const maxX = allRects.length ? Math.max(...allRects.map((r) => r.x + r.width))  + PAD : 800
+  const maxY = allRects.length ? Math.max(...allRects.map((r) => r.y + r.height)) + PAD : 480
+  const vw = maxX - minX
+  const vh = maxY - minY
+
+  const dotGridId = 'iac-dot-grid'
 
   return (
     <div
@@ -100,19 +94,38 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     >
       <svg
         aria-hidden="true"
-        style={{ display: 'block', width: '100%', minHeight: 320 }}
-        viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
+        className="cloud-canvas"
+        style={{ display: 'block', width: '100%', minHeight: 300 }}
+        viewBox={`${minX} ${minY} ${vw} ${vh}`}
         xmlns="http://www.w3.org/2000/svg"
       >
+        <defs>
+          {/* Dot grid background pattern */}
+          <pattern
+            id={dotGridId}
+            patternUnits="userSpaceOnUse"
+            width={24}
+            height={24}
+          >
+            <circle cx={1} cy={1} r={1} fill="#e2e8f0" />
+          </pattern>
+        </defs>
+
+        {/* Background fill */}
+        <rect fill="#f8fafc" height={vh} width={vw} x={minX} y={minY} />
+        {/* Dot grid */}
+        <rect fill={`url(#${dotGridId})`} height={vh} width={vw} x={minX} y={minY} />
+
         <ArrowMarker />
+
         <g style={{ transform, transformOrigin: '0 0' }}>
           {/* Groups first — nodes render on top */}
           {groups.map((g) => (
             <GroupRenderer group={g} key={g.id} />
           ))}
-          {/* Edges */}
+          {/* Edges below nodes */}
           <EdgeRenderer edges={edges} nodeMap={nodeMap} />
-          {/* Nodes */}
+          {/* Nodes on top */}
           {resolvedNodes.map((n) => (
             <NodeRenderer
               key={n.id}
