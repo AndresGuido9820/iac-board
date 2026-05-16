@@ -100,6 +100,7 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
           <path
             key={edge.id}
             d={d}
+            data-testid="iac-edge"
             fill="none"
             markerEnd={`url(#${markerId})`}
             stroke={style.color}
