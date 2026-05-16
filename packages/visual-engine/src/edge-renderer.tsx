@@ -82,12 +82,12 @@ const LABELED_RELATIONS = new Set([
 
 /** Human-readable label text per relation. */
 const RELATION_LABEL: Record<string, string> = {
-  'triggers':     'triggers',
-  'invokes':      'invokes',
+  triggers: 'triggers',
+  invokes: 'invokes',
   'publishes-to': 'publishes to',
-  'connects':     'connects',
-  'writes-to':    'writes to',
-  'uses-role':    'uses role',
+  connects: 'connects',
+  'writes-to': 'writes to',
+  'uses-role': 'uses role',
 }
 
 /** Approximate pixel width of a monospace label at 9px. */
@@ -132,7 +132,11 @@ export function ArrowMarker() {
   )
 }
 
-export function EdgeRenderer({ edges, nodeMap, showLabels = true }: EdgeRendererProps) {
+export function EdgeRenderer({
+  edges,
+  nodeMap,
+  showLabels = true,
+}: EdgeRendererProps) {
   return (
     <>
       {edges.map((edge) => {
@@ -149,7 +153,9 @@ export function EdgeRenderer({ edges, nodeMap, showLabels = true }: EdgeRenderer
 
         const shouldLabel = showLabels && LABELED_RELATIONS.has(edge.relation)
         const labelText = RELATION_LABEL[edge.relation] ?? edge.relation
-        const mid = shouldLabel ? bezierMidpoint(fromNode.rect, toNode.rect) : null
+        const mid = shouldLabel
+          ? bezierMidpoint(fromNode.rect, toNode.rect)
+          : null
         const lw = shouldLabel && mid ? labelWidth(labelText) : 0
 
         return (

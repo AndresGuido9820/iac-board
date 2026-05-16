@@ -115,10 +115,22 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
       }}
     >
       {/* Toolbar overlay */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, display: 'flex', gap: 6 }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          zIndex: 10,
+          display: 'flex',
+          gap: 6,
+        }}
+      >
         <button
           aria-label="Toggle edge labels"
-          onClick={(e) => { e.stopPropagation(); setShowLabels((v) => !v) }}
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowLabels((v) => !v)
+          }}
           style={{
             background: showLabels ? '#1e293b' : '#f1f5f9',
             border: '1px solid #e2e8f0',
@@ -172,7 +184,11 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
             <GroupRenderer group={g} key={g.id} />
           ))}
           {/* Edges below nodes */}
-          <EdgeRenderer edges={edges} nodeMap={nodeMap} showLabels={showLabels} />
+          <EdgeRenderer
+            edges={edges}
+            nodeMap={nodeMap}
+            showLabels={showLabels}
+          />
           {/* Nodes on top */}
           {resolvedNodes.map((n) => (
             <NodeRenderer
