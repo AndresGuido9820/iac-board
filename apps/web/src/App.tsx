@@ -82,10 +82,16 @@ export function ProductShell({
             <button
               className="status-pill"
               onClick={onClearImport}
-              style={{ cursor: 'pointer', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' }}
+              style={{
+                cursor: 'pointer',
+                background: '#fef3c7',
+                color: '#92400e',
+                border: '1px solid #fcd34d',
+              }}
               type="button"
             >
-              {importedFiles.length} file{importedFiles.length !== 1 ? 's' : ''} loaded — clear
+              {importedFiles.length} file{importedFiles.length !== 1 ? 's' : ''}{' '}
+              loaded — clear
             </button>
           )}
         </div>
@@ -109,7 +115,9 @@ export function ProductShell({
         <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (
             <button
-              aria-pressed={project.id === selectedExampleId && mode === 'example'}
+              aria-pressed={
+                project.id === selectedExampleId && mode === 'example'
+              }
               className="example-card"
               key={project.id}
               onClick={() => onSelectExample(project.id)}
@@ -262,7 +270,10 @@ function App() {
       mode={mode}
       onClearImport={handleClearImport}
       onFilesLoaded={handleFilesLoaded}
-      onSelectExample={(id) => { setSelectedExampleId(id); setMode('example') }}
+      onSelectExample={(id) => {
+        setSelectedExampleId(id)
+        setMode('example')
+      }}
       onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
       t={translations[lang]}

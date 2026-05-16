@@ -257,7 +257,9 @@
   gap: 8px;
   padding: 32px 24px;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .import-drop-zone--active {

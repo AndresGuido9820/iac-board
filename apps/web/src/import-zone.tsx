@@ -16,7 +16,8 @@ function isAcceptedFile(file: File): boolean {
 async function readFile(file: File): Promise<LoadedFile> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve({ path: file.name, content: reader.result as string })
+    reader.onload = () =>
+      resolve({ path: file.name, content: reader.result as string })
     reader.onerror = () => reject(new Error(`Failed to read ${file.name}`))
     reader.readAsText(file)
   })
@@ -89,14 +90,27 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
         role="region"
       >
         <div className="import-drop-icon">
-          <svg fill="none" height={40} stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" width={40}>
-            <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            fill="none"
+            height={40}
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+            width={40}
+          >
+            <path
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
         <p className="import-drop-label">
           Drop <strong>.tf</strong> or <strong>.tfvars</strong> files here
         </p>
-        <p className="import-drop-hint">Entire Terraform module — multiple files supported</p>
+        <p className="import-drop-hint">
+          Entire Terraform module — multiple files supported
+        </p>
         <button
           className="import-pick-btn"
           onClick={() => inputRef.current?.click()}
@@ -115,7 +129,11 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
       </div>
 
       {/* Error */}
-      {error && <p className="import-error" role="alert">{error}</p>}
+      {error && (
+        <p className="import-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {/* Loaded files list */}
       {loadedFiles.length > 0 && (
@@ -123,7 +141,9 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
           {loadedFiles.map((f) => (
             <li key={f.path}>
               <span className="import-file-name">{f.path}</span>
-              <span className="import-file-size">{f.content.split('\n').length} lines</span>
+              <span className="import-file-size">
+                {f.content.split('\n').length} lines
+              </span>
             </li>
           ))}
         </ul>
