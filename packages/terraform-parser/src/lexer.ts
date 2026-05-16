@@ -7,22 +7,23 @@
  */
 
 export type TokenKind =
-  | 'IDENT'      // identifier or keyword: resource, var, true, false, null …
-  | 'STRING'     // "…" — raw content preserved, includes ${…} markers
-  | 'NUMBER'     // 42 | 3.14
-  | 'HEREDOC'    // <<EOF … EOF — content only
-  | 'LBRACE'     // {
-  | 'RBRACE'     // }
-  | 'LBRACKET'   // [
-  | 'RBRACKET'   // ]
-  | 'LPAREN'     // (
-  | 'RPAREN'     // )
-  | 'EQUALS'     // =
-  | 'FAT_ARROW'  // =>
-  | 'COMMA'      // ,
-  | 'DOT'        // .
-  | 'ELLIPSIS'   // ...
-  | 'NEWLINE'    // \n
+  | 'IDENT' // identifier or keyword: resource, var, true, false, null …
+  | 'STRING' // "…" — raw content preserved, includes ${…} markers
+  | 'NUMBER' // 42 | 3.14
+  | 'HEREDOC' // <<EOF … EOF — content only
+  | 'LBRACE' // {
+  | 'RBRACE' // }
+  | 'LBRACKET' // [
+  | 'RBRACKET' // ]
+  | 'LPAREN' // (
+  | 'RPAREN' // )
+  | 'EQUALS' // =
+  | 'FAT_ARROW' // =>
+  | 'COMMA' // ,
+  | 'DOT' // .
+  | 'ELLIPSIS' // ...
+  | 'STAR' // *  (splat expressions)
+  | 'NEWLINE' // \n
   | 'EOF'
 
 export type Token = {
@@ -78,10 +79,12 @@ export function tokenize(src: string): Token[] {
 
     // Block comment /* … */
     if (ch === '/' && peek(1) === '*') {
-      advance(); advance() // consume /*
+      advance()
+      advance() // consume /*
       while (pos < src.length) {
         if (peek() === '*' && peek(1) === '/') {
-          advance(); advance()
+          advance()
+          advance()
           break
         }
         advance()
@@ -91,7 +94,8 @@ export function tokenize(src: string): Token[] {
 
     // Heredoc <<[-]IDENT\n…IDENT\n
     if (ch === '<' && peek(1) === '<') {
-      advance(); advance() // <<
+      advance()
+      advance() // <<
       const trimIndent = peek() === '-'
       if (trimIndent) advance()
       let marker = ''
@@ -102,7 +106,6 @@ export function tokenize(src: string): Token[] {
       advance() // consume \n after marker
       let content = ''
       while (pos < src.length) {
-        const lineStart = pos
         let lineContent = ''
         while (pos < src.length && peek() !== '\n') {
           lineContent += advance()
@@ -159,12 +162,12 @@ export function tokenize(src: string): Token[] {
     // Number
     if (ch >= '0' && ch <= '9') {
       let value = ''
-      while (pos < src.length && (peek() >= '0' && peek() <= '9')) {
+      while (pos < src.length && peek() >= '0' && peek() <= '9') {
         value += advance()
       }
       if (peek() === '.' && peek(1) >= '0' && peek(1) <= '9') {
         value += advance()
-        while (pos < src.length && (peek() >= '0' && peek() <= '9')) {
+        while (pos < src.length && peek() >= '0' && peek() <= '9') {
           value += advance()
         }
       }
@@ -172,7 +175,7 @@ export function tokenize(src: string): Token[] {
       if (peek() === 'e' || peek() === 'E') {
         value += advance()
         if (peek() === '+' || peek() === '-') value += advance()
-        while (pos < src.length && (peek() >= '0' && peek() <= '9')) {
+        while (pos < src.length && peek() >= '0' && peek() <= '9') {
           value += advance()
         }
       }
@@ -191,16 +194,46 @@ export function tokenize(src: string): Token[] {
     }
 
     // Punctuation
-    if (ch === '{') { advance(); addToken('LBRACE', '{', startLine); continue }
-    if (ch === '}') { advance(); addToken('RBRACE', '}', startLine); continue }
-    if (ch === '[') { advance(); addToken('LBRACKET', '[', startLine); continue }
-    if (ch === ']') { advance(); addToken('RBRACKET', ']', startLine); continue }
-    if (ch === '(') { advance(); addToken('LPAREN', '(', startLine); continue }
-    if (ch === ')') { advance(); addToken('RPAREN', ')', startLine); continue }
-    if (ch === ',') { advance(); addToken('COMMA', ',', startLine); continue }
+    if (ch === '{') {
+      advance()
+      addToken('LBRACE', '{', startLine)
+      continue
+    }
+    if (ch === '}') {
+      advance()
+      addToken('RBRACE', '}', startLine)
+      continue
+    }
+    if (ch === '[') {
+      advance()
+      addToken('LBRACKET', '[', startLine)
+      continue
+    }
+    if (ch === ']') {
+      advance()
+      addToken('RBRACKET', ']', startLine)
+      continue
+    }
+    if (ch === '(') {
+      advance()
+      addToken('LPAREN', '(', startLine)
+      continue
+    }
+    if (ch === ')') {
+      advance()
+      addToken('RPAREN', ')', startLine)
+      continue
+    }
+    if (ch === ',') {
+      advance()
+      addToken('COMMA', ',', startLine)
+      continue
+    }
     if (ch === '.') {
       if (peek(1) === '.' && peek(2) === '.') {
-        advance(); advance(); advance()
+        advance()
+        advance()
+        advance()
         addToken('ELLIPSIS', '...', startLine)
       } else {
         advance()
@@ -209,13 +242,28 @@ export function tokenize(src: string): Token[] {
       continue
     }
     if (ch === '=') {
-      if (peek(1) === '>') { advance(); advance(); addToken('FAT_ARROW', '=>', startLine) }
-      else if (peek(1) === '=') { advance(); advance() /* skip == operator */ }
-      else { advance(); addToken('EQUALS', '=', startLine) }
+      if (peek(1) === '>') {
+        advance()
+        advance()
+        addToken('FAT_ARROW', '=>', startLine)
+      } else if (peek(1) === '=') {
+        advance()
+        advance() /* skip == operator */
+      } else {
+        advance()
+        addToken('EQUALS', '=', startLine)
+      }
       continue
     }
 
-    // Skip other operators (!=, >=, <=, &&, ||, !, +, -, *, /, %, ?, :, ~)
+    // Splat operator (e.g. aws_subnet.*.id)
+    if (ch === '*') {
+      advance()
+      addToken('STAR', '*', startLine)
+      continue
+    }
+
+    // Skip other operators (!=, >=, <=, &&, ||, !, +, -, /, %, ?, :, ~)
     // These appear inside expressions which we handle as raw text
     advance()
   }
@@ -225,13 +273,9 @@ export function tokenize(src: string): Token[] {
 }
 
 function isIdentStart(ch: string): boolean {
-  return (ch >= 'a' && ch <= 'z') ||
-         (ch >= 'A' && ch <= 'Z') ||
-         ch === '_'
+  return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
 function isIdentPart(ch: string): boolean {
-  return isIdentStart(ch) ||
-         (ch >= '0' && ch <= '9') ||
-         ch === '-'
+  return isIdentStart(ch) || (ch >= '0' && ch <= '9') || ch === '-'
 }

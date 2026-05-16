@@ -12,7 +12,10 @@ const TEXT_X_OFFSET = ICON_PAD + ICON_SIZE + 12
 
 /** Strip cloud provider prefix: aws_ / google_ / azurerm_ / azuread_ / etc. */
 function stripProvider(type: string): string {
-  return type.replace(/^(?:aws|google|azurerm|azuread|kubernetes|helm|random|tls|null|local|time|http)_/, '')
+  return type.replace(
+    /^(?:aws|google|azurerm|azuread|kubernetes|helm|random|tls|null|local|time|http)_/,
+    '',
+  )
 }
 
 function truncate(s: string, max: number) {
@@ -25,9 +28,16 @@ type NodeRendererProps = {
   onMouseDown?: (e: React.MouseEvent, id: string) => void
 }
 
-export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps) {
+export function NodeRenderer({
+  node,
+  selected,
+  onMouseDown,
+}: NodeRendererProps) {
   const { rect, resourceType, label, category } = node
-  const cat = (category as AwsCategory) in categoryColors ? (category as AwsCategory) : 'unknown'
+  const cat =
+    (category as AwsCategory) in categoryColors
+      ? (category as AwsCategory)
+      : 'unknown'
   const color = categoryColors[cat]
   const iconSvg = getIcon(resourceType)
   const iconX = rect.x + ICON_PAD
@@ -74,7 +84,12 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
             // @ts-expect-error xmlns required for foreignObject
             xmlns="http://www.w3.org/1999/xhtml"
             dangerouslySetInnerHTML={{ __html: iconSvg }}
-            style={{ width: ICON_SIZE, height: ICON_SIZE, display: 'flex', alignItems: 'center' }}
+            style={{
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              display: 'flex',
+              alignItems: 'center',
+            }}
           />
         </foreignObject>
       ) : (

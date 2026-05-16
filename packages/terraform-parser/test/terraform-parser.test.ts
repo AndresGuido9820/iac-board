@@ -76,7 +76,9 @@ resource "aws_lambda_function" "api" {
     ])
 
     expect(result.resources).toHaveLength(2)
-    const lambda = result.resources.find(r => r.address === 'aws_lambda_function.api')
+    const lambda = result.resources.find(
+      (r) => r.address === 'aws_lambda_function.api',
+    )
     expect(lambda?.refs).toContain('aws_iam_role.role')
   })
 
@@ -169,7 +171,9 @@ resource "aws_s3_bucket" "main" {
       },
     ])
 
-    const dataSrc = result.resources.find(r => r.address === 'data.aws_caller_identity.current')
+    const dataSrc = result.resources.find(
+      (r) => r.address === 'data.aws_caller_identity.current',
+    )
     expect(dataSrc).toBeDefined()
     expect(dataSrc?.type).toBe('data.aws_caller_identity')
   })
@@ -225,7 +229,9 @@ resource "aws_s3_bucket" "main" {
     ])
 
     expect(result.resources).toHaveLength(2)
-    const instance = result.resources.find(r => r.address === 'aws_instance.web')
+    const instance = result.resources.find(
+      (r) => r.address === 'aws_instance.web',
+    )
     expect(instance?.refs).toContain('aws_vpc.main')
     expect(instance?.source.filePath).toBe('compute.tf')
   })

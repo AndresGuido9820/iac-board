@@ -5,8 +5,7 @@
  */
 
 /** Lambda / compute: lightning bolt */
-export const computeIcon =
-  'M13 2L4.5 13.5H11L9 22L19.5 10H13L13 2Z'
+export const computeIcon = 'M13 2L4.5 13.5H11L9 22L19.5 10H13L13 2Z'
 
 /** S3 / storage: layered cylinder top */
 export const storageIcon =
@@ -28,8 +27,7 @@ export const integrationIcon =
 
 /** VPC / subnet / network: hexagon grid */
 export const networkIcon =
-  'M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2Z' +
-  'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z'
+  'M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2Z' + 'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z'
 
 /** IAM / security group: shield */
 export const securityIcon =
@@ -37,9 +35,7 @@ export const securityIcon =
   'M10 13l-2-2 1.41-1.41L10 10.17l4.59-4.58L16 7l-6 6Z'
 
 /** Unknown: generic box */
-export const unknownIcon =
-  'M4 4h16v16H4z' +
-  'M9 12h6M12 9v6'
+export const unknownIcon = 'M4 4h16v16H4z' + 'M9 12h6M12 9v6'
 
 export type AwsCategory =
   | 'compute'
@@ -61,11 +57,11 @@ export const categoryIcons: Record<AwsCategory, string> = {
 }
 
 export const categoryColors: Record<AwsCategory, string> = {
-  compute: '#f97316',    // orange
-  storage: '#f59e0b',    // amber
-  database: '#10b981',   // emerald
+  compute: '#f97316', // orange
+  storage: '#f59e0b', // amber
+  database: '#10b981', // emerald
   integration: '#8b5cf6', // violet
-  network: '#2563eb',    // blue
-  security: '#ef4444',   // red
-  unknown: '#94a3b8',    // slate
+  network: '#2563eb', // blue
+  security: '#ef4444', // red
+  unknown: '#94a3b8', // slate
 }

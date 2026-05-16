@@ -20,19 +20,6 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
 
   // ── Token helpers ──────────────────────────────────────────────────────────
 
-  function peek(offset = 0): Token {
-    let i = pos
-    let count = 0
-    // Skip newlines for lookahead (but not for consume)
-    while (i < tokens.length) {
-      if (tokens[i]!.kind === 'NEWLINE') { i++; continue }
-      if (count === offset) return tokens[i]!
-      count++
-      i++
-    }
-    return tokens.at(-1)! // EOF
-  }
-
   function current(): Token {
     return tokens[pos] ?? tokens.at(-1)!
   }
@@ -50,7 +37,10 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
   function expect(kind: TokenKind): Token | undefined {
     skipNewlines()
     if (current().kind !== kind) {
-      addDiag(`Expected ${kind}, got ${current().kind} ("${current().value}")`, current().line)
+      addDiag(
+        `Expected ${kind}, got ${current().kind} ("${current().value}")`,
+        current().line,
+      )
       return undefined
     }
     return advance()
@@ -106,7 +96,6 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
     if (next.kind === 'EQUALS') {
       // Attribute
       advance() // consume =
-      const valueLine = current().line
       const value = parseExpr()
       return { name: name.value, value, line: name.line }
     }
@@ -164,9 +153,18 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
 
     // Identifier — bool, null, reference, function call, or complex expression
     if (t.kind === 'IDENT') {
-      if (t.value === 'true')  { advance(); return { kind: 'bool', value: true } }
-      if (t.value === 'false') { advance(); return { kind: 'bool', value: false } }
-      if (t.value === 'null')  { advance(); return { kind: 'null' } }
+      if (t.value === 'true') {
+        advance()
+        return { kind: 'bool', value: true }
+      }
+      if (t.value === 'false') {
+        advance()
+        return { kind: 'bool', value: false }
+      }
+      if (t.value === 'null') {
+        advance()
+        return { kind: 'null' }
+      }
 
       // Attempt to parse a traversal: IDENT (DOT IDENT | DOT NUMBER | [INDEX])*
       // Then check if it's immediately followed by LPAREN (function call)
@@ -181,9 +179,14 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
 
       // Simple reference (or complex expression like `a + b`)
       const nextKind = current().kind
-      if (nextKind === 'NEWLINE' || nextKind === 'COMMA' ||
-          nextKind === 'RBRACE' || nextKind === 'RBRACKET' ||
-          nextKind === 'RPAREN' || nextKind === 'EOF') {
+      if (
+        nextKind === 'NEWLINE' ||
+        nextKind === 'COMMA' ||
+        nextKind === 'RBRACE' ||
+        nextKind === 'RBRACKET' ||
+        nextKind === 'RPAREN' ||
+        nextKind === 'EOF'
+      ) {
         // Clean traversal reference
         return { kind: 'ref', path }
       }
@@ -211,7 +214,8 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
         if (current().kind === 'IDENT' || current().kind === 'NUMBER') {
           path.push(advance().value)
         } else if (current().kind === 'STAR') {
-          advance(); path.push('*')
+          advance()
+          path.push('*')
         } else {
           break
         }
@@ -237,11 +241,18 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
       if (t.kind === 'EOF') break
       if (depth === 0) {
         if (t.kind === 'NEWLINE') break
-        if (t.kind === 'COMMA' || t.kind === 'RBRACE' ||
-            t.kind === 'RBRACKET' || t.kind === 'RPAREN') break
+        if (
+          t.kind === 'COMMA' ||
+          t.kind === 'RBRACE' ||
+          t.kind === 'RBRACKET' ||
+          t.kind === 'RPAREN'
+        )
+          break
       }
-      if (t.kind === 'LBRACE' || t.kind === 'LBRACKET' || t.kind === 'LPAREN') depth++
-      if (t.kind === 'RBRACE' || t.kind === 'RBRACKET' || t.kind === 'RPAREN') depth--
+      if (t.kind === 'LBRACE' || t.kind === 'LBRACKET' || t.kind === 'LPAREN')
+        depth++
+      if (t.kind === 'RBRACE' || t.kind === 'RBRACKET' || t.kind === 'RPAREN')
+        depth--
       raw += t.value + ' '
       advance()
     }
@@ -333,9 +344,7 @@ export function parseHclFile(tokens: Token[], filePath: string): ParseResult {
   const body = parseBody('EOF')
 
   // Filter top-level blocks only (attributes at top level are rare but valid)
-  const blocks: HclBlock[] = body.filter(
-    (s): s is HclBlock => 'body' in s,
-  )
+  const blocks: HclBlock[] = body.filter((s): s is HclBlock => 'body' in s)
 
   return {
     file: { blocks, filePath },

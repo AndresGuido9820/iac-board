@@ -141,7 +141,11 @@ describe('layoutCloudGraph', () => {
     const subnet = positioned.layout['aws_subnet.public']!
     expect(group.x).toBeLessThan(Math.min(vpc.x, subnet.x))
     expect(group.y).toBeLessThan(Math.min(vpc.y, subnet.y))
-    expect(group.x + group.width).toBeGreaterThan(Math.max(vpc.x + vpc.width, subnet.x + subnet.width))
-    expect(group.y + group.height).toBeGreaterThan(Math.max(vpc.y + vpc.height, subnet.y + subnet.height))
+    expect(group.x + group.width).toBeGreaterThan(
+      Math.max(vpc.x + vpc.width, subnet.x + subnet.width),
+    )
+    expect(group.y + group.height).toBeGreaterThan(
+      Math.max(vpc.y + vpc.height, subnet.y + subnet.height),
+    )
   })
 })

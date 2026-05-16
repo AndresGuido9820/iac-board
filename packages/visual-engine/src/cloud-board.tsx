@@ -1,5 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react'
-import type { BoardElement, BoardNode, BoardGroup, BoardEdge, Rect } from './types'
+import type {
+  BoardElement,
+  BoardNode,
+  BoardGroup,
+  BoardEdge,
+  Rect,
+} from './types'
 import { useViewport } from './use-viewport'
 import { NodeRenderer } from './node-renderer'
 import { GroupRenderer } from './group-renderer'
@@ -11,7 +17,8 @@ type CloudBoardProps = {
 }
 
 export function CloudBoard({ elements, className }: CloudBoardProps) {
-  const { transform, onWheel, onMouseDown, onMouseMove, onMouseUp } = useViewport()
+  const { transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
+    useViewport()
   const [overrides, setOverrides] = useState<Record<string, Rect>>({})
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -23,11 +30,14 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     startRectY: number
   } | null>(null)
 
-  const nodes  = elements.filter((e): e is BoardNode  => e.type === 'node')
+  const nodes = elements.filter((e): e is BoardNode => e.type === 'node')
   const groups = elements.filter((e): e is BoardGroup => e.type === 'group')
-  const edges  = elements.filter((e): e is BoardEdge  => e.type === 'edge')
+  const edges = elements.filter((e): e is BoardEdge => e.type === 'edge')
 
-  const resolvedNodes = nodes.map((n) => ({ ...n, rect: overrides[n.id] ?? n.rect }))
+  const resolvedNodes = nodes.map((n) => ({
+    ...n,
+    rect: overrides[n.id] ?? n.rect,
+  }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
   const onNodeMouseDown = useCallback(
@@ -51,14 +61,19 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     (e: React.MouseEvent) => {
       onMouseMove(e)
       if (!dragging.current) return
-      const { id, startMouseX, startMouseY, startRectX, startRectY } = dragging.current
+      const { id, startMouseX, startMouseY, startRectX, startRectY } =
+        dragging.current
       const dx = e.clientX - startMouseX
       const dy = e.clientY - startMouseY
       const node = nodes.find((n) => n.id === id)
       if (!node) return
       setOverrides((prev) => ({
         ...prev,
-        [id]: { ...(overrides[id] ?? node.rect), x: startRectX + dx, y: startRectY + dy },
+        [id]: {
+          ...(overrides[id] ?? node.rect),
+          x: startRectX + dx,
+          y: startRectY + dy,
+        },
       }))
     },
     [onMouseMove, nodes, overrides],
@@ -70,12 +85,19 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
   }, [onMouseUp])
 
   // Compute viewBox from all rects with generous padding
-  const allRects = [...resolvedNodes.map((n) => n.rect), ...groups.map((g) => g.rect)]
+  const allRects = [
+    ...resolvedNodes.map((n) => n.rect),
+    ...groups.map((g) => g.rect),
+  ]
   const PAD = 56
   const minX = allRects.length ? Math.min(...allRects.map((r) => r.x)) - PAD : 0
   const minY = allRects.length ? Math.min(...allRects.map((r) => r.y)) - PAD : 0
-  const maxX = allRects.length ? Math.max(...allRects.map((r) => r.x + r.width))  + PAD : 800
-  const maxY = allRects.length ? Math.max(...allRects.map((r) => r.y + r.height)) + PAD : 480
+  const maxX = allRects.length
+    ? Math.max(...allRects.map((r) => r.x + r.width)) + PAD
+    : 800
+  const maxY = allRects.length
+    ? Math.max(...allRects.map((r) => r.y + r.height)) + PAD
+    : 480
   const vw = maxX - minX
   const vh = maxY - minY
 
@@ -90,7 +112,12 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
       onMouseMove={onBoardMouseMove}
       onMouseUp={onBoardMouseUp}
       onWheel={onWheel as unknown as React.WheelEventHandler}
-      style={{ cursor: 'default', overflow: 'hidden', position: 'relative', width: '100%' }}
+      style={{
+        cursor: 'default',
+        overflow: 'hidden',
+        position: 'relative',
+        width: '100%',
+      }}
     >
       <svg
         aria-hidden="true"
@@ -114,7 +141,13 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
         {/* Background fill */}
         <rect fill="#f8fafc" height={vh} width={vw} x={minX} y={minY} />
         {/* Dot grid */}
-        <rect fill={`url(#${dotGridId})`} height={vh} width={vw} x={minX} y={minY} />
+        <rect
+          fill={`url(#${dotGridId})`}
+          height={vh}
+          width={vw}
+          x={minX}
+          y={minY}
+        />
 
         <ArrowMarker />
 

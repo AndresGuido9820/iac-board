@@ -26,33 +26,33 @@
 
 ### Brechas críticas encontradas (ordenadas por impacto en calidad visual)
 
-| # | Brecha | Impacto | Paquete afectado |
-|---|--------|---------|------------------|
-| 1 | **Sin minimización de cruces** — edges cruzan nodos y grupos | Alto | layout-engine |
-| 2 | **Grupos no afectan layout** — nodos de un VPC se dispersan en 4+ columnas | Alto | layout-engine |
-| 3 | **Sin edge labels** — solo color/dash distingue semántica | Medio | visual-engine |
-| 4 | **Sin edge routing alrededor de grupos** — edges pasan por encima | Medio | visual-engine |
-| 5 | **Sin tests unitarios de visual-engine** — solo visual regression | Medio | visual-engine |
-| 6 | **Solo 28 tipos AWS soportados** — ECS, EKS, ALB, CloudFront, Cognito, StepFunctions, ElastiCache faltan | Medio | cloud-graph |
-| 7 | **Sin expansión de módulos** — módulos locales no se resuelven | Alto | terraform-parser |
-| 8 | **Sin export PNG/SVG** — diagrama no sale del browser | Alto | visual-engine, web |
-| 9 | **Sin file import** — solo ejemplos bundled | Alto | web |
-| 10 | **Sin node inspector** — click en nodo no muestra detalles | Medio | visual-engine, web |
-| 11 | **Drag no ajustado por zoom** — al zoom 0.5, drag se desplaza el doble | Bajo | visual-engine |
-| 12 | **Sin responsive/mobile** — NODE_W/NODE_H fijos, sin touch | Bajo | layout-engine, visual-engine |
+| #   | Brecha                                                                                                   | Impacto | Paquete afectado             |
+| --- | -------------------------------------------------------------------------------------------------------- | ------- | ---------------------------- |
+| 1   | **Sin minimización de cruces** — edges cruzan nodos y grupos                                             | Alto    | layout-engine                |
+| 2   | **Grupos no afectan layout** — nodos de un VPC se dispersan en 4+ columnas                               | Alto    | layout-engine                |
+| 3   | **Sin edge labels** — solo color/dash distingue semántica                                                | Medio   | visual-engine                |
+| 4   | **Sin edge routing alrededor de grupos** — edges pasan por encima                                        | Medio   | visual-engine                |
+| 5   | **Sin tests unitarios de visual-engine** — solo visual regression                                        | Medio   | visual-engine                |
+| 6   | **Solo 28 tipos AWS soportados** — ECS, EKS, ALB, CloudFront, Cognito, StepFunctions, ElastiCache faltan | Medio   | cloud-graph                  |
+| 7   | **Sin expansión de módulos** — módulos locales no se resuelven                                           | Alto    | terraform-parser             |
+| 8   | **Sin export PNG/SVG** — diagrama no sale del browser                                                    | Alto    | visual-engine, web           |
+| 9   | **Sin file import** — solo ejemplos bundled                                                              | Alto    | web                          |
+| 10  | **Sin node inspector** — click en nodo no muestra detalles                                               | Medio   | visual-engine, web           |
+| 11  | **Drag no ajustado por zoom** — al zoom 0.5, drag se desplaza el doble                                   | Bajo    | visual-engine                |
+| 12  | **Sin responsive/mobile** — NODE_W/NODE_H fijos, sin touch                                               | Bajo    | layout-engine, visual-engine |
 
 ---
 
 ## Competidores y referencias
 
-| Herramienta | Qué hace bien | Qué no hace |
-|-------------|---------------|-------------|
-| **Rover** | Layout jerárquico correcto (usa graphviz), plan JSON | Requiere terraform plan, no es browser |
-| **Cloudcraft** | Iconos profesionales, 3D isométrico, drag & drop | SaaS propietario, requiere credenciales |
-| **Lucidchart AWS** | Templates, edge routing perfecto, export | No parsea Terraform, manual |
-| **draw.io** | Edge routing con waypoints, export PNG/SVG/PDF | No parsea Terraform, manual |
-| **Brainboard** | Terraform↔diagrama bidireccional | SaaS, no open-source |
-| **Inframap** | Extrae solo recursos "importantes" | Go CLI, no browser, abandonado |
+| Herramienta        | Qué hace bien                                        | Qué no hace                             |
+| ------------------ | ---------------------------------------------------- | --------------------------------------- |
+| **Rover**          | Layout jerárquico correcto (usa graphviz), plan JSON | Requiere terraform plan, no es browser  |
+| **Cloudcraft**     | Iconos profesionales, 3D isométrico, drag & drop     | SaaS propietario, requiere credenciales |
+| **Lucidchart AWS** | Templates, edge routing perfecto, export             | No parsea Terraform, manual             |
+| **draw.io**        | Edge routing con waypoints, export PNG/SVG/PDF       | No parsea Terraform, manual             |
+| **Brainboard**     | Terraform↔diagrama bidireccional                     | SaaS, no open-source                    |
+| **Inframap**       | Extrae solo recursos "importantes"                   | Go CLI, no browser, abandonado          |
 
 ### Nuestra ventaja competitiva
 
@@ -154,11 +154,13 @@ tests/visual/diagram-audit.visual.spec.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/layout-engine/src/index.ts` — agregar barycenter ordering después de layer assignment
 
 **Dependencias:** ninguna
 
 **Implementación sugerida:**
+
 1. Después de asignar capas (computeLayers), agrupar nodos por capa
 2. Para cada par de capas adyacentes, aplicar barycenter heuristic:
    - Posición de cada nodo = promedio de posiciones de vecinos en capa adyacente
@@ -201,11 +203,13 @@ tests/visual/diagram-audit.visual.spec.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/layout-engine/src/index.ts` — post-procesar layout para colapsar nodos de grupo
 
 **Dependencias:** HU-032 (crossing minimization, para que el reordenamiento no rompa)
 
 **Implementación sugerida:**
+
 1. Después del layout base, identificar nodos que pertenecen a cada grupo
 2. Para cada grupo: encontrar la capa más frecuente de sus hijos
 3. Mover hijos de capas lejanas a la capa más cercana del grupo (±1)
@@ -247,6 +251,7 @@ tests/visual/diagram-audit.visual.spec.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/visual-engine/src/edge-renderer.tsx` — routing algorithm
 - Posible nuevo archivo: `packages/visual-engine/src/edge-router.ts`
 
@@ -286,6 +291,7 @@ apps/web/src/App.test.tsx
 ```
 
 **Archivos afectados:**
+
 - `packages/visual-engine/src/edge-renderer.tsx` — render label at midpoint
 - `packages/visual-engine/src/cloud-board.tsx` — pass showLabels prop
 - `apps/web/src/App.tsx` — toggle control
@@ -317,28 +323,28 @@ necesita: categoría en cloud-graph, icono SVG en visual-engine, y un test.
 
 **Tipos a agregar:**
 
-| Tipo | Categoría | Prioridad |
-|------|-----------|-----------|
-| aws_ecs_cluster | compute | Alta |
-| aws_ecs_service | compute | Alta |
-| aws_ecs_task_definition | compute | Alta |
-| aws_eks_cluster | compute | Alta |
-| aws_lb | network | Alta |
-| aws_lb_listener | network | Alta |
-| aws_lb_target_group | network | Alta |
-| aws_cloudfront_distribution | network | Alta |
-| aws_route53_zone | network | Media |
-| aws_route53_record | network | Media |
-| aws_cognito_user_pool | security | Media |
-| aws_sfn_state_machine | integration | Media |
-| aws_elasticache_cluster | database | Media |
-| aws_elasticsearch_domain | database | Media |
-| aws_cloudwatch_log_group | integration | Media |
-| aws_cloudwatch_metric_alarm | integration | Media |
-| aws_secretsmanager_secret | security | Media |
-| aws_ssm_parameter | security | Baja |
-| aws_ecr_repository | storage | Baja |
-| aws_kms_key | security | Baja |
+| Tipo                        | Categoría   | Prioridad |
+| --------------------------- | ----------- | --------- |
+| aws_ecs_cluster             | compute     | Alta      |
+| aws_ecs_service             | compute     | Alta      |
+| aws_ecs_task_definition     | compute     | Alta      |
+| aws_eks_cluster             | compute     | Alta      |
+| aws_lb                      | network     | Alta      |
+| aws_lb_listener             | network     | Alta      |
+| aws_lb_target_group         | network     | Alta      |
+| aws_cloudfront_distribution | network     | Alta      |
+| aws_route53_zone            | network     | Media     |
+| aws_route53_record          | network     | Media     |
+| aws_cognito_user_pool       | security    | Media     |
+| aws_sfn_state_machine       | integration | Media     |
+| aws_elasticache_cluster     | database    | Media     |
+| aws_elasticsearch_domain    | database    | Media     |
+| aws_cloudwatch_log_group    | integration | Media     |
+| aws_cloudwatch_metric_alarm | integration | Media     |
+| aws_secretsmanager_secret   | security    | Media     |
+| aws_ssm_parameter           | security    | Baja      |
+| aws_ecr_repository          | storage     | Baja      |
+| aws_kms_key                 | security    | Baja      |
 
 **Tests requeridos:**
 
@@ -354,6 +360,7 @@ packages/visual-engine/test/icon-coverage.test.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/cloud-graph/src/index.ts` — awsCategories map
 - `packages/visual-engine/src/icons/registry.ts` — icon SVG strings
 - `packages/visual-engine/src/icons/aws/*.svg` — nuevos iconos
@@ -388,6 +395,7 @@ tests/e2e/export.spec.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/visual-engine/src/cloud-board.tsx` — expose SVG ref
 - `apps/web/src/App.tsx` — export buttons y handlers
 - `apps/web/src/export.ts` — NEW: SVG→PNG conversion via canvas, SVG cleanup
@@ -428,6 +436,7 @@ apps/web/src/App.test.tsx
 ```
 
 **Archivos afectados:**
+
 - `apps/web/src/App.tsx` — import zone, mode switching
 - `apps/web/src/import-zone.tsx` — NEW: drag & drop + file picker + text area
 - `apps/web/src/App.css` — import zone styles
@@ -463,6 +472,7 @@ apps/web/src/App.test.tsx
 ```
 
 **Archivos afectados:**
+
 - `packages/visual-engine/src/cloud-board.tsx` — onNodeClick callback
 - `apps/web/src/App.tsx` — inspector panel state + render
 - `apps/web/src/node-inspector.tsx` — NEW: inspector panel component
@@ -502,6 +512,7 @@ packages/terraform-parser/test/module-expansion.test.ts
 ```
 
 **Archivos afectados:**
+
 - `packages/terraform-parser/src/extractor.ts` — module expansion logic
 - `packages/terraform-parser/src/index.ts` — pass file resolver to extractor
 - `packages/example-catalog/src/index.ts` — nuevo ejemplo con módulos
@@ -536,6 +547,7 @@ tests/benchmark/pipeline-bench.test.ts
 ```
 
 **Archivos afectados:**
+
 - `tests/benchmark/pipeline-bench.test.ts` — NEW
 - `tests/benchmark/fixtures/large-infra.tf` — NEW: 500 recursos generados
 - `package.json` — script `test:bench`
@@ -574,6 +586,7 @@ tests/visual/diagram-audit.visual.spec.ts (expandir existente)
 ```
 
 **Archivos afectados:**
+
 - `tests/visual/diagram-audit.visual.spec.ts` — agregar tests
 - `packages/example-catalog/src/index.ts` — ejemplo grande (ECS + ALB + RDS + VPC)
 
@@ -606,20 +619,20 @@ Fase 4 — Advanced
 
 ### Estimación de líneas de código nuevas
 
-| HU | Código nuevo | Tests nuevos |
-|----|-------------|-------------|
-| HU-032 | ~80 líneas | ~60 líneas |
-| HU-033 | ~60 líneas | ~50 líneas |
-| HU-034 | ~120 líneas | ~80 líneas |
-| HU-035 | ~40 líneas | ~30 líneas |
-| HU-036 | ~100 líneas + 20 SVGs | ~50 líneas |
-| HU-037 | ~80 líneas | ~40 líneas |
-| HU-038 | ~150 líneas | ~60 líneas |
-| HU-039 | ~120 líneas | ~50 líneas |
-| HU-040 | ~200 líneas | ~100 líneas |
-| HU-041 | ~60 líneas + fixture | ~60 líneas |
-| HU-042 | ~40 líneas | ~40 líneas |
-| **Total** | **~1,050 líneas** | **~620 líneas** |
+| HU        | Código nuevo          | Tests nuevos    |
+| --------- | --------------------- | --------------- |
+| HU-032    | ~80 líneas            | ~60 líneas      |
+| HU-033    | ~60 líneas            | ~50 líneas      |
+| HU-034    | ~120 líneas           | ~80 líneas      |
+| HU-035    | ~40 líneas            | ~30 líneas      |
+| HU-036    | ~100 líneas + 20 SVGs | ~50 líneas      |
+| HU-037    | ~80 líneas            | ~40 líneas      |
+| HU-038    | ~150 líneas           | ~60 líneas      |
+| HU-039    | ~120 líneas           | ~50 líneas      |
+| HU-040    | ~200 líneas           | ~100 líneas     |
+| HU-041    | ~60 líneas + fixture  | ~60 líneas      |
+| HU-042    | ~40 líneas            | ~40 líneas      |
+| **Total** | **~1,050 líneas**     | **~620 líneas** |
 
 ---
 

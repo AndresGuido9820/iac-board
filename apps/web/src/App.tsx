@@ -67,7 +67,9 @@ export function ProductShell({
             <p className="eyebrow">{t.eyebrow_samples}</p>
             <h2 id="examples-title">{t.examples_heading}</h2>
           </div>
-          <span className="status-pill">{t.examples_count(examples.length)}</span>
+          <span className="status-pill">
+            {t.examples_count(examples.length)}
+          </span>
         </div>
         <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (

@@ -1,11 +1,26 @@
 import type { BoardGroup } from './types'
 
-const GROUP_COLORS: Record<string, { stroke: string; fill: string; text: string }> = {
-  vpc: { stroke: '#2563eb', fill: 'rgba(37,99,235,0.04)', text: 'rgba(37,99,235,0.7)' },
-  subnet: { stroke: '#7c3aed', fill: 'rgba(124,58,237,0.04)', text: 'rgba(124,58,237,0.7)' },
+const GROUP_COLORS: Record<
+  string,
+  { stroke: string; fill: string; text: string }
+> = {
+  vpc: {
+    stroke: '#2563eb',
+    fill: 'rgba(37,99,235,0.04)',
+    text: 'rgba(37,99,235,0.7)',
+  },
+  subnet: {
+    stroke: '#7c3aed',
+    fill: 'rgba(124,58,237,0.04)',
+    text: 'rgba(124,58,237,0.7)',
+  },
 }
 
-const DEFAULT_COLOR = { stroke: '#64748b', fill: 'rgba(100,116,139,0.04)', text: 'rgba(100,116,139,0.7)' }
+const DEFAULT_COLOR = {
+  stroke: '#64748b',
+  fill: 'rgba(100,116,139,0.04)',
+  text: 'rgba(100,116,139,0.7)',
+}
 
 type GroupRendererProps = {
   group: BoardGroup

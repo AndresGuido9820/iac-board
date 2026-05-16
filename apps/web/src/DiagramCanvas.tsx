@@ -86,10 +86,8 @@ export function DiagramCanvas({ drafts }: DiagramCanvasProps) {
       {/* Nodes */}
       {nodes.map((n) => {
         const dotIndex = n.id.indexOf('.')
-        const resourceType =
-          dotIndex !== -1 ? n.id.slice(0, dotIndex) : n.id
-        const resourceName =
-          dotIndex !== -1 ? n.id.slice(dotIndex + 1) : ''
+        const resourceType = dotIndex !== -1 ? n.id.slice(0, dotIndex) : n.id
+        const resourceName = dotIndex !== -1 ? n.id.slice(dotIndex + 1) : ''
         const accent = accentColor(resourceType)
         const cx = n.x + n.width / 2
 

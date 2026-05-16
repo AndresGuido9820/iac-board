@@ -40,7 +40,10 @@ export function parseTerraformFiles(
     }
 
     const tokens = tokenize(file.content)
-    const { file: hclFile, diagnostics: parseDiags } = parseHclFile(tokens, file.path)
+    const { file: hclFile, diagnostics: parseDiags } = parseHclFile(
+      tokens,
+      file.path,
+    )
     diagnostics.push(...parseDiags)
 
     const fileResources = extractFromFile(hclFile, diagnostics)

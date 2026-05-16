@@ -1,4 +1,9 @@
-import type { CloudEdge, CloudGraph, CloudGroup, CloudNode } from '@iac-board/core-types'
+import type {
+  CloudEdge,
+  CloudGraph,
+  CloudGroup,
+  CloudNode,
+} from '@iac-board/core-types'
 import type {
   TerraformParseResult,
   TerraformResource,
@@ -146,7 +151,9 @@ function buildEdges(resources: TerraformResource[]): CloudEdge[] {
   const edges: CloudEdge[] = []
 
   for (const resource of resources) {
-    const refs = extractReferences(resource).filter((ref) => addressSet.has(ref))
+    const refs = extractReferences(resource).filter((ref) =>
+      addressSet.has(ref),
+    )
     for (const ref of refs) {
       const toType = typeMap.get(ref) ?? ''
       edges.push({
@@ -164,12 +171,19 @@ function buildEdges(resources: TerraformResource[]): CloudEdge[] {
 }
 
 /** Infer edge semantic from both source and target resource types. */
-function inferRelation(fromType: string, toType: string): CloudEdge['relation'] {
+function inferRelation(
+  fromType: string,
+  toType: string,
+): CloudEdge['relation'] {
   // Event-source mapping bridges a stream/queue to a Lambda
   if (fromType === 'aws_lambda_event_source_mapping') return 'triggers'
 
   // API Gateway / IoT publish to downstream compute
-  if (fromType === 'aws_api_gateway_rest_api' || fromType === 'aws_apigatewayv2_api') return 'connects'
+  if (
+    fromType === 'aws_api_gateway_rest_api' ||
+    fromType === 'aws_apigatewayv2_api'
+  )
+    return 'connects'
   if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
 
   // Lambda: distinguish role assumption, storage writes, and generic invocations
@@ -187,7 +201,11 @@ function inferRelation(fromType: string, toType: string): CloudEdge['relation'] 
   }
 
   // Network resources reference VPC/subnet as placement context
-  if (toType === 'aws_vpc' || toType === 'aws_subnet' || toType === 'aws_db_subnet_group')
+  if (
+    toType === 'aws_vpc' ||
+    toType === 'aws_subnet' ||
+    toType === 'aws_db_subnet_group'
+  )
     return 'deployed-in'
   if (toType === 'aws_security_group') return 'secured-by'
   if (toType === 'aws_iam_role') return 'uses-role'
