@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { getExampleProject } from '@iac-board/example-catalog'
+import { describe, expect, it, vi } from 'vitest'
+import {
+  getExampleProject,
+  listExampleProjects,
+} from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import App, { ProductShell } from './App'
 
@@ -92,5 +96,103 @@ describe('App', () => {
       'Private subnet private',
     )
     expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
+  })
+
+  it('toggles to Spanish and back to English', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Español' }))
+    expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+    // Spanish translation functions called
+    expect(screen.getByText(/ejemplos/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'English' }))
+    expect(screen.getByRole('button', { name: 'Español' })).toBeInTheDocument()
+  })
+
+  it('shows imported mode UI with plural file count and header', () => {
+    const examples = listExampleProjects()
+    const example = getExampleProject('aws-serverless-api')
+    const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+    const onClearImport = vi.fn()
+
+    render(
+      <ProductShell
+        example={example}
+        examples={examples}
+        generatedDiagram={generatedDiagram}
+        onSelectExample={() => undefined}
+        selectedExampleId={example.id}
+        mode="imported"
+        importedFiles={[
+          { path: 'main.tf', content: 'resource "aws_s3_bucket" "b" {}' },
+          { path: 'vars.tf', content: 'variable "x" {}' },
+        ]}
+        onClearImport={onClearImport}
+        onFilesLoaded={() => {}}
+      />,
+    )
+
+    // Clear button shows with plural form
+    expect(
+      screen.getByRole('button', { name: /2 files.*clear/i }),
+    ).toBeInTheDocument()
+    // Title shows "Your infrastructure" instead of example name
+    expect(
+      screen.getByRole('heading', { name: 'Your infrastructure' }),
+    ).toBeInTheDocument()
+    // Status pill shows "Imported"
+    expect(screen.getAllByText('Imported').length).toBeGreaterThan(0)
+  })
+
+  it('shows singular file count in imported clear button', () => {
+    const examples = listExampleProjects()
+    const example = getExampleProject('aws-serverless-api')
+    const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
+    render(
+      <ProductShell
+        example={example}
+        examples={examples}
+        generatedDiagram={generatedDiagram}
+        onSelectExample={() => undefined}
+        selectedExampleId={example.id}
+        mode="imported"
+        importedFiles={[{ path: 'main.tf', content: '' }]}
+        onClearImport={() => {}}
+        onFilesLoaded={() => {}}
+      />,
+    )
+
+    // Singular "file" not "files"
+    expect(
+      screen.getByRole('button', { name: /1 file loaded/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('calls onClearImport when clear button is clicked', async () => {
+    const user = userEvent.setup()
+    const examples = listExampleProjects()
+    const example = getExampleProject('aws-serverless-api')
+    const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+    const onClearImport = vi.fn()
+
+    render(
+      <ProductShell
+        example={example}
+        examples={examples}
+        generatedDiagram={generatedDiagram}
+        onSelectExample={() => undefined}
+        selectedExampleId={example.id}
+        mode="imported"
+        importedFiles={[{ path: 'main.tf', content: '' }]}
+        onClearImport={onClearImport}
+        onFilesLoaded={() => {}}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: /1 file loaded/i }))
+    expect(onClearImport).toHaveBeenCalledOnce()
   })
 })

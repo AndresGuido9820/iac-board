@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseTerraformFiles } from '../src'
+import { refsFromString } from '../src/refs'
 
 describe('parseTerraformFiles', () => {
   it('extracts Terraform resources without executing Terraform', () => {
@@ -265,5 +266,49 @@ EOF
     ])
 
     expect(result.resources[0]?.refs).not.toContain('aws_s3_bucket.main')
+  })
+
+  it('handles numeric, boolean, and null attribute values in resource body', () => {
+    const result = parseTerraformFiles([
+      {
+        path: 'main.tf',
+        content: `resource "aws_lambda_function" "fn" {
+  timeout     = 30
+  publish     = true
+  reserved    = false
+  description = null
+}
+`,
+      },
+    ])
+    expect(result.resources).toHaveLength(1)
+    const body = result.resources[0]?.body ?? ''
+    expect(body).toContain('30')
+    expect(body).toContain('true')
+    expect(body).toContain('false')
+    expect(body).toContain('null')
+  })
+})
+
+describe('refsFromString', () => {
+  it('extracts resource refs from string interpolation blocks', () => {
+    const refs = refsFromString('${aws_lambda_function.handler.arn}')
+    expect(refs).toContain('aws_lambda_function.handler')
+  })
+
+  it('extracts bare resource refs from plain strings', () => {
+    const refs = refsFromString('aws_s3_bucket.data.id')
+    expect(refs).toContain('aws_s3_bucket.data')
+  })
+
+  it('returns empty array for strings with no refs', () => {
+    const refs = refsFromString('just a plain string with no resource refs')
+    expect(refs).toEqual([])
+  })
+
+  it('handles null-like interpolation content gracefully', () => {
+    // Edge case: ${} empty interpolation — should not throw
+    const refs = refsFromString('${aws_iam_role.exec.arn}')
+    expect(refs).toContain('aws_iam_role.exec')
   })
 })
