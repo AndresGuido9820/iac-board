@@ -1,4 +1,8 @@
-import { getExampleProject } from '@iac-board/example-catalog'
+import { useMemo, useState } from 'react'
+import {
+  getExampleProject,
+  listExampleProjects,
+} from '@iac-board/example-catalog'
 import type { ExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
@@ -13,11 +17,20 @@ const qualityGates = [
 ]
 
 type ProductShellProps = {
+  examples: ExampleProject[]
   example: ExampleProject
   generatedDiagram: DiagramPipelineResult
+  onSelectExample: (exampleId: string) => void
+  selectedExampleId: string
 }
 
-export function ProductShell({ example, generatedDiagram }: ProductShellProps) {
+export function ProductShell({
+  examples,
+  example,
+  generatedDiagram,
+  onSelectExample,
+  selectedExampleId,
+}: ProductShellProps) {
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
   )
@@ -44,6 +57,31 @@ export function ProductShell({ example, generatedDiagram }: ProductShellProps) {
             <li key={gate}>{gate}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="panel" aria-labelledby="examples-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">HU-002</p>
+            <h2 id="examples-title">Example projects</h2>
+          </div>
+          <span className="status-pill">{examples.length} examples</span>
+        </div>
+        <div className="example-grid" aria-label="Bundled example projects">
+          {examples.map((project) => (
+            <button
+              aria-pressed={project.id === selectedExampleId}
+              className="example-card"
+              key={project.id}
+              onClick={() => onSelectExample(project.id)}
+              type="button"
+            >
+              <strong>{project.name}</strong>
+              <span>{project.description}</span>
+              <small>{project.userStoryIds.join(' / ')}</small>
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="panel" aria-labelledby="example-title">
@@ -126,10 +164,20 @@ export function ProductShell({ example, generatedDiagram }: ProductShellProps) {
 }
 
 function App() {
-  const example = getExampleProject('aws-serverless-api')
+  const examples = useMemo(() => listExampleProjects(), [])
+  const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
+  const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
   const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
 
-  return <ProductShell example={example} generatedDiagram={generatedDiagram} />
+  return (
+    <ProductShell
+      example={example}
+      examples={examples}
+      generatedDiagram={generatedDiagram}
+      onSelectExample={setSelectedExampleId}
+      selectedExampleId={example.id}
+    />
+  )
 }
 
 export default App

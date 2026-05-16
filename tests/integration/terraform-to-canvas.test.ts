@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { getExampleProject } from '@iac-board/example-catalog'
+import {
+  getExampleProject,
+  listExampleProjects,
+} from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 
 describe('Terraform to canvas pipeline', () => {
@@ -34,5 +37,20 @@ describe('Terraform to canvas pipeline', () => {
         }),
       }),
     )
+  })
+
+  it('generates diagrams for every bundled example', () => {
+    const results = listExampleProjects().map((example) => ({
+      example,
+      result: generateDiagramFromTerraformFiles(example.files),
+    }))
+
+    expect(results).toHaveLength(3)
+    expect(results.every(({ result }) => result.canvasDrafts.length > 0)).toBe(
+      true,
+    )
+    expect(results.map(({ result }) => result.diagnostics.length)).toEqual([
+      0, 0, 0,
+    ])
   })
 })

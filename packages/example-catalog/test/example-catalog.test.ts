@@ -5,14 +5,21 @@ describe('example catalog', () => {
   it('lists example projects for HU-002', () => {
     const examples = listExampleProjects()
 
-    expect(examples.length).toBeGreaterThan(0)
+    expect(examples).toHaveLength(3)
+    expect(examples.map((example) => example.id)).toEqual([
+      'aws-serverless-api',
+      'aws-iot-pipeline',
+      'aws-vpc-rds',
+    ])
     expect(examples[0]).toMatchObject({
       id: 'aws-serverless-api',
       userStoryIds: ['HU-002', 'HU-005'],
     })
-    expect(examples[0]?.files.every((file) => file.path.endsWith('.tf'))).toBe(
-      true,
-    )
+    expect(
+      examples.every((example) =>
+        example.files.every((file) => file.path.endsWith('.tf')),
+      ),
+    ).toBe(true)
   })
 
   it('loads examples by id', () => {

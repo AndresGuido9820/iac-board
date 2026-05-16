@@ -88,6 +88,46 @@
   white-space: nowrap;
 }
 
+.example-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.example-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  gap: 8px;
+  min-height: 168px;
+  padding: 16px;
+  text-align: left;
+}
+
+.example-card[aria-pressed='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.14);
+}
+
+.example-card strong {
+  color: var(--text-strong);
+  font-size: 1rem;
+}
+
+.example-card span {
+  line-height: 1.45;
+}
+
+.example-card small {
+  align-self: end;
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .metrics {
   display: grid;
   gap: 12px;
@@ -174,6 +214,10 @@
 }
 
 @media (max-width: 760px) {
+  .example-grid {
+    grid-template-columns: 1fr;
+  }
+
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

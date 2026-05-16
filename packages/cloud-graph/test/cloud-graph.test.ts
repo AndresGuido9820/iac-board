@@ -7,7 +7,9 @@ describe('buildCloudGraph', () => {
     const parseResult = parseTerraformFiles([
       {
         path: 'main.tf',
-        content: 'resource "aws_s3_bucket" "assets" {}',
+        content: `resource "aws_s3_bucket" "assets" {}
+resource "aws_iot_topic_rule" "telemetry" {}
+resource "aws_nat_gateway" "egress" {}`,
       },
     ])
 
@@ -18,6 +20,16 @@ describe('buildCloudGraph', () => {
         id: 'aws_s3_bucket.assets',
         provider: 'aws',
         category: 'storage',
+      },
+      {
+        id: 'aws_iot_topic_rule.telemetry',
+        provider: 'aws',
+        category: 'integration',
+      },
+      {
+        id: 'aws_nat_gateway.egress',
+        provider: 'aws',
+        category: 'network',
       },
     ])
   })
