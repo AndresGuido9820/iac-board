@@ -1,11 +1,12 @@
 import React from 'react'
 import type { BoardNode } from './types'
-import { categoryColors, categoryIcons } from './icons/aws'
+import { categoryColors } from './icons/aws'
 import type { AwsCategory } from './icons/aws'
+import { getIcon } from './icons/registry'
 
 const NODE_W = 180
 const NODE_H = 88
-const ICON_SIZE = 28
+const ICON_SIZE = 32
 
 function truncate(s: string, max: number) {
   return s.length > max ? s.slice(0, max - 1) + '…' : s
@@ -21,20 +22,19 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
   const { rect, resourceType, label, category } = node
   const cat = (category as AwsCategory) in categoryColors ? (category as AwsCategory) : 'unknown'
   const color = categoryColors[cat]
-  const iconPath = categoryIcons[cat]
+  const iconSvg = getIcon(resourceType)
   const cx = rect.x + rect.width / 2
-  const iconX = rect.x + 14
+  const iconX = rect.x + 12
   const iconY = rect.y + (rect.height - ICON_SIZE) / 2
 
   return (
     <g
       cursor="grab"
       onMouseDown={(e) => onMouseDown?.(e, node.id)}
-      role="img"
     >
       {/* Drop shadow */}
       <rect
-        fill="rgba(0,0,0,0.08)"
+        fill="rgba(0,0,0,0.07)"
         height={rect.height}
         rx={8}
         width={rect.width}
@@ -57,24 +57,37 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
         fill={color}
         height={rect.height - 2}
         rx={7}
-        width={6}
+        width={5}
         x={rect.x + 1}
         y={rect.y + 1}
       />
-      {/* Service icon */}
-      <g transform={`translate(${iconX}, ${iconY})`}>
-        <rect fill={`${color}18`} height={ICON_SIZE} rx={6} width={ICON_SIZE} x={0} y={0} />
-        <g
-          fill="none"
-          stroke={color}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          transform={`scale(${ICON_SIZE / 24})`}
+      {/* Service icon — real SVG from tf2d2/icons if available, else colored box */}
+      {iconSvg ? (
+        <foreignObject
+          height={ICON_SIZE}
+          width={ICON_SIZE}
+          x={iconX}
+          y={iconY}
         >
-          <path d={iconPath} />
-        </g>
-      </g>
+          <div
+            // @ts-expect-error xmlns required for foreignObject
+            xmlns="http://www.w3.org/1999/xhtml"
+            dangerouslySetInnerHTML={{ __html: iconSvg }}
+            style={{ width: ICON_SIZE, height: ICON_SIZE, display: 'flex', alignItems: 'center' }}
+          />
+        </foreignObject>
+      ) : (
+        <rect
+          fill={`${color}22`}
+          height={ICON_SIZE}
+          rx={6}
+          stroke={color}
+          strokeWidth={1}
+          width={ICON_SIZE}
+          x={iconX}
+          y={iconY}
+        />
+      )}
       {/* Resource type */}
       <text
         dominantBaseline="middle"
@@ -83,7 +96,7 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
         fontWeight={700}
         letterSpacing="0.04em"
         textAnchor="middle"
-        x={cx + 14}
+        x={cx + 16}
         y={rect.y + 26}
       >
         {truncate(resourceType, 22)}
@@ -95,12 +108,11 @@ export function NodeRenderer({ node, selected, onMouseDown }: NodeRendererProps)
         fontSize={13}
         fontWeight={700}
         textAnchor="middle"
-        x={cx + 14}
-        y={rect.y + 50}
+        x={cx + 16}
+        y={rect.y + 52}
       >
         {truncate(label, 16)}
       </text>
-      {/* Source ref shown in the resource list panel, not here */}
     </g>
   )
 }
