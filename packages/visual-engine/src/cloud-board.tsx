@@ -42,6 +42,13 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
   }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
+  const onBoardClick = (e: React.MouseEvent) => {
+    // Deselect when clicking on the background (not on a node — nodes stopPropagation)
+    if ((e.target as Element).closest('[data-testid="iac-node"]')) return
+    setSelected(null)
+    onNodeSelect?.(null)
+  }
+
   const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     setSelected(id)
@@ -127,6 +134,7 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
       <svg
         aria-hidden="true"
         className="cloud-canvas"
+        onClick={onBoardClick}
         ref={svgRef}
         style={{ display: 'block', width: '100%', minHeight: 300 }}
         viewBox={`${minX} ${minY} ${vw} ${vh}`}
