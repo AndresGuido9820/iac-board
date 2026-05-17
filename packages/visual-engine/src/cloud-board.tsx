@@ -11,6 +11,8 @@ import { useViewport } from './use-viewport'
 import { NodeRenderer } from './node-renderer'
 import { GroupRenderer } from './group-renderer'
 import { EdgeRenderer, ArrowMarker, EdgeLegend, LEGEND_H } from './edge-renderer'
+import { categoryColors } from './icons/aws'
+import type { AwsCategory } from './icons/aws'
 
 const MMAP_W = 120
 const MMAP_H = 80
@@ -60,17 +62,23 @@ function Minimap({ nodes, groups, contentRect, viewport, viewW, viewH, x, y }: M
         />
       ))}
       {/* Nodes */}
-      {nodes.map((n) => (
-        <rect
-          key={n.id}
-          fill="#64748b"
-          height={Math.max(2, n.rect.height * sy)}
-          rx={0.5}
-          width={Math.max(4, n.rect.width * sx)}
-          x={toMmX(n.rect.x)}
-          y={toMmY(n.rect.y)}
-        />
-      ))}
+      {nodes.map((n) => {
+        const cat = (n.category as AwsCategory) in categoryColors
+          ? (n.category as AwsCategory)
+          : 'unknown'
+        return (
+          <rect
+            key={n.id}
+            fill={categoryColors[cat]}
+            fillOpacity={0.8}
+            height={Math.max(2, n.rect.height * sy)}
+            rx={0.5}
+            width={Math.max(4, n.rect.width * sx)}
+            x={toMmX(n.rect.x)}
+            y={toMmY(n.rect.y)}
+          />
+        )
+      })}
       {/* Viewport indicator */}
       <rect
         fill="#2563eb"
