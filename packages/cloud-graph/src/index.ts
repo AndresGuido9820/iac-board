@@ -82,10 +82,22 @@ const awsCategories: Record<string, CloudNode['category']> = {
   aws_cloudwatch_dashboard: 'integration',
 }
 
+/**
+ * Resource types that are pure configuration artifacts with no standalone
+ * architectural meaning. They are excluded from graph nodes and edges but
+ * are still used to propagate VPC/subnet group membership.
+ */
+const IMPLEMENTATION_DETAIL_TYPES = new Set([
+  'aws_db_subnet_group', // RDS API grouping artifact — placement is communicated by subnet group membership
+])
+
 export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
-  const nodes = parseResult.resources.map(resourceToNode)
-  const groups = buildNetworkGroups(parseResult.resources)
-  const edges = buildEdges(parseResult.resources)
+  const visibleResources = parseResult.resources.filter(
+    (r) => !IMPLEMENTATION_DETAIL_TYPES.has(r.type),
+  )
+  const nodes = visibleResources.map(resourceToNode)
+  const groups = buildNetworkGroups(parseResult.resources) // use ALL resources for VPC propagation
+  const edges = buildEdges(visibleResources)
 
   return {
     nodes,
@@ -93,7 +105,7 @@ export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
     groups,
     diagnostics: [
       ...parseResult.diagnostics,
-      ...parseResult.resources
+      ...visibleResources
         .filter((resource) => !awsCategories[resource.type])
         .map((resource) => ({
           code: 'GRAPH001',

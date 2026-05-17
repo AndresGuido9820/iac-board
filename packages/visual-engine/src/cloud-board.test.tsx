@@ -176,4 +176,52 @@ describe('CloudBoard', () => {
     // No assertion on exact position since scale depends on jsdom layout,
     // but the interaction must not throw
   })
+
+  it('ArrowRight selects first node when nothing is selected', () => {
+    const onNodeSelect = vi.fn()
+    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    const board = document.querySelector('[data-pannable]')!
+    fireEvent.keyDown(board, { key: 'ArrowRight' })
+    expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
+  })
+
+  it('ArrowRight moves to the next node', () => {
+    const onNodeSelect = vi.fn()
+    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    const board = document.querySelector('[data-pannable]')!
+    // Select first node via click
+    fireEvent.mouseDown(screen.getAllByTestId('iac-node')[0])
+    onNodeSelect.mockClear()
+    // Arrow right moves to second node
+    fireEvent.keyDown(board, { key: 'ArrowRight' })
+    expect(onNodeSelect).toHaveBeenCalledWith('aws_s3_bucket.b')
+  })
+
+  it('ArrowRight wraps around from last to first node', () => {
+    const onNodeSelect = vi.fn()
+    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    const board = document.querySelector('[data-pannable]')!
+    // Select last node
+    fireEvent.mouseDown(screen.getAllByTestId('iac-node')[1])
+    onNodeSelect.mockClear()
+    fireEvent.keyDown(board, { key: 'ArrowRight' })
+    expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
+  })
+
+  it('ArrowLeft wraps around from first to last node', () => {
+    const onNodeSelect = vi.fn()
+    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    const board = document.querySelector('[data-pannable]')!
+    // Select first node
+    fireEvent.mouseDown(screen.getAllByTestId('iac-node')[0])
+    onNodeSelect.mockClear()
+    fireEvent.keyDown(board, { key: 'ArrowLeft' })
+    expect(onNodeSelect).toHaveBeenCalledWith('aws_s3_bucket.b')
+  })
+
+  it('does not crash on arrow key with empty elements', () => {
+    render(<CloudBoard elements={emptyElements} />)
+    const board = document.querySelector('[data-pannable]')!
+    expect(() => fireEvent.keyDown(board, { key: 'ArrowRight' })).not.toThrow()
+  })
 })

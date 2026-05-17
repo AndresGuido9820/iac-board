@@ -34,6 +34,7 @@ export interface Translations {
   inspector_source: string
   inspector_edges_out: string
   inspector_edges_in: string
+  export_svg: string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -72,6 +73,7 @@ export const translations: Record<Lang, Translations> = {
     inspector_source: 'Source',
     inspector_edges_out: 'Edges out',
     inspector_edges_in: 'Edges in',
+    export_svg: 'Export SVG',
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -108,5 +110,6 @@ export const translations: Record<Lang, Translations> = {
     inspector_source: 'Fuente',
     inspector_edges_out: 'Edges salientes',
     inspector_edges_in: 'Edges entrantes',
+    export_svg: 'Exportar SVG',
   },
 }
