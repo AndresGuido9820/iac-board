@@ -178,7 +178,36 @@ resource "aws_s3_bucket" "main" {
     expect(dataSrc?.type).toBe('data.aws_caller_identity')
   })
 
-  it('emits TF003 diagnostic for local modules', () => {
+  it('expands local modules when matching files are provided', () => {
+    const result = parseTerraformFiles([
+      {
+        path: 'main.tf',
+        content: `module "db" {
+  source = "./modules/db"
+}
+`,
+      },
+      {
+        path: 'modules/db/main.tf',
+        content: `resource "aws_db_instance" "primary" {
+  identifier = "db"
+}
+`,
+      },
+    ])
+
+    expect(result.diagnostics).toHaveLength(0)
+    expect(result.resources).toMatchObject([
+      {
+        address: 'module.db.aws_db_instance.primary',
+        type: 'aws_db_instance',
+        name: 'primary',
+        source: { filePath: 'modules/db/main.tf' },
+      },
+    ])
+  })
+
+  it('emits TF003 diagnostic when local module files are not found', () => {
     const result = parseTerraformFiles([
       {
         path: 'main.tf',
@@ -267,3 +296,33 @@ EOF
     expect(result.resources[0]?.refs).not.toContain('aws_s3_bucket.main')
   })
 })
+
+  it('prefixes module resource refs with module name', () => {
+    const result = parseTerraformFiles([
+      {
+        path: 'main.tf',
+        content: `module "net" {
+  source = "./modules/net"
+}
+`,
+      },
+      {
+        path: 'modules/net/main.tf',
+        content: `resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "pub" {
+  vpc_id = aws_vpc.main.id
+}
+`,
+      },
+    ])
+
+    expect(result.diagnostics).toHaveLength(0)
+    expect(result.resources).toHaveLength(2)
+    const subnet = result.resources.find(
+      (r) => r.address === 'module.net.aws_subnet.pub',
+    )
+    expect(subnet?.refs).toContain('module.net.aws_vpc.main')
+  })
