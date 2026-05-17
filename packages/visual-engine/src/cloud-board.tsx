@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react'
+import type { Viewport } from './types'
 import type {
   BoardElement,
   BoardNode,
@@ -10,6 +11,82 @@ import { useViewport } from './use-viewport'
 import { NodeRenderer } from './node-renderer'
 import { GroupRenderer } from './group-renderer'
 import { EdgeRenderer, ArrowMarker, EdgeLegend, LEGEND_H } from './edge-renderer'
+
+const MMAP_W = 120
+const MMAP_H = 80
+
+type MinimapProps = {
+  nodes: BoardNode[]
+  groups: BoardGroup[]
+  contentRect: Rect
+  viewport: Viewport
+  viewW: number
+  viewH: number
+  x: number
+  y: number
+}
+
+function Minimap({ nodes, groups, contentRect, viewport, viewW, viewH, x, y }: MinimapProps) {
+  const cW = contentRect.width || 800
+  const cH = contentRect.height || 480
+  const sx = MMAP_W / cW
+  const sy = MMAP_H / cH
+  const toMmX = (cx: number) => x + (cx - contentRect.x) * sx
+  const toMmY = (cy: number) => y + (cy - contentRect.y) * sy
+
+  // Visible content area in content coordinates
+  const visX = -viewport.x / viewport.zoom
+  const visY = -viewport.y / viewport.zoom
+  const visW = viewW / viewport.zoom
+  const visH = viewH / viewport.zoom
+
+  return (
+    <g data-testid="iac-minimap" pointerEvents="none">
+      {/* Background */}
+      <rect fill="white" fillOpacity={0.9} height={MMAP_H} rx={4} stroke="#e2e8f0" strokeWidth={0.75} width={MMAP_W} x={x} y={y} />
+      {/* Groups */}
+      {groups.map((g) => (
+        <rect
+          key={g.id}
+          fill={g.kind === 'vpc' ? '#2563eb18' : '#8b5cf618'}
+          height={g.rect.height * sy}
+          rx={1}
+          stroke={g.kind === 'vpc' ? '#2563eb' : '#8b5cf6'}
+          strokeOpacity={0.4}
+          strokeWidth={0.5}
+          width={g.rect.width * sx}
+          x={toMmX(g.rect.x)}
+          y={toMmY(g.rect.y)}
+        />
+      ))}
+      {/* Nodes */}
+      {nodes.map((n) => (
+        <rect
+          key={n.id}
+          fill="#64748b"
+          height={Math.max(2, n.rect.height * sy)}
+          rx={0.5}
+          width={Math.max(4, n.rect.width * sx)}
+          x={toMmX(n.rect.x)}
+          y={toMmY(n.rect.y)}
+        />
+      ))}
+      {/* Viewport indicator */}
+      <rect
+        fill="#2563eb"
+        fillOpacity={0.08}
+        height={Math.min(MMAP_H, visH * sy)}
+        rx={1.5}
+        stroke="#2563eb"
+        strokeOpacity={0.7}
+        strokeWidth={0.75}
+        width={Math.min(MMAP_W, visW * sx)}
+        x={Math.max(x, toMmX(visX))}
+        y={Math.max(y, toMmY(visY))}
+      />
+    </g>
+  )
+}
 
 type CloudBoardProps = {
   elements: BoardElement[]
@@ -167,6 +244,20 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
 
         {/* Edge legend — below diagram content, not affected by pan/zoom */}
         <EdgeLegend x={minX + 16} y={legendY} />
+
+        {/* Minimap — bottom-right of legend row */}
+        {allRects.length > 0 && (
+          <Minimap
+            contentRect={{ x: minX + PAD, y: minY + PAD, width: maxX - minX - PAD * 2, height: contentMaxY - minY - PAD * 2 }}
+            groups={groups}
+            nodes={resolvedNodes}
+            viewport={viewport}
+            viewH={svgRef.current?.clientHeight ?? vh}
+            viewW={svgRef.current?.clientWidth ?? vw}
+            x={maxX - MMAP_W - 8}
+            y={legendY}
+          />
+        )}
 
         <g style={{ transform, transformOrigin: '0 0' }}>
           {/* Groups first — nodes render on top */}
