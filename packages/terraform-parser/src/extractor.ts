@@ -6,7 +6,7 @@
  *   variable  → variable defaults table (used for var.x resolution)
  *   locals    → locals table (used for local.x resolution)
  *   data      → TerraformResource with type prefixed "data."
- *   module    → diagnostic (not expanded yet)
+ *   module    → local modules expanded inline; remote modules emit TF004
  *   provider  → ignored (not needed for graph)
  *   output    → ignored
  */
@@ -14,12 +14,33 @@
 import type { Diagnostic } from '@iac-board/core-types'
 import type { HclFile, HclBlock, HclBody, HclExpr } from './ast'
 import { isAttribute, isBlock, bodyAttr, exprToString } from './ast'
-import type { TerraformResource } from './index'
+import type { TerraformResource, TerraformFile } from './index'
+import { expandLocalModule } from './index'
 import { refsFromBody, bodyToText } from './refs'
+
+
+/**
+ * Resolve a module source path (e.g. "./modules/vpc") relative to the
+ * directory of the calling .tf file.
+ */
+function resolveModulePath(callingFilePath: string, moduleSource: string): string {
+  const callingDir = callingFilePath.includes('/')
+    ? callingFilePath.slice(0, callingFilePath.lastIndexOf('/'))
+    : ''
+  const parts = moduleSource.replace(/^\.\//, '').split('/')
+  const dirParts = callingDir ? callingDir.split('/') : []
+  for (const part of parts) {
+    if (part === '..') dirParts.pop()
+    else if (part !== '.') dirParts.push(part)
+  }
+  return dirParts.join('/')
+}
 
 export function extractFromFile(
   file: HclFile,
+  allFiles: TerraformFile[],
   allDiagnostics: Diagnostic[],
+  _visited?: Set<string>,
 ): TerraformResource[] {
   const resources: TerraformResource[] = []
   const filePath = file.filePath
@@ -96,15 +117,37 @@ export function extractFromFile(
       const sourceExpr = bodyAttr(block.body, 'source')
       const sourceVal = sourceExpr ? exprToString(sourceExpr) : undefined
       const isLocal =
-        sourceVal?.startsWith('./') || sourceVal?.startsWith('../')
-      allDiagnostics.push({
-        code: isLocal ? 'TF003' : 'TF004',
-        severity: 'info',
-        message: isLocal
-          ? `Local module "${moduleName}" (${sourceVal}) not expanded — module expansion planned`
-          : `Remote module "${moduleName}" not supported in static analysis`,
-        source: { filePath, line: block.line },
-      })
+        sourceVal !== undefined &&
+        (sourceVal.startsWith('./') || sourceVal.startsWith('../'))
+
+      if (isLocal && sourceVal) {
+        const modulePath = resolveModulePath(filePath, sourceVal)
+        const visited = _visited ?? new Set<string>()
+        const moduleResources = expandLocalModule(
+          moduleName,
+          modulePath,
+          allFiles,
+          allDiagnostics,
+          visited,
+        )
+        if (moduleResources.length > 0) {
+          resources.push(...moduleResources)
+        } else {
+          allDiagnostics.push({
+            code: 'TF003',
+            severity: 'info',
+            message: `Local module "${moduleName}" (${sourceVal}) not expanded — no matching files found`,
+            source: { filePath, line: block.line },
+          })
+        }
+      } else if (!isLocal) {
+        allDiagnostics.push({
+          code: 'TF004',
+          severity: 'info',
+          message: `Remote module "${moduleName}" not supported in static analysis`,
+          source: { filePath, line: block.line },
+        })
+      }
     }
   }
 
