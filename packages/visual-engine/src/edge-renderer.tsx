@@ -40,8 +40,19 @@ function bezierPath(from: Rect, to: Rect, obstacles: Rect[] = []): string {
   const x2 = to.x
   const y2 = cy(to)
 
-  // Feedback edge (right-to-left): compact S-curve dropping below both nodes
+  // Feedback edge (right-to-left): route using inner edges for compact arc.
+  // Exit left-center of source, enter right-center of target — avoids a wide
+  // loop extending beyond the rightmost column.
   if (x2 < x1 + 20) {
+    const srcX = from.x                 // left edge of source
+    const dstX = to.x + to.width        // right edge of target
+    if (dstX < srcX) {
+      // Non-overlapping: compact S-arc between inner faces
+      const midX = (srcX + dstX) / 2
+      const midY = Math.max(cy(from), cy(to)) + 44
+      return `M ${srcX},${y1} C ${srcX - 36},${y1} ${srcX - 36},${midY} ${midX},${midY} S ${dstX + 36},${y2} ${dstX},${y2}`
+    }
+    // Overlapping nodes (same column): fallback to outer arc
     const midX = (x1 + x2) / 2
     const midY = Math.max(cy(from), cy(to)) + 44
     return `M ${x1},${y1} C ${x1 + 36},${y1} ${x1 + 36},${midY} ${midX},${midY} S ${x2 - 36},${y2} ${x2},${y2}`
