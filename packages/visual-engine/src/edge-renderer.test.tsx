@@ -143,6 +143,29 @@ describe('EdgeRenderer', () => {
     expect(screen.queryByTestId('iac-edge')).not.toBeInTheDocument()
   })
 
+  it('renders depends-on edge as forward arc (dependency LEFT of dependent)', () => {
+    // A (dependent, RIGHT at x=660) depends-on B (dependency, LEFT at x=60)
+    // Visual direction should be reversed: arrow goes FROM B TO A (left→right)
+    const dependsOnMap = new Map<string, BoardNode>([
+      ['A', node('A', 660, 60)], // dependent — layout places it RIGHT
+      ['B', node('B', 60, 60)],  // dependency — layout places it LEFT
+    ])
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'depends-on')]}
+          nodeMap={dependsOnMap}
+        />
+      </svg>,
+    )
+    // Edge renders (not hidden)
+    expect(screen.getByTestId('iac-edge')).toBeInTheDocument()
+    // The path starts at right(B)=280 and ends at left(A)=660 — a forward arc
+    const path = screen.getByTestId('iac-edge-path').getAttribute('d') ?? ''
+    expect(path.startsWith('M 280,')).toBe(true) // starts at right face of B (dependency)
+  })
+
   it('renders edge when an intermediate node blocks the direct path', () => {
     // A → C with B in between — edge should still render (obstacle avoidance path)
     const obstacleMap = new Map<string, BoardNode>([
