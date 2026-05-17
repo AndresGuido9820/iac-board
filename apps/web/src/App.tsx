@@ -309,7 +309,9 @@ export function ProductShell({
             </span>
           </div>
         </div>
-        <p className="panel-copy">{example.description}</p>
+        {mode !== 'imported' && (
+          <p className="panel-copy">{example.description}</p>
+        )}
         <div className="board-with-inspector">
           <CloudBoard
             className="cloud-board"

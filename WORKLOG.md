@@ -134,3 +134,50 @@ teal=database.
 **Target ≥9.5/10: ✅ ACHIEVED**
 
 Tests: 89 passing, coverage all above thresholds.
+
+---
+
+## 2026-05-18 (continued) — MVP Integration Sprint
+
+**Branch:** `feat/mvp-integration` (based from `feat/hu-032-033-layout-quality`)
+
+### HU-036 — Expanded AWS resource types
+
+Expanded `awsCategories` in `packages/cloud-graph/src/index.ts` from ~20 to 60+ AWS resource types across compute, network, database, integration, security, AI/ML, and IoT. Added `ICON_ALIASES` registry for types that share icons.
+
+### HU-037 — PNG export
+
+Added `exportPng()` async function in `apps/web/src/App.tsx`: SVG → Blob URL → Image → Canvas (2×) → PNG dataURL → download. PNG export button shown alongside SVG export in the diagram panel header.
+
+### HU-038 — .tf file import
+
+Added `ImportZone` component (`apps/web/src/import-zone.tsx`): drag-and-drop or browse `.tf` / `.tfvars` files. App-level `mode: 'example' | 'imported'` state switches active files. Import mode shows file count, clear button, loaded file list with line counts.
+
+### HU-040 — Local module expansion
+
+Implemented in `packages/terraform-parser/src/`:
+- `resolveModulePath()` resolves `./path` and `../path` relative to calling file
+- `expandLocalModule()` finds matching `.tf` files, parses them recursively (cycle-guarded via `visited` Set), and re-addresses resources as `module.<name>.<type>.<name>`
+- Root-level loop pre-scans module sources and skips module directory files to prevent duplication
+- TF003 emitted only when local module files not found; TF004 for remote/registry modules
+
+### Bundled Examples
+
+- **ECS Microservices** (HU-036): ECS Fargate + ALB + CloudFront + RDS Aurora + ElastiCache + Cognito + Secrets Manager — exercises 20+ new resource types, 0 diagnostics
+- **Modular App** (HU-040): root module calling `./modules/network` and `./modules/compute`, validates module expansion end-to-end
+
+### README
+
+Rewrote from "Planning stage" to production-ready documentation: feature list, pipeline diagram, supported resources table, quick start, project structure, architecture overview.
+
+### Test Summary
+
+| Metric | Before | After |
+|---|---|---|
+| Tests | 89 | 105 |
+| Test files | 12 | 14 |
+| Bundled examples | 3 | 5 |
+| Coverage (branches) | 71.23% | 71.46% ✅ |
+| Coverage (statements) | 82.86% | 81.46% ✅ |
+| Lint errors | 0 | 0 |
+
