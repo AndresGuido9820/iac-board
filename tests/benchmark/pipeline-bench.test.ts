@@ -94,7 +94,7 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
       })
 
       // Log for visibility in CI output
-      console.log(
+      console.warn(
         `[bench] ${size} resources: ${elapsed.toFixed(1)}ms (limit ${maxMs}ms)`,
       )
 
@@ -147,7 +147,7 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
       generateDiagramFromTerraformFiles([{ path: 'main.tf', content: large }]),
     )
 
-    console.log(
+    console.warn(
       `[bench] scaling ratio: ${(tLarge / tSmall).toFixed(1)}× (200 vs 20 resources)`,
     )
 
