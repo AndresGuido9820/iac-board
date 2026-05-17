@@ -20,15 +20,19 @@ function bezierPath(from: Rect, to: Rect): string {
   const x2 = to.x
   const y2 = cy(to)
 
-  // If target is to the left (feedback edge), draw a curved arc going under
+  // Feedback edge (right-to-left): compact S-curve dropping below both nodes
   if (x2 < x1 + 20) {
-    const midY = Math.max(cy(from), cy(to)) + 80
-    return `M ${x1},${y1} C ${x1 + 60},${y1} ${x1 + 60},${midY} ${cx(from) + (cx(to) - cx(from)) / 2},${midY} S ${x2 - 60},${y2} ${x2},${y2}`
+    const midX = (x1 + x2) / 2
+    const midY = Math.max(cy(from), cy(to)) + 44
+    return `M ${x1},${y1} C ${x1 + 36},${y1} ${x1 + 36},${midY} ${midX},${midY} S ${x2 - 36},${y2} ${x2},${y2}`
   }
 
   const offset = Math.max(60, (x2 - x1) * 0.45)
   return `M ${x1},${y1} C ${x1 + offset},${y1} ${x2 - offset},${y2} ${x2},${y2}`
 }
+
+/** Relations that are hidden from the canvas (position communicates containment). */
+const HIDDEN_RELATIONS = new Set(['deployed-in'])
 
 const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
   triggers: { color: '#8b5cf6' }, // purple — event-source mapping fires lambda
@@ -55,7 +59,6 @@ const LEGEND_ENTRIES: Array<{ label: string; color: string; dash?: string }> = [
   { label: 'writes to', color: '#16a34a' },
   { label: 'uses role', color: '#94a3b8', dash: '4 3' },
   { label: 'secured by', color: '#f59e0b', dash: '5 3' },
-  { label: 'deployed in', color: '#cbd5e1', dash: '3 5' },
 ]
 
 const LEGEND_ROW_H = 16
@@ -233,6 +236,7 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
   return (
     <>
       {edges.map((edge) => {
+        if (HIDDEN_RELATIONS.has(edge.relation)) return null
         const fromNode = nodeMap.get(edge.from)
         const toNode = nodeMap.get(edge.to)
         if (!fromNode || !toNode) return null
