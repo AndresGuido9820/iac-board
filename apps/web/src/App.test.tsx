@@ -162,3 +162,34 @@ describe('App', () => {
     expect(inspector.textContent).toContain('examples/terraform')
   })
 })
+
+  it('renders export PNG button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Export PNG' }),
+    ).toBeInTheDocument()
+  })
+
+  it('renders language toggle button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Español' }),
+    ).toBeInTheDocument()
+  })
+
+  it('toggles interface language to Spanish', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Español' }))
+
+    expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Exportar SVG' })).toBeInTheDocument()
+  })
+
+  it('renders import zone drop area', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Import .tf files' }),
+    ).toBeInTheDocument()
+  })
