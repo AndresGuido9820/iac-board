@@ -130,11 +130,21 @@ export function ProductShell({
   )
 
   const handleNodeSelect = (id: string | null) => {
-    if (!id) { setSelectedNode(null); return }
+    if (!id) {
+      setSelectedNode(null)
+      return
+    }
     const graphNode = nodesById.get(id)
-    if (!graphNode) { setSelectedNode(null); return }
-    const edgesOut = generatedDiagram.graph.edges.filter((e) => e.from === id).length
-    const edgesIn = generatedDiagram.graph.edges.filter((e) => e.to === id).length
+    if (!graphNode) {
+      setSelectedNode(null)
+      return
+    }
+    const edgesOut = generatedDiagram.graph.edges.filter(
+      (e) => e.from === id,
+    ).length
+    const edgesIn = generatedDiagram.graph.edges.filter(
+      (e) => e.to === id,
+    ).length
     setSelectedNode({
       id,
       label: graphNode.label,

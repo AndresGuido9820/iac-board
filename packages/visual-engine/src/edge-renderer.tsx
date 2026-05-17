@@ -18,7 +18,13 @@ const OBSTACLE_PAD = 20
  * A rect blocks if its x-span overlaps [x1, x2] and its y-span overlaps
  * the approximate y-band of the edge (with 8px tolerance).
  */
-function blockingObstacles(x1: number, y1: number, x2: number, y2: number, obstacles: Rect[]): Rect[] {
+function blockingObstacles(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  obstacles: Rect[],
+): Rect[] {
   const edgeMinY = Math.min(y1, y2)
   const edgeMaxY = Math.max(y1, y2)
   return obstacles.filter((obs) => {
@@ -44,8 +50,8 @@ function bezierPath(from: Rect, to: Rect, obstacles: Rect[] = []): string {
   // Exit left-center of source, enter right-center of target — avoids a wide
   // loop extending beyond the rightmost column.
   if (x2 < x1 + 20) {
-    const srcX = from.x                 // left edge of source
-    const dstX = to.x + to.width        // right edge of target
+    const srcX = from.x // left edge of source
+    const dstX = to.x + to.width // right edge of target
     if (dstX < srcX) {
       // Non-overlapping: compact S-arc between inner faces
       const midX = (srcX + dstX) / 2
@@ -109,7 +115,8 @@ const LEGEND_ENTRIES: Array<{ label: string; color: string; dash?: string }> = [
 const LEGEND_ROW_H = 16
 const LEGEND_PAD = 10
 const LEGEND_W = 108
-export const LEGEND_H = LEGEND_ENTRIES.length * LEGEND_ROW_H + LEGEND_PAD * 2 + 14 // +14 for title
+export const LEGEND_H =
+  LEGEND_ENTRIES.length * LEGEND_ROW_H + LEGEND_PAD * 2 + 14 // +14 for title
 
 type EdgeLegendProps = { x: number; y: number }
 
@@ -340,7 +347,11 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
               style={{ color: style.color }}
             />
             {anchor && (
-              <EdgeLabel anchor={anchor} color={style.color} text={labelText!} />
+              <EdgeLabel
+                anchor={anchor}
+                color={style.color}
+                text={labelText!}
+              />
             )}
           </g>
         )

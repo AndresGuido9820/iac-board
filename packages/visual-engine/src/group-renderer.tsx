@@ -32,9 +32,7 @@ export function GroupRenderer({ group }: GroupRendererProps) {
 
   // Subnet labels render at the bottom to avoid overlapping the parent VPC label.
   const labelAtBottom = kind === 'subnet'
-  const labelY = labelAtBottom
-    ? rect.y + rect.height - 18
-    : rect.y + 10
+  const labelY = labelAtBottom ? rect.y + rect.height - 18 : rect.y + 10
   const labelBaseline = labelAtBottom ? 'auto' : 'hanging'
 
   return (
