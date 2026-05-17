@@ -1,86 +1,106 @@
 # IaC Board
 
-Generate editable cloud architecture diagrams from infrastructure-as-code.
+> Generate interactive AWS architecture diagrams directly from Terraform files — no cloud execution required.
 
-IaC Board is a developer tool for turning Terraform infrastructure into visual
-architecture diagrams. OpenTofu can be supported through the same HCL-first
-pipeline, but the product focus is Terraform.
+IaC Board parses `.tf` files, builds a cloud resource graph, lays it out automatically, and renders it as an interactive SVG diagram. No Terraform plan, no cloud credentials, no drift.
 
-The product is planned as a standalone open source project. It may use the
-Drawnix and Plait ecosystem as its visual canvas foundation, but the unique
-product layer is infrastructure parsing, cloud graph normalization, layout, and
-documentation workflows.
+## Demo
 
-## Vision
+Drop any `.tf` file — or use one of the bundled examples — and get an interactive diagram in seconds.
 
-Architecture diagrams should not be stale screenshots or manual drawings that
-drift away from the real system.
+**Features:**
+- Drag-and-drop or browse `.tf` / `.tfvars` files from your local machine
+- 4 bundled example projects (Serverless API, IoT Pipeline, VPC + RDS, ECS Microservices)
+- Interactive diagram: pan, zoom, node drag, keyboard navigation (arrow keys)
+- Node inspector: click any resource to see type, category, source file, and connection count
+- Minimap for large diagrams
+- Edge legend with relationship types
+- Export as SVG or PNG (2× resolution)
+- EN / ES interface
 
-IaC Board should let a developer open an infrastructure repository and quickly
-get:
+## Pipeline
 
-- a visual cloud architecture diagram,
-- editable nodes, groups, arrows, and annotations,
-- source metadata that links diagram elements back to IaC files,
-- parser diagnostics for unsupported or ambiguous resources,
-- image and JSON export for documentation.
-
-## First Target
-
-The first useful version should support Terraform projects for AWS:
-
-- VPCs, subnets, routes, internet gateways, NAT gateways,
-- Lambda, API Gateway, SQS, SNS, EventBridge,
-- RDS, DynamoDB, S3,
-- ECS/EKS at a high level,
-- security groups as relationships and metadata.
-
-## Product Direction
-
-IaC Board is not a cloud console and it should not apply infrastructure changes.
-
-It is an architecture understanding and documentation tool:
-
-```text
-IaC files -> parser -> cloud graph -> layout -> editable diagram -> export
+```
+.tf files → HCL lexer + parser → resource extractor → cloud graph
+         → layout engine (Sugiyama + force) → canvas drafts → SVG diagram
 ```
 
-## Planning Docs
+## Supported AWS Resources
 
-The engineering plan lives in [docs](docs/README.md).
+| Category | Resources |
+|---|---|
+| Compute | `aws_lambda_function`, `aws_ecs_cluster`, `aws_ecs_service`, `aws_ecs_task_definition`, `aws_eks_cluster`, `aws_autoscaling_group`, `aws_instance` |
+| Network | `aws_vpc`, `aws_subnet`, `aws_internet_gateway`, `aws_nat_gateway`, `aws_lb` / `aws_alb`, `aws_cloudfront_distribution`, `aws_route53_zone` |
+| Storage | `aws_s3_bucket`, `aws_s3_object` |
+| Database | `aws_db_instance`, `aws_rds_cluster`, `aws_dynamodb_table`, `aws_elasticache_cluster`, `aws_elasticache_replication_group`, `aws_redshift_cluster` |
+| Integration | `aws_api_gateway_rest_api`, `aws_sqs_queue`, `aws_sns_topic`, `aws_kinesis_stream`, `aws_kinesis_firehose_delivery_stream`, `aws_eventbridge_rule` |
+| Security | `aws_iam_role`, `aws_iam_policy`, `aws_security_group`, `aws_cognito_user_pool`, `aws_secretsmanager_secret`, `aws_kms_key` |
+| AI/ML | `aws_sagemaker_endpoint`, `aws_sagemaker_model` |
+| IoT | `aws_iot_topic_rule` |
 
-Start here:
+Resources not in the table are still rendered with an inferred category.
 
-- [Product Brief](docs/product/product-brief.md)
-- [User Stories](docs/product/user-stories.md)
-- [Development Spec](docs/development-spec.md)
-- [Git Workflow](docs/git-workflow.md)
-- [Engine Extraction Plan](docs/engineering/engine-extraction-plan.md)
-- [Architecture](docs/engineering/architecture.md)
-- [Test Strategy](docs/testing/test-strategy.md)
-- [Roadmap](docs/product/roadmap.md)
-- [Attribution And Licensing](docs/engineering/attribution-and-licensing.md)
-- [ADR 0001](docs/adr/0001-use-drawnix-plait-as-visual-engine.md)
+## Quick Start
 
-## Engine Strategy
+```bash
+git clone https://github.com/AndresGuido9820/iac-board
+cd iac-board
+npm install
+npm run dev
+```
 
-The current plan is:
+Open `http://localhost:5173`.
 
-1. Use Drawnix/Plait as a package dependency for the first proof of concept.
-2. Wrap it behind an internal `canvas-engine` adapter.
-3. Keep parser, graph, and layout independent from Drawnix internals.
-4. Extract selected Drawnix source only if package APIs block product features.
+## Running Tests
 
-This keeps IaC Board as a real product instead of a renamed fork.
+```bash
+npm test
+```
 
-## Status
+99 tests across 14 test files — unit + integration.
 
-Planning stage.
+## Project Structure
 
-The next milestone is a proof of concept that renders a generated AWS
-serverless architecture diagram on a Drawnix/Plait-backed canvas.
+```
+apps/web/                  # React app (Vite)
+packages/
+  terraform-parser/        # HCL lexer, parser, resource extractor
+  cloud-graph/             # Resource → CloudNode, edge inference
+  layout-engine/           # Sugiyama + force layout, group placement
+  canvas-engine/           # Layout → canvas element drafts
+  visual-engine/           # React SVG renderer (CloudBoard)
+  pipeline/                # Orchestrates parser → graph → layout → canvas
+  example-catalog/         # Bundled .tf example projects
+  core-types/              # Shared TypeScript types + Zod schemas
+```
 
-## Acknowledgements
+## Architecture
 
-IaC Board may use the Drawnix and Plait ecosystem as part of its visual canvas
-foundation. Drawnix is an MIT-licensed open source whiteboard project.
+The diagram pipeline is fully client-side. No server, no cloud calls.
+
+```
+TerraformFile[]
+  │
+  ▼ terraform-parser
+TerraformParseResult { resources, diagnostics }
+  │
+  ▼ cloud-graph
+CloudGraph { nodes, edges, groups }
+  │
+  ▼ layout-engine
+PositionedGraph { layout (x/y/w/h per node/group) }
+  │
+  ▼ canvas-engine
+CanvasElementDraft[]
+  │
+  ▼ visual-engine (CloudBoard)
+Interactive SVG diagram
+```
+
+## Contributing
+
+See [docs/git-workflow.md](docs/git-workflow.md) for branch conventions and [docs/product/user-stories.md](docs/product/user-stories.md) for the backlog.
+
+## License
+
+MIT
