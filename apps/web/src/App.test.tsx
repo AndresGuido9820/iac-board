@@ -96,7 +96,9 @@ describe('App', () => {
 
   it('renders export SVG button', () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: 'Export SVG' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Export SVG' }),
+    ).toBeInTheDocument()
   })
 
   it('opens node inspector when a board node is clicked', async () => {
@@ -104,7 +106,7 @@ describe('App', () => {
     render(<App />)
 
     // Click the first iac-node element rendered inside the SVG
-    const node = document.querySelector('[data-testid="iac-node"]')
+    const node = screen.getAllByTestId('iac-node')[0]
     expect(node).not.toBeNull()
     await user.pointer({ keys: '[MouseLeft]', target: node! })
 
@@ -116,7 +118,7 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    const node = document.querySelector('[data-testid="iac-node"]')
+    const node = screen.getAllByTestId('iac-node')[0]
     await user.pointer({ keys: '[MouseLeft]', target: node! })
     expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
 
@@ -128,7 +130,7 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    const node = document.querySelector('[data-testid="iac-node"]')
+    const node = screen.getAllByTestId('iac-node')[0]
     await user.pointer({ keys: '[MouseLeft]', target: node! })
     expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
 
@@ -151,7 +153,7 @@ describe('App', () => {
       />,
     )
 
-    const node = document.querySelector('[data-testid="iac-node"]')
+    const node = screen.getAllByTestId('iac-node')[0]
     await user.pointer({ keys: '[MouseLeft]', target: node! })
 
     const inspector = screen.getByLabelText('Node inspector')

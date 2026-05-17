@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react'
-import type { Viewport } from './types'
+import React, { useEffect, useRef, useState } from 'react'
 import type {
+  Viewport,
   BoardElement,
   BoardNode,
   BoardGroup,
@@ -10,7 +10,12 @@ import type {
 import { useViewport } from './use-viewport'
 import { NodeRenderer } from './node-renderer'
 import { GroupRenderer } from './group-renderer'
-import { EdgeRenderer, ArrowMarker, EdgeLegend, LEGEND_H } from './edge-renderer'
+import {
+  EdgeRenderer,
+  ArrowMarker,
+  EdgeLegend,
+  LEGEND_H,
+} from './edge-renderer'
 import { categoryColors } from './icons/aws'
 import type { AwsCategory } from './icons/aws'
 
@@ -28,7 +33,16 @@ type MinimapProps = {
   y: number
 }
 
-function Minimap({ nodes, groups, contentRect, viewport, viewW, viewH, x, y }: MinimapProps) {
+function Minimap({
+  nodes,
+  groups,
+  contentRect,
+  viewport,
+  viewW,
+  viewH,
+  x,
+  y,
+}: MinimapProps) {
   const cW = contentRect.width || 800
   const cH = contentRect.height || 480
   const sx = MMAP_W / cW
@@ -45,7 +59,17 @@ function Minimap({ nodes, groups, contentRect, viewport, viewW, viewH, x, y }: M
   return (
     <g data-testid="iac-minimap" pointerEvents="none">
       {/* Background */}
-      <rect fill="white" fillOpacity={0.9} height={MMAP_H} rx={4} stroke="#e2e8f0" strokeWidth={0.75} width={MMAP_W} x={x} y={y} />
+      <rect
+        fill="white"
+        fillOpacity={0.9}
+        height={MMAP_H}
+        rx={4}
+        stroke="#e2e8f0"
+        strokeWidth={0.75}
+        width={MMAP_W}
+        x={x}
+        y={y}
+      />
       {/* Groups */}
       {groups.map((g) => (
         <rect
@@ -63,9 +87,10 @@ function Minimap({ nodes, groups, contentRect, viewport, viewW, viewH, x, y }: M
       ))}
       {/* Nodes */}
       {nodes.map((n) => {
-        const cat = (n.category as AwsCategory) in categoryColors
-          ? (n.category as AwsCategory)
-          : 'unknown'
+        const cat =
+          (n.category as AwsCategory) in categoryColors
+            ? (n.category as AwsCategory)
+            : 'unknown'
         return (
           <rect
             key={n.id}
@@ -102,12 +127,31 @@ type CloudBoardProps = {
   onNodeSelect?: (id: string | null) => void
 }
 
-export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProps) {
+export function CloudBoard({
+  elements,
+  className,
+  onNodeSelect,
+}: CloudBoardProps) {
   const { viewport, transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useViewport()
   const svgRef = useRef<SVGSVGElement | null>(null)
   const [overrides, setOverrides] = useState<Record<string, Rect>>({})
   const [selected, setSelected] = useState<string | null>(null)
+  const [svgClientSize, setSvgClientSize] = useState({ w: 0, h: 0 })
+
+  // Track SVG element size via ResizeObserver so minimap has accurate viewport size.
+  // This avoids reading svgRef.current during render (React Compiler warning).
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    setSvgClientSize({ w: el.clientWidth, h: el.clientHeight })
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      setSvgClientSize({ w: el.clientWidth, h: el.clientHeight })
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const dragging = useRef<{
     id: string
@@ -135,7 +179,8 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
   }
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key))
+      return
     if (resolvedNodes.length === 0) return
     e.preventDefault()
     const currentIdx = selected
@@ -179,7 +224,7 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
     // Convert screen-pixel delta to SVG user-space delta.
     // SVG viewBox maps vw user units to svgClientWidth CSS pixels;
     // the CSS transform adds viewport.zoom on top of that.
-    const svgW = svgRef.current?.clientWidth ?? vw
+    const svgW = svgClientSize.w || vw
     const scale = viewport.zoom * (svgW / vw)
     setOverrides((prev) => ({
       ...prev,
@@ -241,6 +286,7 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
       <svg
         aria-hidden="true"
         className="cloud-canvas"
+        data-testid="iac-canvas"
         onClick={onBoardClick}
         ref={svgRef}
         style={{ display: 'block', width: '100%', minHeight: 300 }}
@@ -278,12 +324,17 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
         {/* Minimap — bottom-right of legend row */}
         {allRects.length > 0 && (
           <Minimap
-            contentRect={{ x: minX + PAD, y: minY + PAD, width: maxX - minX - PAD * 2, height: contentMaxY - minY - PAD * 2 }}
+            contentRect={{
+              x: minX + PAD,
+              y: minY + PAD,
+              width: maxX - minX - PAD * 2,
+              height: contentMaxY - minY - PAD * 2,
+            }}
             groups={groups}
             nodes={resolvedNodes}
             viewport={viewport}
-            viewH={svgRef.current?.clientHeight ?? vh}
-            viewW={svgRef.current?.clientWidth ?? vw}
+            viewH={svgClientSize.h || vh}
+            viewW={svgClientSize.w || vw}
             x={maxX - MMAP_W - 8}
             y={legendY}
           />
