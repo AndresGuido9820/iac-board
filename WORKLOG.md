@@ -53,24 +53,29 @@ with smart midpoint positioning and toggle visibility.
 #### Changes implemented
 
 **Layout quality:**
+
 - `IMPLEMENTATION_DETAIL_TYPES`: filters `aws_db_subnet_group` from nodes/edges (kept for group propagation). VPC+RDS group: 4→3 columns.
 - `HIDDEN_RELATIONS`: `deployed-in` + `secured-by` removed from canvas. Position communicates these relations.
 - Subnet labels moved to bottom of group box (avoids VPC MAIN label overlap at top-left).
 
 **Edge quality:**
+
 - HU-034: `bezierPath` now accepts `obstacles: Rect[]`. Detects blocking nodes in horizontal path span and routes edge ABOVE them with `avoidY = minObstacle.y - 20`. `labelAnchor` updated to match.
 - `EdgeRenderer` computes `obstacles` per edge (all nodes except source/target).
 
 **Node icons:**
+
 - `categoryIcons` fallback in `NodeRenderer`: when no specific AWS icon, renders category SVG path on tinted background. All nodes now show meaningful icons.
 - `ICON_ALIASES` in `registry.ts`: 12 Terraform resource types mapped to nearest same-category icon (e.g., `aws_lambda_event_source_mapping → aws_kinesis_stream`, `aws_rds_cluster → aws_db_instance`, `aws_lb → aws_api_gateway_rest_api`).
 
 **UX interactive:**
+
 - Keyboard navigation: `CloudBoard` wrapper div is `role=application tabIndex=0`. `onKeyDown` handles `ArrowLeft/Right/Up/Down` to cycle through `resolvedNodes`. Calls `onNodeSelect` on each step.
 - Export SVG button: `exportSvg()` uses `XMLSerializer` + XML declaration + Blob URL download. Internationalized (en/es).
 - Minimap: thumbnail 120×80 in bottom-right of legend row showing node positions + viewport indicator.
 
 **CI:**
+
 - Coverage: statements 82.86%, branches 71.23%, functions 92.82%, lines 84.25% — all above thresholds.
 - Tests: 88 passing (87+1 new obstacle-avoidance test, +5 keyboard nav tests).
 
@@ -117,14 +122,14 @@ teal=database.
 
 #### Score breakdown
 
-| Dimension | Before | After | Delta |
-|-----------|--------|-------|-------|
-| Layout (×0.30) | 9.5 | 9.9 | +0.4 |
-| Edges (×0.25) | 9.0 | 9.4 | +0.4 |
-| Nodes (×0.20) | 9.5 | 9.75 | +0.25 |
-| Composition (×0.15) | 9.0 | 9.5 | +0.5 |
-| UX (×0.10) | 9.5 | 9.5 | 0 |
-| **Total** | **~9.3** | **~9.6** | **+0.3** |
+| Dimension           | Before   | After    | Delta    |
+| ------------------- | -------- | -------- | -------- |
+| Layout (×0.30)      | 9.5      | 9.9      | +0.4     |
+| Edges (×0.25)       | 9.0      | 9.4      | +0.4     |
+| Nodes (×0.20)       | 9.5      | 9.75     | +0.25    |
+| Composition (×0.15) | 9.0      | 9.5      | +0.5     |
+| UX (×0.10)          | 9.5      | 9.5      | 0        |
+| **Total**           | **~9.3** | **~9.6** | **+0.3** |
 
 **Target ≥9.5/10: ✅ ACHIEVED**
 
