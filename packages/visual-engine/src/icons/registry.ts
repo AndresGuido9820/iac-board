@@ -70,21 +70,24 @@ export const iconRegistry: Record<string, string> = {
 
 /**
  * Terraform resources that lack a dedicated AWS architecture icon.
- * Mapped to the closest conceptually related service icon.
+ * Mapped to the closest conceptually related service icon within the same category
+ * to avoid color conflicts (accent bar and icon should share the same visual language).
  */
 const ICON_ALIASES: Record<string, string> = {
-  aws_lambda_event_source_mapping: 'aws_lambda_function', // triggers a lambda
-  aws_cloudwatch_event_rule: 'aws_sns_topic', // event bus routing
+  // integration → integration (purple): same category, no color conflict
+  aws_lambda_event_source_mapping: 'aws_kinesis_stream', // ESM: streams/queues to lambda
+  aws_cloudwatch_event_rule: 'aws_sns_topic',            // event bus routing
   aws_cloudwatch_event_target: 'aws_sns_topic',
-  aws_scheduler_schedule: 'aws_lambda_function',
-  aws_sfn_state_machine: 'aws_lambda_function',
-  aws_rds_cluster: 'aws_db_instance',
-  aws_rds_cluster_instance: 'aws_db_instance',
+  aws_scheduler_schedule: 'aws_sqs_queue',               // queue/schedule pattern
+  aws_sfn_state_machine: 'aws_sns_topic',                // orchestration
   aws_kinesis_firehose_delivery_stream: 'aws_kinesis_stream',
   aws_lb: 'aws_api_gateway_rest_api',
   aws_alb: 'aws_api_gateway_rest_api',
   aws_lb_listener: 'aws_api_gateway_rest_api',
   aws_lb_target_group: 'aws_api_gateway_rest_api',
+  // database → database (green): same category
+  aws_rds_cluster: 'aws_db_instance',
+  aws_rds_cluster_instance: 'aws_db_instance',
 }
 
 export function getIcon(resourceType: string): string | undefined {
