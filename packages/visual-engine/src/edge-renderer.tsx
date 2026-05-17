@@ -10,8 +10,31 @@ function right(rect: Rect) {
   return rect.x + rect.width
 }
 
-/** Cubic bezier S-curve path string from source right-center to target left-center. */
-function bezierPath(from: Rect, to: Rect): string {
+/** Padding above a blocking node when routing an edge around it. */
+const OBSTACLE_PAD = 20
+
+/**
+ * Finds rects that block the direct horizontal path of an edge.
+ * A rect blocks if its x-span overlaps [x1, x2] and its y-span overlaps
+ * the approximate y-band of the edge (with 8px tolerance).
+ */
+function blockingObstacles(x1: number, y1: number, x2: number, y2: number, obstacles: Rect[]): Rect[] {
+  const edgeMinY = Math.min(y1, y2)
+  const edgeMaxY = Math.max(y1, y2)
+  return obstacles.filter((obs) => {
+    const obsRight = obs.x + obs.width
+    const obsBot = obs.y + obs.height
+    if (obsRight <= x1 + 8 || obs.x >= x2 - 8) return false
+    if (obsBot < edgeMinY - 8 || obs.y > edgeMaxY + 8) return false
+    return true
+  })
+}
+
+/**
+ * Cubic bezier path string from source right-center to target left-center.
+ * When intermediate nodes block the direct path, routes the edge above them.
+ */
+function bezierPath(from: Rect, to: Rect, obstacles: Rect[] = []): string {
   const x1 = right(from)
   const y1 = cy(from)
   const x2 = to.x
@@ -24,12 +47,26 @@ function bezierPath(from: Rect, to: Rect): string {
     return `M ${x1},${y1} C ${x1 + 36},${y1} ${x1 + 36},${midY} ${midX},${midY} S ${x2 - 36},${y2} ${x2},${y2}`
   }
 
+  const blocking = blockingObstacles(x1, y1, x2, y2, obstacles)
   const offset = Math.max(60, (x2 - x1) * 0.45)
-  return `M ${x1},${y1} C ${x1 + offset},${y1} ${x2 - offset},${y2} ${x2},${y2}`
+
+  if (blocking.length === 0) {
+    return `M ${x1},${y1} C ${x1 + offset},${y1} ${x2 - offset},${y2} ${x2},${y2}`
+  }
+
+  // Route above all blocking nodes
+  const topOfBlocking = Math.min(...blocking.map((obs) => obs.y))
+  const avoidY = topOfBlocking - OBSTACLE_PAD
+  const o = Math.max(60, (x2 - x1) * 0.35)
+  return `M ${x1},${y1} C ${x1 + o},${avoidY} ${x2 - o},${avoidY} ${x2},${y2}`
 }
 
-/** Relations that are hidden from the canvas (position communicates containment). */
-const HIDDEN_RELATIONS = new Set(['deployed-in'])
+/**
+ * Relations hidden from the canvas because position alone communicates them:
+ * - 'deployed-in': the VPC/subnet boundary shows network containment
+ * - 'secured-by': the security group's position left of the resource shows the relationship
+ */
+const HIDDEN_RELATIONS = new Set(['deployed-in', 'secured-by'])
 
 const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
   triggers: { color: '#8b5cf6' }, // purple — event-source mapping fires lambda
@@ -55,7 +92,7 @@ const LEGEND_ENTRIES: Array<{ label: string; color: string; dash?: string }> = [
   { label: 'invokes', color: '#f97316' },
   { label: 'writes to', color: '#16a34a' },
   { label: 'uses role', color: '#94a3b8', dash: '4 3' },
-  { label: 'secured by', color: '#f59e0b', dash: '5 3' },
+  { label: 'depends on', color: '#94a3b8', dash: '6 3' },
 ]
 
 const LEGEND_ROW_H = 16
@@ -140,15 +177,30 @@ const RELATION_LABEL: Partial<Record<string, string>> = {
 /**
  * Returns the visual midpoint of the bezier edge for label placement.
  * Returns null for feedback edges (right-to-left) to avoid label clutter.
+ * When obstacles are present, returns the midpoint of the rerouted arc.
  */
 function labelAnchor(
   from: Rect,
   to: Rect,
+  obstacles: Rect[] = [],
 ): { x: number; y: number } | null {
   const x1 = right(from)
   const x2 = to.x
   if (x2 < x1 + 20) return null // feedback edge — skip label
-  return { x: (x1 + x2) / 2, y: (cy(from) + cy(to)) / 2 }
+
+  const midX = (x1 + x2) / 2
+  const y1 = cy(from)
+  const y2 = cy(to)
+  const blocking = blockingObstacles(x1, y1, x2, y2, obstacles)
+
+  if (blocking.length === 0) {
+    return { x: midX, y: (y1 + y2) / 2 }
+  }
+
+  // Bezier midpoint at t=0.5: y = 0.125*(y1+y2) + 0.75*avoidY
+  const topOfBlocking = Math.min(...blocking.map((obs) => obs.y))
+  const avoidY = topOfBlocking - OBSTACLE_PAD
+  return { x: midX, y: 0.125 * (y1 + y2) + 0.75 * avoidY }
 }
 
 type EdgeLabelProps = {
@@ -230,6 +282,9 @@ export function ArrowMarker() {
 }
 
 export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
+  // Precompute all node rects for obstacle detection
+  const allNodeRects = Array.from(nodeMap.values()).map((n) => n.rect)
+
   return (
     <>
       {edges.map((edge) => {
@@ -238,16 +293,21 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
         const toNode = nodeMap.get(edge.to)
         if (!fromNode || !toNode) return null
 
+        // Obstacles: all nodes except source and target
+        const obstacles = allNodeRects.filter(
+          (r) => r !== fromNode.rect && r !== toNode.rect,
+        )
+
         const style =
           RELATION_STYLE[edge.relation] ??
           RELATION_STYLE[edge.confidence] ??
           DEFAULT_STYLE
-        const d = bezierPath(fromNode.rect, toNode.rect)
+        const d = bezierPath(fromNode.rect, toNode.rect, obstacles)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
         const labelText = RELATION_LABEL[edge.relation]
         const anchor = labelText
-          ? labelAnchor(fromNode.rect, toNode.rect)
+          ? labelAnchor(fromNode.rect, toNode.rect, obstacles)
           : null
 
         return (

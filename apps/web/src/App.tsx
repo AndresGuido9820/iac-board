@@ -11,6 +11,25 @@ import { translations } from './translations'
 import type { Lang, Translations } from './translations'
 import './App.css'
 
+/** Download the `.cloud-canvas` SVG as a self-contained SVG file. */
+function exportSvg(name: string): void {
+  const svg = document.querySelector<SVGSVGElement>('.cloud-canvas')
+  if (!svg) return
+  const serializer = new XMLSerializer()
+  let src = serializer.serializeToString(svg)
+  // Ensure XML declaration and SVG namespace are present
+  if (!src.startsWith('<?xml')) {
+    src = '<?xml version="1.0" encoding="utf-8"?>\n' + src
+  }
+  const blob = new Blob([src], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${name.toLowerCase().replace(/\s+/g, '-')}-diagram.svg`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 type SelectedNode = {
   id: string
   label: string
@@ -183,7 +202,17 @@ export function ProductShell({
             <p className="eyebrow">{t.eyebrow_generated}</p>
             <h2 id="example-title">{example.name}</h2>
           </div>
-          <span className="status-pill">{t.bundled_example}</span>
+          <div className="panel-header-actions">
+            <button
+              aria-label={t.export_svg}
+              className="export-btn"
+              onClick={() => exportSvg(example.name)}
+              type="button"
+            >
+              {t.export_svg}
+            </button>
+            <span className="status-pill">{t.bundled_example}</span>
+          </div>
         </div>
         <p className="panel-copy">{example.description}</p>
         <div className="board-with-inspector">

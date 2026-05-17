@@ -97,6 +97,30 @@
   padding-left: 20px;
 }
 
+.panel-header-actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.export-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.export-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .status-pill {
   border: 1px solid var(--border);
   border-radius: 999px;
