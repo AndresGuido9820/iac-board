@@ -200,7 +200,12 @@ function barycentreOrdering(
  * For these edges we reverse the predecessor direction so the container ends up
  * at a lower layer number (leftmost column) instead of the rightmost.
  */
-const CONTAINMENT_RELATIONS = new Set<string>(['deployed-in', 'secured-by'])
+/** Relations where edge.to is the predecessor (provider/dependency precedes consumer).
+ * 'deployed-in': container is placed left of contained resources.
+ * 'secured-by': security resource is placed left of protected resources.
+ * 'depends-on': dependency is placed left of the dependent (downstream consumer).
+ */
+const CONTAINMENT_RELATIONS = new Set<string>(['deployed-in', 'secured-by', 'depends-on'])
 
 /**
  * Assigns each node a layer using longest-path-from-source DP.
