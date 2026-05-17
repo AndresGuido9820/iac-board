@@ -3,9 +3,6 @@ import type { BoardEdge, BoardNode, Rect } from './types'
 const MARKER_ID = 'iac-arrowhead'
 const MARKER_ID_DASHED = 'iac-arrowhead-dashed'
 
-function cx(rect: Rect) {
-  return rect.x + rect.width / 2
-}
 function cy(rect: Rect) {
   return rect.y + rect.height / 2
 }
