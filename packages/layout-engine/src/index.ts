@@ -205,7 +205,11 @@ function barycentreOrdering(
  * 'secured-by': security resource is placed left of protected resources.
  * 'depends-on': dependency is placed left of the dependent (downstream consumer).
  */
-const CONTAINMENT_RELATIONS = new Set<string>(['deployed-in', 'secured-by', 'depends-on'])
+const CONTAINMENT_RELATIONS = new Set<string>([
+  'deployed-in',
+  'secured-by',
+  'depends-on',
+])
 
 /**
  * Assigns each node a layer using longest-path-from-source DP.

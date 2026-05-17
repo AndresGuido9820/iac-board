@@ -19,7 +19,10 @@ describe('useViewport', () => {
   it('zooms in on wheel up', () => {
     const { result } = renderHook(() => useViewport())
     act(() => {
-      result.current.onWheel({ deltaY: -1, preventDefault: () => {} } as unknown as React.WheelEvent)
+      result.current.onWheel({
+        deltaY: -1,
+        preventDefault: () => {},
+      } as unknown as React.WheelEvent)
     })
     expect(result.current.viewport.zoom).toBeGreaterThan(1)
   })
@@ -27,7 +30,10 @@ describe('useViewport', () => {
   it('zooms out on wheel down', () => {
     const { result } = renderHook(() => useViewport())
     act(() => {
-      result.current.onWheel({ deltaY: 1, preventDefault: () => {} } as unknown as React.WheelEvent)
+      result.current.onWheel({
+        deltaY: 1,
+        preventDefault: () => {},
+      } as unknown as React.WheelEvent)
     })
     expect(result.current.viewport.zoom).toBeLessThan(1)
   })
@@ -36,7 +42,10 @@ describe('useViewport', () => {
     const { result } = renderHook(() => useViewport())
     for (let i = 0; i < 100; i++) {
       act(() => {
-        result.current.onWheel({ deltaY: -1, preventDefault: () => {} } as unknown as React.WheelEvent)
+        result.current.onWheel({
+          deltaY: -1,
+          preventDefault: () => {},
+        } as unknown as React.WheelEvent)
       })
     }
     expect(result.current.viewport.zoom).toBeLessThanOrEqual(3)
@@ -46,7 +55,10 @@ describe('useViewport', () => {
     const { result } = renderHook(() => useViewport())
     for (let i = 0; i < 100; i++) {
       act(() => {
-        result.current.onWheel({ deltaY: 1, preventDefault: () => {} } as unknown as React.WheelEvent)
+        result.current.onWheel({
+          deltaY: 1,
+          preventDefault: () => {},
+        } as unknown as React.WheelEvent)
       })
     }
     expect(result.current.viewport.zoom).toBeGreaterThanOrEqual(0.2)
@@ -56,13 +68,17 @@ describe('useViewport', () => {
     const { result } = renderHook(() => useViewport())
     act(() => {
       result.current.onMouseDown({
-        clientX: 100, clientY: 100,
+        clientX: 100,
+        clientY: 100,
         target: { closest: () => true },
         preventDefault: () => {},
       } as unknown as React.MouseEvent)
     })
     act(() => {
-      result.current.onMouseMove({ clientX: 150, clientY: 120 } as React.MouseEvent)
+      result.current.onMouseMove({
+        clientX: 150,
+        clientY: 120,
+      } as React.MouseEvent)
     })
     expect(result.current.viewport.x).toBe(50)
     expect(result.current.viewport.y).toBe(20)
@@ -72,14 +88,20 @@ describe('useViewport', () => {
     const { result } = renderHook(() => useViewport())
     act(() => {
       result.current.onMouseDown({
-        clientX: 100, clientY: 100,
+        clientX: 100,
+        clientY: 100,
         target: { closest: () => true },
         preventDefault: () => {},
       } as unknown as React.MouseEvent)
     })
-    act(() => { result.current.onMouseUp() })
     act(() => {
-      result.current.onMouseMove({ clientX: 200, clientY: 200 } as React.MouseEvent)
+      result.current.onMouseUp()
+    })
+    act(() => {
+      result.current.onMouseMove({
+        clientX: 200,
+        clientY: 200,
+      } as React.MouseEvent)
     })
     // After mouseup, position should not have changed
     expect(result.current.viewport.x).toBe(0)
@@ -90,13 +112,17 @@ describe('useViewport', () => {
     const { result } = renderHook(() => useViewport())
     act(() => {
       result.current.onMouseDown({
-        clientX: 100, clientY: 100,
+        clientX: 100,
+        clientY: 100,
         target: { closest: () => null },
         preventDefault: () => {},
       } as unknown as React.MouseEvent)
     })
     act(() => {
-      result.current.onMouseMove({ clientX: 200, clientY: 200 } as React.MouseEvent)
+      result.current.onMouseMove({
+        clientX: 200,
+        clientY: 200,
+      } as React.MouseEvent)
     })
     expect(result.current.viewport.x).toBe(0)
     expect(result.current.viewport.y).toBe(0)

@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "statusMessage": "Lanzando analisis de producto IaC Board...",
+            "timeout": 300,
+            "command": "bash /home/andres/Github/iac-board/.claude/product-analyst.sh >> /tmp/iac-analyst-hook.log 2>&1"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "statusMessage": "Lanzando visual reviewer IaC Board...",
+            "timeout": 400,
+            "command": "bash /home/andres/Github/iac-board/.claude/visual-reviewer.sh >> /tmp/iac-visual-reviewer-hook.log 2>&1"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | grep -qE '(visual-engine|layout-engine|canvas-engine)/src/|App\\.css$' && echo '{\"systemMessage\": \"Visual file changed. After implementation, run: npm run test:visual:update — then read screenshots to verify.\"}' || true"
+          }
+        ]
+      }
+    ]
+  }
+}

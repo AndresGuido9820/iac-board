@@ -76,10 +76,10 @@ export const iconRegistry: Record<string, string> = {
 const ICON_ALIASES: Record<string, string> = {
   // integration → integration (purple): same category, no color conflict
   aws_lambda_event_source_mapping: 'aws_kinesis_stream', // ESM: streams/queues to lambda
-  aws_cloudwatch_event_rule: 'aws_sns_topic',            // event bus routing
+  aws_cloudwatch_event_rule: 'aws_sns_topic', // event bus routing
   aws_cloudwatch_event_target: 'aws_sns_topic',
-  aws_scheduler_schedule: 'aws_sqs_queue',               // queue/schedule pattern
-  aws_sfn_state_machine: 'aws_sns_topic',                // orchestration
+  aws_scheduler_schedule: 'aws_sqs_queue', // queue/schedule pattern
+  aws_sfn_state_machine: 'aws_sns_topic', // orchestration
   aws_kinesis_firehose_delivery_stream: 'aws_kinesis_stream',
   aws_lb: 'aws_api_gateway_rest_api',
   aws_alb: 'aws_api_gateway_rest_api',
@@ -91,5 +91,7 @@ const ICON_ALIASES: Record<string, string> = {
 }
 
 export function getIcon(resourceType: string): string | undefined {
-  return iconRegistry[resourceType] ?? iconRegistry[ICON_ALIASES[resourceType] ?? '']
+  return (
+    iconRegistry[resourceType] ?? iconRegistry[ICON_ALIASES[resourceType] ?? '']
+  )
 }

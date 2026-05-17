@@ -148,7 +148,7 @@ describe('EdgeRenderer', () => {
     // Visual direction should be reversed: arrow goes FROM B TO A (left→right)
     const dependsOnMap = new Map<string, BoardNode>([
       ['A', node('A', 660, 60)], // dependent — layout places it RIGHT
-      ['B', node('B', 60, 60)],  // dependency — layout places it LEFT
+      ['B', node('B', 60, 60)], // dependency — layout places it LEFT
     ])
     render(
       <svg>
