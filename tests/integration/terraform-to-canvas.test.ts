@@ -45,13 +45,16 @@ describe('Terraform to canvas pipeline', () => {
       result: generateDiagramFromTerraformFiles(example.files),
     }))
 
-    expect(results).toHaveLength(3)
+    expect(results).toHaveLength(4)
     expect(results.every(({ result }) => result.canvasDrafts.length > 0)).toBe(
       true,
     )
-    expect(results.map(({ result }) => result.diagnostics.length)).toEqual([
-      0, 0, 0,
-    ])
+    // All examples must parse without diagnostics
+    results.forEach(({ example, result }) => {
+      expect(result.diagnostics, `${example.id} has diagnostics`).toHaveLength(
+        0,
+      )
+    })
   })
 
   it('keeps network topology groups in canvas output', () => {
@@ -68,5 +71,27 @@ describe('Terraform to canvas pipeline', () => {
       type: 'group',
       label: 'VPC main',
     })
+  })
+
+  it('generates ECS microservices diagram with expected resources', () => {
+    const example = getExampleProject('aws-ecs-microservices')
+    const result = generateDiagramFromTerraformFiles(example.files)
+
+    expect(result.diagnostics).toHaveLength(0)
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({ id: 'aws_ecs_cluster.app', label: 'app' }),
+    )
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({ id: 'aws_lb.api', label: 'api' }),
+    )
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({
+        id: 'aws_cloudfront_distribution.cdn',
+        label: 'cdn',
+      }),
+    )
+    expect(result.canvasDrafts).toContainEqual(
+      expect.objectContaining({ id: 'aws_cognito_user_pool.users', label: 'users' }),
+    )
   })
 })
