@@ -5,12 +5,13 @@ describe('example catalog', () => {
   it('lists example projects for HU-002', () => {
     const examples = listExampleProjects()
 
-    expect(examples).toHaveLength(4)
+    expect(examples).toHaveLength(5)
     expect(examples.map((example) => example.id)).toEqual([
       'aws-serverless-api',
       'aws-iot-pipeline',
       'aws-vpc-rds',
       'aws-ecs-microservices',
+      'aws-modular-app',
     ])
     expect(examples[0]).toMatchObject({
       id: 'aws-serverless-api',

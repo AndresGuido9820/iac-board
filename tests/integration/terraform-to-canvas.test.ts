@@ -45,7 +45,7 @@ describe('Terraform to canvas pipeline', () => {
       result: generateDiagramFromTerraformFiles(example.files),
     }))
 
-    expect(results).toHaveLength(4)
+    expect(results).toHaveLength(5)
     expect(results.every(({ result }) => result.canvasDrafts.length > 0)).toBe(
       true,
     )
