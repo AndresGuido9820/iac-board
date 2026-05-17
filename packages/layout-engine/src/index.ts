@@ -43,7 +43,7 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
     byLayer.set(layer, arr)
   }
 
-  // Sort each layer by category order then name for stable output
+  // Sort each layer by category order then name for stable initial ordering
   const categoryOrder = [
     'network',
     'security',
@@ -62,6 +62,9 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
       return ca !== cb ? ca - cb : a.localeCompare(b)
     })
   }
+
+  // Phase 2 — Barycenter crossing minimisation (Sugiyama)
+  barycentreOrdering(byLayer, graph.edges)
 
   // Find tallest column to centre shorter ones vertically
   const maxCount = Math.max(
@@ -112,6 +115,81 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   }
 
   return { ...graph, layout }
+}
+
+// ── Barycenter crossing minimisation ─────────────────────────────────────────
+
+/**
+ * Reorders nodes within each layer to reduce edge crossings using the
+ * barycenter heuristic (Sugiyama Phase 2).
+ *
+ * Each node's barycenter = average position-index of its neighbours in the
+ * adjacent layer. Alternating forward/backward sweeps are repeated for
+ * `iterations` passes. The initial category-order sort is used as a tiebreak
+ * so identical barycenters remain stable.
+ */
+function barycentreOrdering(
+  byLayer: Map<number, string[]>,
+  edges: CloudEdge[],
+  iterations = 6,
+): void {
+  if (byLayer.size < 2) return
+
+  // Build adjacency: successors[id] = ids in the next layer this node points to
+  //                  predecessors[id] = ids in the prev layer that point here
+  const successors = new Map<string, string[]>()
+  const predecessors = new Map<string, string[]>()
+  for (const edge of edges) {
+    if (!successors.has(edge.from)) successors.set(edge.from, [])
+    if (!predecessors.has(edge.to)) predecessors.set(edge.to, [])
+    successors.get(edge.from)!.push(edge.to)
+    predecessors.get(edge.to)!.push(edge.from)
+  }
+
+  const sortedLayerNums = [...byLayer.keys()].sort((a, b) => a - b)
+
+  /** Returns the barycenter of `id` relative to positions in `refLayer`. */
+  function barycenter(
+    id: string,
+    neighbours: string[],
+    posOf: Map<string, number>,
+  ): number {
+    const refs = neighbours.filter((n) => posOf.has(n))
+    if (refs.length === 0) return Infinity // no neighbours → keep at end
+    return refs.reduce((sum, n) => sum + posOf.get(n)!, 0) / refs.length
+  }
+
+  for (let iter = 0; iter < iterations; iter++) {
+    // Forward sweep: L=1..max, sort by predecessor barycenters in L-1
+    for (let i = 1; i < sortedLayerNums.length; i++) {
+      const prevLayerNum = sortedLayerNums[i - 1]
+      const currLayerNum = sortedLayerNums[i]
+      const prevIds = byLayer.get(prevLayerNum)!
+      const currIds = byLayer.get(currLayerNum)!
+
+      const posOf = new Map(prevIds.map((id, idx) => [id, idx]))
+      currIds.sort((a, b) => {
+        const ba = barycenter(a, predecessors.get(a) ?? [], posOf)
+        const bb = barycenter(b, predecessors.get(b) ?? [], posOf)
+        return ba - bb
+      })
+    }
+
+    // Backward sweep: L=max-1..0, sort by successor barycenters in L+1
+    for (let i = sortedLayerNums.length - 2; i >= 0; i--) {
+      const nextLayerNum = sortedLayerNums[i + 1]
+      const currLayerNum = sortedLayerNums[i]
+      const nextIds = byLayer.get(nextLayerNum)!
+      const currIds = byLayer.get(currLayerNum)!
+
+      const posOf = new Map(nextIds.map((id, idx) => [id, idx]))
+      currIds.sort((a, b) => {
+        const ba = barycenter(a, successors.get(a) ?? [], posOf)
+        const bb = barycenter(b, successors.get(b) ?? [], posOf)
+        return ba - bb
+      })
+    }
+  }
 }
 
 // ── Layer assignment ─────────────────────────────────────────────────────────
