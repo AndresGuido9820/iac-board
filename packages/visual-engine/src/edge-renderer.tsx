@@ -45,6 +45,87 @@ const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
 
 const DEFAULT_STYLE = { color: '#94a3b8', dash: '5 3' }
 
+// ── Edge legend ───────────────────────────────────────────────────────────────
+
+const LEGEND_ENTRIES: Array<{ label: string; color: string; dash?: string }> = [
+  { label: 'connects', color: '#2563eb' },
+  { label: 'triggers', color: '#8b5cf6' },
+  { label: 'publishes', color: '#8b5cf6' },
+  { label: 'invokes', color: '#f97316' },
+  { label: 'writes to', color: '#16a34a' },
+  { label: 'uses role', color: '#94a3b8', dash: '4 3' },
+  { label: 'secured by', color: '#f59e0b', dash: '5 3' },
+  { label: 'deployed in', color: '#cbd5e1', dash: '3 5' },
+]
+
+const LEGEND_ROW_H = 16
+const LEGEND_PAD = 10
+const LEGEND_W = 108
+export const LEGEND_H = LEGEND_ENTRIES.length * LEGEND_ROW_H + LEGEND_PAD * 2 + 14 // +14 for title
+
+type EdgeLegendProps = { x: number; y: number }
+
+export function EdgeLegend({ x, y }: EdgeLegendProps) {
+  return (
+    <g data-testid="iac-edge-legend" pointerEvents="none">
+      {/* Background */}
+      <rect
+        fill="white"
+        fillOpacity={0.9}
+        height={LEGEND_H}
+        rx={6}
+        stroke="#e2e8f0"
+        strokeWidth={1}
+        width={LEGEND_W}
+        x={x}
+        y={y}
+      />
+      {/* Title */}
+      <text
+        dominantBaseline="hanging"
+        fill="#94a3b8"
+        fontFamily="system-ui, sans-serif"
+        fontSize={8}
+        fontWeight={700}
+        letterSpacing="0.08em"
+        x={x + LEGEND_PAD}
+        y={y + LEGEND_PAD}
+      >
+        RELATIONS
+      </text>
+      {/* Entries */}
+      {LEGEND_ENTRIES.map(({ label, color, dash }, i) => {
+        const rowY = y + LEGEND_PAD + 14 + i * LEGEND_ROW_H
+        return (
+          <g key={label}>
+            {/* Line sample */}
+            <line
+              stroke={color}
+              strokeDasharray={dash}
+              strokeWidth={1.5}
+              x1={x + LEGEND_PAD}
+              x2={x + LEGEND_PAD + 18}
+              y1={rowY + LEGEND_ROW_H / 2}
+              y2={rowY + LEGEND_ROW_H / 2}
+            />
+            {/* Label */}
+            <text
+              dominantBaseline="middle"
+              fill="#475569"
+              fontFamily="system-ui, sans-serif"
+              fontSize={8.5}
+              x={x + LEGEND_PAD + 24}
+              y={rowY + LEGEND_ROW_H / 2}
+            >
+              {label}
+            </text>
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+
 /** Human-readable label per relation. Omitted relations get no label. */
 const RELATION_LABEL: Partial<Record<string, string>> = {
   triggers: 'triggers',

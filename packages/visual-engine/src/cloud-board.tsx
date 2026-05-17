@@ -9,7 +9,7 @@ import type {
 import { useViewport } from './use-viewport'
 import { NodeRenderer } from './node-renderer'
 import { GroupRenderer } from './group-renderer'
-import { EdgeRenderer, ArrowMarker } from './edge-renderer'
+import { EdgeRenderer, ArrowMarker, EdgeLegend, LEGEND_H } from './edge-renderer'
 
 type CloudBoardProps = {
   elements: BoardElement[]
@@ -89,11 +89,14 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
   const maxX = allRects.length
     ? Math.max(...allRects.map((r) => r.x + r.width)) + PAD
     : 800
-  const maxY = allRects.length
+  // Extend bottom to accommodate the edge legend below diagram content
+  const contentMaxY = allRects.length
     ? Math.max(...allRects.map((r) => r.y + r.height)) + PAD
     : 480
+  const maxY = contentMaxY + LEGEND_H + 24
   const vw = maxX - minX
   const vh = maxY - minY
+  const legendY = contentMaxY + 8
 
   const dotGridId = 'iac-dot-grid'
 
@@ -144,6 +147,9 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
         />
 
         <ArrowMarker />
+
+        {/* Edge legend — below diagram content, not affected by pan/zoom */}
+        <EdgeLegend x={minX + 16} y={legendY} />
 
         <g style={{ transform, transformOrigin: '0 0' }}>
           {/* Groups first — nodes render on top */}
