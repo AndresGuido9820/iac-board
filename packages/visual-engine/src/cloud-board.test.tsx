@@ -80,6 +80,16 @@ describe('CloudBoard', () => {
     expect(screen.getAllByTestId('iac-node')).toHaveLength(2)
   })
 
+  it('renders minimap when there are nodes', () => {
+    render(<CloudBoard elements={twoNodeElements} />)
+    expect(screen.getByTestId('iac-minimap')).toBeInTheDocument()
+  })
+
+  it('does not render minimap when elements is empty', () => {
+    render(<CloudBoard elements={emptyElements} />)
+    expect(screen.queryByTestId('iac-minimap')).not.toBeInTheDocument()
+  })
+
   it('uses fallback viewBox when elements is empty', () => {
     render(<CloudBoard elements={emptyElements} />)
     const svg = document.querySelector('.cloud-canvas')
