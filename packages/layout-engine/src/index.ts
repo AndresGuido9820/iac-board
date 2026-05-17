@@ -150,7 +150,7 @@ function barycentreOrdering(
 
   /** Returns the barycenter of `id` relative to positions in `refLayer`. */
   function barycenter(
-    id: string,
+    _id: string,
     neighbours: string[],
     posOf: Map<string, number>,
   ): number {
@@ -195,20 +195,33 @@ function barycentreOrdering(
 // ── Layer assignment ─────────────────────────────────────────────────────────
 
 /**
+ * Containment edges (deployed-in, secured-by) represent AWS resource hierarchy:
+ * the container (VPC, subnet) should appear to the LEFT of the resources it holds.
+ * For these edges we reverse the predecessor direction so the container ends up
+ * at a lower layer number (leftmost column) instead of the rightmost.
+ */
+const CONTAINMENT_RELATIONS = new Set<string>(['deployed-in', 'secured-by'])
+
+/**
  * Assigns each node a layer using longest-path-from-source DP.
  *
- * Edge semantics: from→to means "from references to", so from is placed
- * BEFORE to (lower layer number = leftmost column).
- * layer(to) = max(layer(from) for all edges from→to) + 1
+ * For data-flow edges (from→to): from is placed BEFORE to.
+ * For containment edges (from deployed-in to): to (the container) is placed
+ * BEFORE from (the resource inside the container).
  */
 function computeLayers(
   nodeIds: string[],
   edges: CloudEdge[],
 ): Map<string, number> {
-  // predecessors[to] = list of froms (nodes that point TO this node)
+  // predecessors[node] = list of nodes that must be placed before this node
   const predecessors = new Map<string, string[]>(nodeIds.map((id) => [id, []]))
   for (const edge of edges) {
-    predecessors.get(edge.to)?.push(edge.from)
+    if (CONTAINMENT_RELATIONS.has(edge.relation)) {
+      // Container (edge.to) is the predecessor: container goes left of contained
+      predecessors.get(edge.from)?.push(edge.to)
+    } else {
+      predecessors.get(edge.to)?.push(edge.from)
+    }
   }
 
   const memo = new Map<string, number>()
