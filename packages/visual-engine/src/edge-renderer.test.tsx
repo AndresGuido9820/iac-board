@@ -1,0 +1,132 @@
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+import { EdgeRenderer, ArrowMarker } from './edge-renderer'
+import type { BoardEdge, BoardNode, Rect } from './types'
+
+function rect(x: number, y: number): Rect {
+  return { x, y, width: 220, height: 92 }
+}
+
+function node(id: string, x: number, y: number): BoardNode {
+  return {
+    type: 'node',
+    id,
+    resourceType: 'aws_lambda_function',
+    label: id,
+    category: 'compute',
+    rect: rect(x, y),
+  }
+}
+
+function edge(
+  id: string,
+  from: string,
+  to: string,
+  relation: BoardEdge['relation'],
+): BoardEdge {
+  return { type: 'edge', id, from, to, relation, confidence: 'inferred' }
+}
+
+const nodeMap = new Map<string, BoardNode>([
+  ['A', node('A', 60, 60)],
+  ['B', node('B', 360, 60)],
+])
+
+describe('EdgeRenderer', () => {
+  it('renders a path for a known edge', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'connects')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.getAllByTestId('iac-edge')).toHaveLength(1)
+    expect(screen.getByTestId('iac-edge-path')).toBeInTheDocument()
+  })
+
+  it('renders an edge label for labelled relations', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'triggers')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge-label')).toBeInTheDocument()
+    expect(screen.getByText('triggers')).toBeInTheDocument()
+  })
+
+  it('renders correct label text per relation', () => {
+    const cases: Array<[BoardEdge['relation'], string]> = [
+      ['invokes', 'invokes'],
+      ['publishes-to', 'publishes'],
+      ['connects', 'connects'],
+      ['writes-to', 'writes to'],
+      ['uses-role', 'uses role'],
+      ['secured-by', 'secured by'],
+    ]
+
+    for (const [relation, expectedText] of cases) {
+      const { unmount } = render(
+        <svg>
+          <ArrowMarker />
+          <EdgeRenderer
+            edges={[edge('e1', 'A', 'B', relation)]}
+            nodeMap={nodeMap}
+          />
+        </svg>,
+      )
+      expect(screen.getByText(expectedText)).toBeInTheDocument()
+      unmount()
+    }
+  })
+
+  it('does not render a label for deployed-in (containment, no label)', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'deployed-in')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.queryByTestId('iac-edge-label')).not.toBeInTheDocument()
+  })
+
+  it('does not render a label for feedback edges (right-to-left)', () => {
+    // B is to the LEFT of A — feedback edge
+    const reverseMap = new Map<string, BoardNode>([
+      ['A', node('A', 360, 60)],
+      ['B', node('B', 60, 60)],
+    ])
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'triggers')]}
+          nodeMap={reverseMap}
+        />
+      </svg>,
+    )
+    expect(screen.queryByTestId('iac-edge-label')).not.toBeInTheDocument()
+  })
+
+  it('skips edges with missing nodes', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'MISSING', 'connects')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.queryByTestId('iac-edge')).not.toBeInTheDocument()
+  })
+})
