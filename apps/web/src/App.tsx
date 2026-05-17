@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   getExampleProject,
   listExampleProjects,
@@ -10,6 +10,74 @@ import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
 import './App.css'
+
+type SelectedNode = {
+  id: string
+  label: string
+  resourceType: string
+  category: string
+  sourceRef?: string
+  edgesOut: number
+  edgesIn: number
+}
+
+type NodeInspectorProps = {
+  node: SelectedNode
+  onClose: () => void
+  t: Translations
+}
+
+function NodeInspector({ node, onClose, t }: NodeInspectorProps) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return (
+    <aside className="node-inspector" aria-label={t.aria_node_inspector}>
+      <div className="node-inspector-header">
+        <strong>{node.label}</strong>
+        <button
+          aria-label={t.close_inspector}
+          className="inspector-close"
+          onClick={onClose}
+          type="button"
+        >
+          ✕
+        </button>
+      </div>
+      <dl className="inspector-fields">
+        <div>
+          <dt>{t.inspector_type}</dt>
+          <dd>{node.resourceType}</dd>
+        </div>
+        <div>
+          <dt>{t.inspector_category}</dt>
+          <dd>{node.category}</dd>
+        </div>
+        {node.sourceRef && (
+          <div>
+            <dt>{t.inspector_source}</dt>
+            <dd>
+              <code>{node.sourceRef}</code>
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt>{t.inspector_edges_out}</dt>
+          <dd>{node.edgesOut}</dd>
+        </div>
+        <div>
+          <dt>{t.inspector_edges_in}</dt>
+          <dd>{node.edgesIn}</dd>
+        </div>
+      </dl>
+    </aside>
+  )
+}
 
 type ProductShellProps = {
   examples: ExampleProject[]
@@ -30,6 +98,8 @@ export function ProductShell({
   t = translations.en,
   onToggleLang,
 }: ProductShellProps) {
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null)
+
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
   )
@@ -39,6 +109,25 @@ export function ProductShell({
   const groupDrafts = generatedDiagram.canvasDrafts.filter(
     (draft) => draft.type === 'group',
   )
+
+  const handleNodeSelect = (id: string | null) => {
+    if (!id) { setSelectedNode(null); return }
+    const graphNode = nodesById.get(id)
+    if (!graphNode) { setSelectedNode(null); return }
+    const edgesOut = generatedDiagram.graph.edges.filter((e) => e.from === id).length
+    const edgesIn = generatedDiagram.graph.edges.filter((e) => e.to === id).length
+    setSelectedNode({
+      id,
+      label: graphNode.label,
+      resourceType: graphNode.kind,
+      category: graphNode.category,
+      sourceRef: graphNode.source
+        ? `${graphNode.source.filePath}:${graphNode.source.line ?? 1}`
+        : undefined,
+      edgesOut,
+      edgesIn,
+    })
+  }
 
   return (
     <main className="app-shell">
@@ -97,14 +186,24 @@ export function ProductShell({
           <span className="status-pill">{t.bundled_example}</span>
         </div>
         <p className="panel-copy">{example.description}</p>
-        <CloudBoard
-          className="cloud-board"
-          elements={toBoardElements(
-            generatedDiagram.canvasDrafts,
-            generatedDiagram.graph.nodes,
-            generatedDiagram.graph.edges,
+        <div className="board-with-inspector">
+          <CloudBoard
+            className="cloud-board"
+            elements={toBoardElements(
+              generatedDiagram.canvasDrafts,
+              generatedDiagram.graph.nodes,
+              generatedDiagram.graph.edges,
+            )}
+            onNodeSelect={handleNodeSelect}
+          />
+          {selectedNode && (
+            <NodeInspector
+              node={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              t={t}
+            />
           )}
-        />
+        </div>
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>
