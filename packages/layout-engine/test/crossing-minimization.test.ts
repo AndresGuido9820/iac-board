@@ -3,11 +3,25 @@ import { layoutCloudGraph } from '../src'
 import type { CloudGraph } from '@iac-board/core-types'
 
 function node(id: string, category = 'compute') {
-  return { id, provider: 'aws' as const, kind: id, label: id, category, metadata: {} }
+  return {
+    id,
+    provider: 'aws' as const,
+    kind: id,
+    label: id,
+    category,
+    metadata: {},
+  }
 }
 
 function edge(from: string, to: string) {
-  return { id: `${from}->${to}`, from, to, relation: 'connects' as const, confidence: 'inferred' as const, metadata: {} }
+  return {
+    id: `${from}->${to}`,
+    from,
+    to,
+    relation: 'connects' as const,
+    confidence: 'inferred' as const,
+    metadata: {},
+  }
 }
 
 describe('barycentre crossing minimisation', () => {
@@ -36,10 +50,7 @@ describe('barycentre crossing minimisation', () => {
     // After barycenter: should swap so top0→top1, bot0→bot1 (no crossing)
     const graph: CloudGraph = {
       nodes: [node('top0'), node('bot0'), node('top1'), node('bot1')],
-      edges: [
-        edge('top0', 'top1'),
-        edge('bot0', 'bot1'),
-      ],
+      edges: [edge('top0', 'top1'), edge('bot0', 'bot1')],
       groups: [],
       diagnostics: [],
     }
@@ -49,7 +60,6 @@ describe('barycentre crossing minimisation', () => {
     // bot0 and bot1 share an edge → they should be at similar y positions
     const yTop0 = positioned.layout['top0']!.y
     const yTop1 = positioned.layout['top1']!.y
-    const yBot0 = positioned.layout['bot0']!.y
     const yBot1 = positioned.layout['bot1']!.y
 
     // Connected pairs should be on the same side (top/bottom)

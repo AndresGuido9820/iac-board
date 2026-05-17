@@ -36,7 +36,7 @@ const twoNodeElements: BoardElement[] = [
 describe('CloudBoard', () => {
   it('renders without crashing with empty elements', () => {
     render(<CloudBoard elements={emptyElements} />)
-    expect(document.querySelector('.cloud-canvas')).toBeInTheDocument()
+    expect(screen.getByTestId('iac-canvas')).toBeInTheDocument()
   })
 
   it('renders nodes and edges', () => {
@@ -47,7 +47,9 @@ describe('CloudBoard', () => {
 
   it('calls onNodeSelect when a node is clicked', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
     const nodes = screen.getAllByTestId('iac-node')
     fireEvent.mouseDown(nodes[0])
     expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
@@ -92,9 +94,9 @@ describe('CloudBoard', () => {
 
   it('uses fallback viewBox when elements is empty', () => {
     render(<CloudBoard elements={emptyElements} />)
-    const svg = document.querySelector('.cloud-canvas')
+    const svg = screen.getByTestId('iac-canvas')
     // contentMaxY=480 + LEGEND_H(7*16+20+14=146) + 24 = 650
-    expect(svg?.getAttribute('viewBox')).toBe('0 0 800 650')
+    expect(svg.getAttribute('viewBox')).toBe('0 0 800 650')
   })
 
   it('toBoardElements produces correct BoardEdge from CloudEdge', () => {
@@ -113,13 +115,35 @@ describe('CloudBoard', () => {
       ],
     )
     expect(elements).toHaveLength(1)
-    expect(elements[0]).toMatchObject({ type: 'edge', from: 'a', to: 'b', relation: 'connects' })
+    expect(elements[0]).toMatchObject({
+      type: 'edge',
+      from: 'a',
+      to: 'b',
+      relation: 'connects',
+    })
   })
 
   it('toBoardElements maps draft node with source ref', () => {
     const elements = toBoardElements(
-      [{ type: 'node', id: 'aws_lambda_function.fn', label: 'fn', x: 0, y: 0, width: 220, height: 92 }],
-      [{ id: 'aws_lambda_function.fn', kind: 'aws_lambda_function', category: 'compute', source: { filePath: 'main.tf', line: 5 } }],
+      [
+        {
+          type: 'node',
+          id: 'aws_lambda_function.fn',
+          label: 'fn',
+          x: 0,
+          y: 0,
+          width: 220,
+          height: 92,
+        },
+      ],
+      [
+        {
+          id: 'aws_lambda_function.fn',
+          kind: 'aws_lambda_function',
+          category: 'compute',
+          source: { filePath: 'main.tf', line: 5 },
+        },
+      ],
       [],
     )
     expect(elements).toHaveLength(1)
@@ -130,7 +154,17 @@ describe('CloudBoard', () => {
 
   it('toBoardElements maps draft node without matching graph node', () => {
     const elements = toBoardElements(
-      [{ type: 'node', id: 'custom.thing', label: 'thing', x: 0, y: 0, width: 220, height: 92 }],
+      [
+        {
+          type: 'node',
+          id: 'custom.thing',
+          label: 'thing',
+          x: 0,
+          y: 0,
+          width: 220,
+          height: 92,
+        },
+      ],
       [],
       [],
     )
@@ -142,24 +176,45 @@ describe('CloudBoard', () => {
 
   it('toBoardElements uses line=1 fallback when source has no line', () => {
     const elements = toBoardElements(
-      [{ type: 'node', id: 'aws_lambda_function.fn', label: 'fn', x: 0, y: 0, width: 220, height: 92 }],
-      [{ id: 'aws_lambda_function.fn', kind: 'aws_lambda_function', category: 'compute', provider: 'aws', label: 'fn', source: { filePath: 'main.tf' }, metadata: {} }],
+      [
+        {
+          type: 'node',
+          id: 'aws_lambda_function.fn',
+          label: 'fn',
+          x: 0,
+          y: 0,
+          width: 220,
+          height: 92,
+        },
+      ],
+      [
+        {
+          id: 'aws_lambda_function.fn',
+          kind: 'aws_lambda_function',
+          category: 'compute',
+          provider: 'aws',
+          label: 'fn',
+          source: { filePath: 'main.tf' },
+          metadata: {},
+        },
+      ],
       [],
     )
     const node = elements[0] as import('./types').BoardNode
     expect(node.sourceRef).toBe('main.tf:1')
   })
 
-
   it('deselects node when clicking board background', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
     // Click a node first
     const nodes = screen.getAllByTestId('iac-node')
     fireEvent.mouseDown(nodes[0])
     expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
     // Click the SVG background — should deselect
-    const svg = document.querySelector('.cloud-canvas')!
+    const svg = screen.getByTestId('iac-canvas')
     fireEvent.click(svg)
     expect(onNodeSelect).toHaveBeenLastCalledWith(null)
   })
@@ -167,28 +222,32 @@ describe('CloudBoard', () => {
   it('drags a node with mouse events', () => {
     render(<CloudBoard elements={twoNodeElements} />)
     const nodes = screen.getAllByTestId('iac-node')
+    const board = screen.getByRole('application')
     // Start drag on the node
     fireEvent.mouseDown(nodes[0], { clientX: 100, clientY: 100 })
     // Move — board mousemove updates position
-    const board = document.querySelector('[data-pannable]')!
     fireEvent.mouseMove(board, { clientX: 150, clientY: 120 })
     fireEvent.mouseUp(board)
-    // No assertion on exact position since scale depends on jsdom layout,
-    // but the interaction must not throw
+    // Position updates occur without throwing; nodes remain rendered
+    expect(nodes[0]).toBeInTheDocument()
   })
 
   it('ArrowRight selects first node when nothing is selected', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
-    const board = document.querySelector('[data-pannable]')!
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
+    const board = screen.getByRole('application')
     fireEvent.keyDown(board, { key: 'ArrowRight' })
     expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
   })
 
   it('ArrowRight moves to the next node', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
-    const board = document.querySelector('[data-pannable]')!
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
+    const board = screen.getByRole('application')
     // Select first node via click
     fireEvent.mouseDown(screen.getAllByTestId('iac-node')[0])
     onNodeSelect.mockClear()
@@ -199,8 +258,10 @@ describe('CloudBoard', () => {
 
   it('ArrowRight wraps around from last to first node', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
-    const board = document.querySelector('[data-pannable]')!
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
+    const board = screen.getByRole('application')
     // Select last node
     fireEvent.mouseDown(screen.getAllByTestId('iac-node')[1])
     onNodeSelect.mockClear()
@@ -210,8 +271,10 @@ describe('CloudBoard', () => {
 
   it('ArrowLeft wraps around from first to last node', () => {
     const onNodeSelect = vi.fn()
-    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
-    const board = document.querySelector('[data-pannable]')!
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
+    const board = screen.getByRole('application')
     // Select first node
     fireEvent.mouseDown(screen.getAllByTestId('iac-node')[0])
     onNodeSelect.mockClear()
@@ -221,7 +284,7 @@ describe('CloudBoard', () => {
 
   it('does not crash on arrow key with empty elements', () => {
     render(<CloudBoard elements={emptyElements} />)
-    const board = document.querySelector('[data-pannable]')!
+    const board = screen.getByRole('application')
     expect(() => fireEvent.keyDown(board, { key: 'ArrowRight' })).not.toThrow()
   })
 })
