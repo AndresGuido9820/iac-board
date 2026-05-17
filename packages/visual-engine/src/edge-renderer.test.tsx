@@ -86,7 +86,7 @@ describe('EdgeRenderer', () => {
     }
   })
 
-  it('does not render a label for deployed-in (containment, no label)', () => {
+  it('does not render deployed-in edges (containment communicated by position)', () => {
     render(
       <svg>
         <ArrowMarker />
@@ -96,6 +96,7 @@ describe('EdgeRenderer', () => {
         />
       </svg>,
     )
+    expect(screen.queryByTestId('iac-edge')).not.toBeInTheDocument()
     expect(screen.queryByTestId('iac-edge-label')).not.toBeInTheDocument()
   })
 

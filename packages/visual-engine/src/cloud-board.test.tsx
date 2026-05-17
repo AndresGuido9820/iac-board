@@ -83,8 +83,8 @@ describe('CloudBoard', () => {
   it('uses fallback viewBox when elements is empty', () => {
     render(<CloudBoard elements={emptyElements} />)
     const svg = document.querySelector('.cloud-canvas')
-    // contentMaxY=480 + LEGEND_H(162) + 24 = 666
-    expect(svg?.getAttribute('viewBox')).toBe('0 0 800 666')
+    // contentMaxY=480 + LEGEND_H(7*16+20+14=146) + 24 = 650
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 800 650')
   })
 
   it('toBoardElements produces correct BoardEdge from CloudEdge', () => {
