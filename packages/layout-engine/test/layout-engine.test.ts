@@ -101,6 +101,66 @@ describe('layoutCloudGraph', () => {
     )
   })
 
+  it('places container (VPC) to the left of contained resources (deployed-in)', () => {
+    const positioned = layoutCloudGraph({
+      nodes: [
+        {
+          id: 'aws_vpc.main',
+          provider: 'aws',
+          kind: 'aws_vpc',
+          label: 'main',
+          category: 'network',
+          metadata: {},
+        },
+        {
+          id: 'aws_subnet.public',
+          provider: 'aws',
+          kind: 'aws_subnet',
+          label: 'public',
+          category: 'network',
+          metadata: {},
+        },
+        {
+          id: 'aws_nat_gateway.egress',
+          provider: 'aws',
+          kind: 'aws_nat_gateway',
+          label: 'egress',
+          category: 'network',
+          metadata: {},
+        },
+      ],
+      edges: [
+        {
+          id: 'e1',
+          from: 'aws_subnet.public',
+          to: 'aws_vpc.main',
+          relation: 'deployed-in',
+          confidence: 'inferred',
+          metadata: {},
+        },
+        {
+          id: 'e2',
+          from: 'aws_nat_gateway.egress',
+          to: 'aws_subnet.public',
+          relation: 'deployed-in',
+          confidence: 'inferred',
+          metadata: {},
+        },
+      ],
+      groups: [],
+      diagnostics: [],
+    })
+
+    // vpc.main is the container → must be leftmost
+    expect(positioned.layout['aws_vpc.main']!.x).toBeLessThan(
+      positioned.layout['aws_subnet.public']!.x,
+    )
+    // subnet.public is the container for nat_gateway → subnet must be left of nat
+    expect(positioned.layout['aws_subnet.public']!.x).toBeLessThan(
+      positioned.layout['aws_nat_gateway.egress']!.x,
+    )
+  })
+
   it('adds group bounds around child node positions', () => {
     const positioned = layoutCloudGraph({
       nodes: [
