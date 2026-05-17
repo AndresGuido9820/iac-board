@@ -50,10 +50,8 @@ describe('Terraform to canvas pipeline', () => {
       true,
     )
     // All examples must parse without diagnostics
-    results.forEach(({ example, result }) => {
-      expect(result.diagnostics, `${example.id} has diagnostics`).toHaveLength(
-        0,
-      )
+    results.forEach(({ result }) => {
+      expect(result.diagnostics).toHaveLength(0)
     })
   })
 
