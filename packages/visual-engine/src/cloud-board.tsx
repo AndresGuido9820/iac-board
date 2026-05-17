@@ -14,11 +14,13 @@ import { EdgeRenderer, ArrowMarker, EdgeLegend, LEGEND_H } from './edge-renderer
 type CloudBoardProps = {
   elements: BoardElement[]
   className?: string
+  onNodeSelect?: (id: string | null) => void
 }
 
-export function CloudBoard({ elements, className }: CloudBoardProps) {
-  const { transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
+export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProps) {
+  const { viewport, transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useViewport()
+  const svgRef = useRef<SVGSVGElement | null>(null)
   const [overrides, setOverrides] = useState<Record<string, Rect>>({})
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -43,6 +45,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
   const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     setSelected(id)
+    onNodeSelect?.(id)
     const node = resolvedNodes.find((n) => n.id === id)
     if (!node) return
     dragging.current = {
@@ -63,12 +66,17 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
     const dy = e.clientY - startMouseY
     const node = nodes.find((n) => n.id === id)
     if (!node) return
+    // Convert screen-pixel delta to SVG user-space delta.
+    // SVG viewBox maps vw user units to svgClientWidth CSS pixels;
+    // the CSS transform adds viewport.zoom on top of that.
+    const svgW = svgRef.current?.clientWidth ?? vw
+    const scale = viewport.zoom * (svgW / vw)
     setOverrides((prev) => ({
       ...prev,
       [id]: {
         ...(overrides[id] ?? node.rect),
-        x: startRectX + dx,
-        y: startRectY + dy,
+        x: startRectX + dx / scale,
+        y: startRectY + dy / scale,
       },
     }))
   }
@@ -119,6 +127,7 @@ export function CloudBoard({ elements, className }: CloudBoardProps) {
       <svg
         aria-hidden="true"
         className="cloud-canvas"
+        ref={svgRef}
         style={{ display: 'block', width: '100%', minHeight: 300 }}
         viewBox={`${minX} ${minY} ${vw} ${vh}`}
         xmlns="http://www.w3.org/2000/svg"
