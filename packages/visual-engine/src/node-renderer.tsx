@@ -47,7 +47,7 @@ export function NodeRenderer({
   const nameLabel = truncate(label, 18)
 
   return (
-    <g cursor="grab" onMouseDown={(e) => onMouseDown?.(e, node.id)}>
+    <g cursor="grab" data-testid="iac-node" onMouseDown={(e) => onMouseDown?.(e, node.id)}>
       {/* Drop shadow */}
       <rect
         fill="rgba(0,0,0,0.06)"
