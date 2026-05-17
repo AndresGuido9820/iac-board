@@ -278,11 +278,68 @@ resource "aws_s3_bucket" "assets" {
   ],
 }
 
+
+const awsModularApp: ExampleProject = {
+  id: 'aws-modular-app',
+  name: 'AWS Modular App',
+  description:
+    'Demonstrates local Terraform module expansion: a root module calls ./modules/network and ./modules/compute, which are inlined into the diagram.',
+  userStoryIds: ['HU-040'],
+  files: [
+    {
+      path: 'examples/terraform/aws-modular-app/main.tf',
+      content: `module "network" {
+  source = "./modules/network"
+}
+
+module "compute" {
+  source = "./modules/compute"
+}
+`,
+    },
+    {
+      path: 'examples/terraform/aws-modular-app/modules/network/main.tf',
+      content: `resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "public" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+}
+
+resource "aws_internet_gateway" "edge" {
+  vpc_id = aws_vpc.main.id
+}
+`,
+    },
+    {
+      path: 'examples/terraform/aws-modular-app/modules/compute/main.tf',
+      content: `resource "aws_iam_role" "lambda_exec" {
+  name               = "lambda-exec"
+  assume_role_policy = "{}"
+}
+
+resource "aws_lambda_function" "api" {
+  function_name = "api"
+  role          = aws_iam_role.lambda_exec.arn
+}
+
+resource "aws_api_gateway_rest_api" "public" {
+  name            = "public-api"
+  integration_uri = aws_lambda_function.api.invoke_arn
+}
+`,
+    },
+  ],
+}
+
 export const exampleProjects = [
   awsServerlessApi,
   awsIotPipeline,
   awsVpcRds,
   awsEcsMicroservices,
+  awsModularApp,
 ] as const
 
 export function listExampleProjects(): ExampleProject[] {
