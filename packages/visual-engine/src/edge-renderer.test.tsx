@@ -68,7 +68,6 @@ describe('EdgeRenderer', () => {
       ['connects', 'connects'],
       ['writes-to', 'writes to'],
       ['uses-role', 'uses role'],
-      ['secured-by', 'secured by'],
     ]
 
     for (const [relation, expectedText] of cases) {
@@ -100,6 +99,19 @@ describe('EdgeRenderer', () => {
     expect(screen.queryByTestId('iac-edge-label')).not.toBeInTheDocument()
   })
 
+  it('does not render secured-by edges (security group position communicates the relationship)', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'secured-by')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.queryByTestId('iac-edge')).not.toBeInTheDocument()
+  })
+
   it('does not render a label for feedback edges (right-to-left)', () => {
     // B is to the LEFT of A — feedback edge
     const reverseMap = new Map<string, BoardNode>([
@@ -129,5 +141,25 @@ describe('EdgeRenderer', () => {
       </svg>,
     )
     expect(screen.queryByTestId('iac-edge')).not.toBeInTheDocument()
+  })
+
+  it('renders edge when an intermediate node blocks the direct path', () => {
+    // A → C with B in between — edge should still render (obstacle avoidance path)
+    const obstacleMap = new Map<string, BoardNode>([
+      ['A', node('A', 60, 60)],
+      ['B', node('B', 360, 60)], // intermediate node at same y level
+      ['C', node('C', 660, 60)],
+    ])
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'C', 'invokes')]}
+          nodeMap={obstacleMap}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge')).toBeInTheDocument()
+    expect(screen.getByTestId('iac-edge-path')).toBeInTheDocument()
   })
 })
