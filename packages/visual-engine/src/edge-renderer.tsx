@@ -45,6 +45,73 @@ const RELATION_STYLE: Record<string, { dash?: string; color: string }> = {
 
 const DEFAULT_STYLE = { color: '#94a3b8', dash: '5 3' }
 
+/** Human-readable label per relation. Omitted relations get no label. */
+const RELATION_LABEL: Partial<Record<string, string>> = {
+  triggers: 'triggers',
+  invokes: 'invokes',
+  'publishes-to': 'publishes',
+  connects: 'connects',
+  'writes-to': 'writes to',
+  'uses-role': 'uses role',
+  'secured-by': 'secured by',
+}
+
+/**
+ * Returns the visual midpoint of the bezier edge for label placement.
+ * Returns null for feedback edges (right-to-left) to avoid label clutter.
+ */
+function labelAnchor(
+  from: Rect,
+  to: Rect,
+): { x: number; y: number } | null {
+  const x1 = right(from)
+  const x2 = to.x
+  if (x2 < x1 + 20) return null // feedback edge — skip label
+  return { x: (x1 + x2) / 2, y: (cy(from) + cy(to)) / 2 }
+}
+
+type EdgeLabelProps = {
+  text: string
+  anchor: { x: number; y: number }
+  color: string
+}
+
+function EdgeLabel({ text, anchor, color }: EdgeLabelProps) {
+  const charW = 5.5
+  const padX = 5
+  const padY = 2
+  const boxW = text.length * charW + padX * 2
+  const boxH = 14
+  return (
+    <g data-testid="iac-edge-label" pointerEvents="none">
+      <rect
+        fill="white"
+        fillOpacity={0.88}
+        height={boxH}
+        rx={3}
+        stroke={color}
+        strokeOpacity={0.35}
+        strokeWidth={0.5}
+        width={boxW}
+        x={anchor.x - boxW / 2}
+        y={anchor.y - boxH / 2 - padY}
+      />
+      <text
+        dominantBaseline="middle"
+        fill={color}
+        fontFamily="system-ui, sans-serif"
+        fontSize={8}
+        fontWeight={500}
+        textAnchor="middle"
+        x={anchor.x}
+        y={anchor.y - padY}
+      >
+        {text}
+      </text>
+    </g>
+  )
+}
+
 type EdgeRendererProps = {
   edges: BoardEdge[]
   nodeMap: Map<string, BoardNode>
@@ -96,17 +163,27 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
         const d = bezierPath(fromNode.rect, toNode.rect)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
+        const labelText = RELATION_LABEL[edge.relation]
+        const anchor = labelText
+          ? labelAnchor(fromNode.rect, toNode.rect)
+          : null
+
         return (
-          <path
-            key={edge.id}
-            d={d}
-            fill="none"
-            markerEnd={`url(#${markerId})`}
-            stroke={style.color}
-            strokeDasharray={style.dash}
-            strokeWidth={1.5}
-            style={{ color: style.color }}
-          />
+          <g key={edge.id} data-testid="iac-edge">
+            <path
+              d={d}
+              data-testid="iac-edge-path"
+              fill="none"
+              markerEnd={`url(#${markerId})`}
+              stroke={style.color}
+              strokeDasharray={style.dash}
+              strokeWidth={1.5}
+              style={{ color: style.color }}
+            />
+            {anchor && (
+              <EdgeLabel anchor={anchor} color={style.color} text={labelText!} />
+            )}
+          </g>
         )
       })}
     </>
