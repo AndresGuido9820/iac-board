@@ -313,12 +313,18 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
           RELATION_STYLE[edge.relation] ??
           RELATION_STYLE[edge.confidence] ??
           DEFAULT_STYLE
-        const d = bezierPath(fromNode.rect, toNode.rect, obstacles)
+
+        // depends-on: the layout places edge.to (dependency) LEFT of edge.from (dependent).
+        // Reverse the visual direction so the arrow flows forward: dependency → dependent.
+        const visualFrom = edge.relation === 'depends-on' ? toNode : fromNode
+        const visualTo = edge.relation === 'depends-on' ? fromNode : toNode
+
+        const d = bezierPath(visualFrom.rect, visualTo.rect, obstacles)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
         const labelText = RELATION_LABEL[edge.relation]
         const anchor = labelText
-          ? labelAnchor(fromNode.rect, toNode.rect, obstacles)
+          ? labelAnchor(visualFrom.rect, visualTo.rect, obstacles)
           : null
 
         return (
