@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { getExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
@@ -92,5 +92,66 @@ describe('App', () => {
       'Private subnet private',
     )
     expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
+  })
+
+  it('opens node inspector when a board node is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // Click the first iac-node element rendered inside the SVG
+    const node = document.querySelector('[data-testid="iac-node"]')
+    expect(node).not.toBeNull()
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+
+    // Inspector should appear with resource type label
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+  })
+
+  it('closes node inspector with Escape key', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const node = document.querySelector('[data-testid="iac-node"]')
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByLabelText('Node inspector')).not.toBeInTheDocument()
+  })
+
+  it('closes node inspector with close button', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const node = document.querySelector('[data-testid="iac-node"]')
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Close inspector'))
+    expect(screen.queryByLabelText('Node inspector')).not.toBeInTheDocument()
+  })
+
+  it('inspector shows correct node fields', async () => {
+    const user = userEvent.setup()
+    const example = getExampleProject('aws-serverless-api')
+    const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
+    render(
+      <ProductShell
+        example={example}
+        examples={[example]}
+        generatedDiagram={generatedDiagram}
+        onSelectExample={() => undefined}
+        selectedExampleId={example.id}
+      />,
+    )
+
+    const node = document.querySelector('[data-testid="iac-node"]')
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+
+    const inspector = screen.getByLabelText('Node inspector')
+    expect(inspector).toBeInTheDocument()
+    // Should show source file reference
+    expect(inspector.textContent).toContain('examples/terraform')
   })
 })
