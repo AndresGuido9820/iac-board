@@ -141,6 +141,19 @@ describe('CloudBoard', () => {
   })
 
 
+  it('deselects node when clicking board background', () => {
+    const onNodeSelect = vi.fn()
+    render(<CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />)
+    // Click a node first
+    const nodes = screen.getAllByTestId('iac-node')
+    fireEvent.mouseDown(nodes[0])
+    expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
+    // Click the SVG background — should deselect
+    const svg = document.querySelector('.cloud-canvas')!
+    fireEvent.click(svg)
+    expect(onNodeSelect).toHaveBeenLastCalledWith(null)
+  })
+
   it('drags a node with mouse events', () => {
     render(<CloudBoard elements={twoNodeElements} />)
     const nodes = screen.getAllByTestId('iac-node')
