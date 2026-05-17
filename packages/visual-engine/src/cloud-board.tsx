@@ -126,6 +126,24 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
     onNodeSelect?.(null)
   }
 
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return
+    if (resolvedNodes.length === 0) return
+    e.preventDefault()
+    const currentIdx = selected
+      ? resolvedNodes.findIndex((n) => n.id === selected)
+      : -1
+    let nextIdx: number
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      nextIdx = currentIdx < resolvedNodes.length - 1 ? currentIdx + 1 : 0
+    } else {
+      nextIdx = currentIdx > 0 ? currentIdx - 1 : resolvedNodes.length - 1
+    }
+    const nextNode = resolvedNodes[nextIdx]
+    setSelected(nextNode.id)
+    onNodeSelect?.(nextNode.id)
+  }
+
   const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     setSelected(id)
@@ -194,19 +212,23 @@ export function CloudBoard({ elements, className, onNodeSelect }: CloudBoardProp
 
   return (
     <div
+      aria-label="Architecture diagram"
       className={className}
       data-pannable="true"
+      onKeyDown={onKeyDown}
       onMouseDown={onMouseDown}
       onMouseLeave={onBoardMouseUp}
       onMouseMove={onBoardMouseMove}
       onMouseUp={onBoardMouseUp}
       onWheel={onWheel as unknown as React.WheelEventHandler}
+      role="application"
       style={{
         cursor: 'default',
         overflow: 'hidden',
         position: 'relative',
         width: '100%',
       }}
+      tabIndex={0}
     >
       <svg
         aria-hidden="true"

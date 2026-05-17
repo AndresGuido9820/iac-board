@@ -1,6 +1,6 @@
 import React from 'react'
 import type { BoardNode } from './types'
-import { categoryColors } from './icons/aws'
+import { categoryColors, categoryIcons } from './icons/aws'
 import type { AwsCategory } from './icons/aws'
 import { getIcon } from './icons/registry'
 
@@ -93,16 +93,27 @@ export function NodeRenderer({
           />
         </foreignObject>
       ) : (
-        <rect
-          fill={`${color}1a`}
-          height={ICON_SIZE}
-          rx={8}
-          stroke={`${color}55`}
-          strokeWidth={1}
-          width={ICON_SIZE}
-          x={iconX}
-          y={iconY}
-        />
+        /* Category fallback icon — colored path on tinted background */
+        <g>
+          <rect
+            fill={`${color}18`}
+            height={ICON_SIZE}
+            rx={8}
+            width={ICON_SIZE}
+            x={iconX}
+            y={iconY}
+          />
+          <svg
+            fill={color}
+            height={ICON_SIZE - 8}
+            viewBox="0 0 24 24"
+            width={ICON_SIZE - 8}
+            x={iconX + 4}
+            y={iconY + 4}
+          >
+            <path d={categoryIcons[cat]} fillRule="evenodd" />
+          </svg>
+        </g>
       )}
       {/* Service type — small, colored, above name */}
       <text

@@ -94,6 +94,11 @@ describe('App', () => {
     expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
   })
 
+  it('renders export SVG button', () => {
+    render(<App />)
+    expect(screen.getByRole('button', { name: 'Export SVG' })).toBeInTheDocument()
+  })
+
   it('opens node inspector when a board node is clicked', async () => {
     const user = userEvent.setup()
     render(<App />)
