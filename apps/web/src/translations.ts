@@ -40,6 +40,10 @@ export interface Translations {
   import_clear: string
   import_loaded_summary: (n: number) => string
   save_layout: string
+  load_layout: string
+  load_layout_mismatch: string
+  plan_mode_badge: string
+  plan_mode_hint: string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -84,6 +88,10 @@ export const translations: Record<Lang, Translations> = {
     import_clear: 'Clear',
     import_loaded_summary: (n) => `${n} file${n !== 1 ? 's' : ''} loaded`,
     save_layout: 'Save layout',
+    load_layout: 'Load layout',
+    load_layout_mismatch: 'Layout was saved for a different diagram — positions may not align.',
+    plan_mode_badge: 'From plan',
+    plan_mode_hint: 'Exact dependencies from terraform show -json — no inference.',
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -126,5 +134,9 @@ export const translations: Record<Lang, Translations> = {
     import_clear: 'Limpiar',
     import_loaded_summary: (n) => `${n} archivo${n !== 1 ? 's' : ''} cargado${n !== 1 ? 's' : ''}`,
     save_layout: 'Guardar layout',
+    load_layout: 'Cargar layout',
+    load_layout_mismatch: 'El layout fue guardado para otro diagrama — las posiciones pueden no coincidir.',
+    plan_mode_badge: 'Desde plan',
+    plan_mode_hint: 'Dependencias exactas de terraform show -json — sin inferencia.',
   },
 }

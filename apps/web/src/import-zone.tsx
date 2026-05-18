@@ -7,7 +7,7 @@ type ImportZoneProps = {
   loadedFiles: LoadedFile[]
 }
 
-const ACCEPTED = ['.tf', '.tfvars']
+const ACCEPTED = ['.tf', '.tfvars', '.json']
 
 function isAcceptedFile(file: File): boolean {
   return ACCEPTED.some((ext) => file.name.endsWith(ext))
@@ -37,7 +37,7 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
 
       const accepted = Array.from(fileList).filter(isAcceptedFile)
       if (accepted.length === 0) {
-        setError('No .tf or .tfvars files found. Drop Terraform files only.')
+        setError('No .tf, .tfvars, or .json files found.')
         return
       }
 
@@ -110,10 +110,10 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
           </svg>
         </div>
         <p className="import-drop-label">
-          Drop <strong>.tf</strong> or <strong>.tfvars</strong> files here
+          Drop <strong>.tf</strong>, <strong>.tfvars</strong>, or <strong>.json</strong> files here
         </p>
         <p className="import-drop-hint">
-          Entire Terraform module — multiple files supported
+          Terraform module files, or a single <code>terraform show -json</code> plan file
         </p>
         <button
           className="import-pick-btn"
@@ -123,7 +123,7 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
           Browse files
         </button>
         <input
-          accept=".tf,.tfvars"
+          accept=".tf,.tfvars,.json"
           data-testid="file-input"
           multiple
           onChange={onInputChange}
