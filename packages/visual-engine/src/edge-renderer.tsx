@@ -14,6 +14,21 @@ function right(rect: Rect) {
 const OBSTACLE_PAD = 20
 
 /**
+ * Returns true if the center of nodeRect lies inside groupRect.
+ * Used to decide whether a group boundary is a relevant obstacle for a given edge.
+ */
+function centerInRect(nodeRect: Rect, groupRect: Rect): boolean {
+  const ncx = nodeRect.x + nodeRect.width / 2
+  const ncy = nodeRect.y + nodeRect.height / 2
+  return (
+    ncx >= groupRect.x &&
+    ncx <= groupRect.x + groupRect.width &&
+    ncy >= groupRect.y &&
+    ncy <= groupRect.y + groupRect.height
+  )
+}
+
+/**
  * Finds rects that block the direct horizontal path of an edge.
  * A rect blocks if its x-span overlaps [x1, x2] and its y-span overlaps
  * the approximate y-band of the edge (with 8px tolerance).
@@ -267,6 +282,8 @@ type EdgeRendererProps = {
   edges: BoardEdge[]
   nodeMap: Map<string, BoardNode>
   showEdgeLabels?: boolean
+  /** Group boundary rects used as additional routing obstacles. */
+  groupRects?: Rect[]
 }
 
 export function ArrowMarker() {
@@ -300,7 +317,12 @@ export function ArrowMarker() {
   )
 }
 
-export function EdgeRenderer({ edges, nodeMap, showEdgeLabels = true }: EdgeRendererProps) {
+export function EdgeRenderer({
+  edges,
+  nodeMap,
+  showEdgeLabels = true,
+  groupRects = [],
+}: EdgeRendererProps) {
   // Precompute all node rects for obstacle detection
   const allNodeRects = Array.from(nodeMap.values()).map((n) => n.rect)
 
@@ -312,10 +334,20 @@ export function EdgeRenderer({ edges, nodeMap, showEdgeLabels = true }: EdgeRend
         const toNode = nodeMap.get(edge.to)
         if (!fromNode || !toNode) return null
 
-        // Obstacles: all nodes except source and target
-        const obstacles = allNodeRects.filter(
-          (r) => r !== fromNode.rect && r !== toNode.rect,
+        // Group rects are obstacles only when the edge crosses a group boundary.
+        // If both endpoints are inside the same group, the group rect is irrelevant.
+        const groupObstacles = groupRects.filter(
+          (gr) =>
+            !(centerInRect(fromNode.rect, gr) && centerInRect(toNode.rect, gr)),
         )
+
+        // Obstacles: all nodes except source and target, plus relevant group boundaries
+        const obstacles = [
+          ...allNodeRects.filter(
+            (r) => r !== fromNode.rect && r !== toNode.rect,
+          ),
+          ...groupObstacles,
+        ]
 
         const style =
           RELATION_STYLE[edge.relation] ??
