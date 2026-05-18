@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- Target group: bullseye with nodes -->
+  <!-- Outer circle -->
+  <circle cx="28" cy="32" r="20" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+  <!-- Middle circle -->
+  <circle cx="28" cy="32" r="12" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+  <!-- Inner circle / bullseye -->
+  <circle cx="28" cy="32" r="5" fill="#FFFFFF"/>
+  <!-- Target nodes (group members) -->
+  <circle cx="50" cy="20" r="5" fill="#FFFFFF"/>
+  <circle cx="54" cy="32" r="5" fill="#FFFFFF"/>
+  <circle cx="50" cy="44" r="5" fill="#FFFFFF"/>
+  <!-- Lines to target -->
+  <line x1="45" y1="22" x2="35" y2="27" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="49" y1="32" x2="40" y2="32" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="45" y1="42" x2="35" y2="37" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

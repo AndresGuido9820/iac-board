@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#DD344C"/>
+  <!-- Role (left) -->
+  <rect x="6" y="20" width="20" height="24" rx="3" fill="#FFFFFF"/>
+  <circle cx="16" cy="28" r="5" fill="#DD344C" opacity="0.4"/>
+  <path d="M8,44 Q8,36 16,36 Q24,36 24,44" fill="#DD344C" opacity="0.4"/>
+  <!-- Chain link (center) -->
+  <ellipse cx="32" cy="28" rx="6" ry="4" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+  <ellipse cx="32" cy="36" rx="6" ry="4" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="26" y="30" width="12" height="4" fill="#DD344C"/>
+  <!-- Policy (right) -->
+  <rect x="38" y="20" width="20" height="24" rx="3" fill="#FFFFFF"/>
+  <rect x="41" y="26" width="14" height="2" rx="1" fill="#DD344C" opacity="0.4"/>
+  <rect x="41" y="30" width="10" height="2" rx="1" fill="#DD344C" opacity="0.4"/>
+  <rect x="41" y="34" width="12" height="2" rx="1" fill="#DD344C" opacity="0.4"/>
+  <rect x="41" y="38" width="8" height="2" rx="1" fill="#DD344C" opacity="0.4"/>
+</svg>

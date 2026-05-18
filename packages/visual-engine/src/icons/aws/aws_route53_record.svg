@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- DNS record document -->
+  <rect x="12" y="10" width="40" height="44" rx="3" fill="#FFFFFF"/>
+  <!-- Record type badge -->
+  <rect x="12" y="10" width="40" height="12" rx="3" fill="#FFFFFF"/>
+  <rect x="12" y="18" width="40" height="4" fill="#FFFFFF"/>
+  <rect x="16" y="13" width="10" height="6" rx="2" fill="#8C4FFF"/>
+  <text x="16" y="18" font-family="monospace" font-size="5" fill="#FFFFFF" font-weight="bold">A</text>
+  <!-- Record value lines -->
+  <rect x="17" y="28" width="30" height="3" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="17" y="35" width="22" height="3" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="17" y="42" width="26" height="3" rx="1" fill="#8C4FFF" opacity="0.5"/>
+</svg>

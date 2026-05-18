@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- Listener: ear/funnel shape receiving traffic -->
+  <!-- Port badge -->
+  <rect x="8" y="22" width="20" height="20" rx="4" fill="#FFFFFF"/>
+  <!-- Port number hint -->
+  <rect x="11" y="28" width="14" height="3" rx="1" fill="#8C4FFF" opacity="0.6"/>
+  <rect x="11" y="33" width="10" height="2" rx="1" fill="#8C4FFF" opacity="0.6"/>
+  <!-- Arrow pointing right into rules box -->
+  <line x1="28" y1="32" x2="38" y2="32" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="36,27 44,32 36,37" fill="#FFFFFF"/>
+  <!-- Rules box -->
+  <rect x="44" y="16" width="14" height="32" rx="3" fill="#FFFFFF"/>
+  <rect x="47" y="21" width="8" height="2" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="47" y="26" width="8" height="2" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="47" y="31" width="8" height="2" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="47" y="36" width="8" height="2" rx="1" fill="#8C4FFF" opacity="0.5"/>
+  <rect x="47" y="41" width="5" height="2" rx="1" fill="#8C4FFF" opacity="0.5"/>
+</svg>

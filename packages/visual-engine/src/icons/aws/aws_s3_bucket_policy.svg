@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#7AA116"/>
+  <!-- S3 bucket cylinder -->
+  <ellipse cx="32" cy="16" rx="17" ry="6" fill="#FFFFFF"/>
+  <rect x="15" y="16" width="34" height="26" fill="#FFFFFF"/>
+  <ellipse cx="32" cy="42" rx="17" ry="6" fill="#FFFFFF"/>
+  <!-- Policy shield overlay -->
+  <path d="M32,22 L40,26 L40,34 C40,39 36.5,42 32,43 C27.5,42 24,39 24,34 L24,26 Z" fill="#7AA116"/>
+  <!-- Checkmark in shield -->
+  <polyline points="27,32 30.5,36 37,28" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

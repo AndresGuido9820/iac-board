@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Stream source (left) -->
+  <rect x="6" y="22" width="16" height="20" rx="3" fill="#FFFFFF"/>
+  <rect x="9" y="26" width="10" height="2" rx="1" fill="#E7157B" opacity="0.5"/>
+  <rect x="9" y="30" width="10" height="2" rx="1" fill="#E7157B" opacity="0.5"/>
+  <rect x="9" y="34" width="7" height="2" rx="1" fill="#E7157B" opacity="0.5"/>
+  <!-- Mapping arrow -->
+  <line x1="22" y1="32" x2="38" y2="32" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-dasharray="3,2"/>
+  <polygon points="36,27 44,32 36,37" fill="#FFFFFF"/>
+  <!-- Lambda target (right) -->
+  <rect x="44" y="22" width="14" height="20" rx="3" fill="#FFFFFF"/>
+  <!-- Lambda lightning bolt in target -->
+  <polygon points="54,24 49,32 52,32 47,40 54,32 51,32" fill="#E7157B"/>
+</svg>

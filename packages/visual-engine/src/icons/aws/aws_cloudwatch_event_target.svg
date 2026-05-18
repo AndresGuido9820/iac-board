@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- EventBridge target: arrow hitting a service -->
+  <!-- Event source arrow -->
+  <line x1="8" y1="32" x2="26" y2="32" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <polygon points="24,27 34,32 24,37" fill="#FFFFFF"/>
+  <!-- Target service box -->
+  <rect x="34" y="18" width="22" height="28" rx="3" fill="#FFFFFF"/>
+  <!-- Target service icon lines -->
+  <rect x="38" y="24" width="14" height="3" rx="1" fill="#E7157B" opacity="0.5"/>
+  <rect x="38" y="30" width="10" height="3" rx="1" fill="#E7157B" opacity="0.5"/>
+  <rect x="38" y="36" width="12" height="3" rx="1" fill="#E7157B" opacity="0.5"/>
+  <!-- Hit indicator dot -->
+  <circle cx="45" cy="14" r="5" fill="#FFFFFF"/>
+  <circle cx="45" cy="14" r="2" fill="#E7157B"/>
+</svg>

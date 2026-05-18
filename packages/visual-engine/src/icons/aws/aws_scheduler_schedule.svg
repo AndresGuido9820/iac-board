@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Calendar/clock scheduler icon -->
+  <!-- Calendar body -->
+  <rect x="10" y="14" width="44" height="38" rx="3" fill="#FFFFFF"/>
+  <!-- Calendar header -->
+  <rect x="10" y="14" width="44" height="12" rx="3" fill="#FFFFFF"/>
+  <rect x="10" y="22" width="44" height="4" fill="#FFFFFF"/>
+  <!-- Calendar hooks -->
+  <rect x="20" y="10" width="4" height="8" rx="2" fill="#FFFFFF"/>
+  <rect x="40" y="10" width="4" height="8" rx="2" fill="#FFFFFF"/>
+  <!-- Clock face (bottom right of calendar) -->
+  <circle cx="42" cy="42" r="12" fill="#E7157B"/>
+  <circle cx="42" cy="42" r="9" fill="#FFFFFF"/>
+  <!-- Clock hands -->
+  <line x1="42" y1="42" x2="42" y2="35" stroke="#E7157B" stroke-width="2" stroke-linecap="round"/>
+  <line x1="42" y1="42" x2="47" y2="45" stroke="#E7157B" stroke-width="2" stroke-linecap="round"/>
+  <!-- Calendar dots -->
+  <circle cx="18" cy="32" r="2" fill="#E7157B" opacity="0.5"/>
+  <circle cx="26" cy="32" r="2" fill="#E7157B" opacity="0.5"/>
+  <circle cx="34" cy="32" r="2" fill="#E7157B" opacity="0.5"/>
+  <circle cx="18" cy="40" r="2" fill="#E7157B" opacity="0.5"/>
+  <circle cx="26" cy="40" r="2" fill="#E7157B" opacity="0.5"/>
+</svg>

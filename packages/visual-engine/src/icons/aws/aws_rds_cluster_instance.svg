@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#C925D1"/>
+  <!-- Single RDS instance cylinder -->
+  <ellipse cx="32" cy="18" rx="18" ry="7" fill="#FFFFFF"/>
+  <rect x="14" y="18" width="36" height="28" fill="#FFFFFF"/>
+  <ellipse cx="32" cy="46" rx="18" ry="7" fill="#FFFFFF"/>
+  <!-- Instance indicator (single node badge) -->
+  <circle cx="48" cy="14" r="10" fill="#C925D1"/>
+  <circle cx="48" cy="14" r="7" fill="#FFFFFF"/>
+  <rect x="46" y="9" width="3" height="7" rx="1" fill="#C925D1"/>
+  <rect x="43" y="14" width="9" height="3" rx="1" fill="#C925D1"/>
+</svg>
