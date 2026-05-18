@@ -49,7 +49,7 @@ describe('ImportZone', () => {
     fireEvent.drop(zone, { dataTransfer: { files: [pngFile] } })
     expect(await screen.findByRole('alert')).toBeTruthy()
     expect(screen.getByRole('alert').textContent).toContain(
-      'No .tf or .tfvars files found',
+      'No .tf, .tfvars, or .json files found.',
     )
     expect(handler).not.toHaveBeenCalled()
   })
