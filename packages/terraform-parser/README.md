@@ -9,10 +9,7 @@ No `terraform` binary required. All parsing is pure text/regex/HCL tokenisation 
 ## API
 
 ```typescript
-import {
-  parseTerraformFiles,
-  parsePlanJson,
-} from '@iac-board/terraform-parser'
+import { parseTerraformFiles, parsePlanJson } from '@iac-board/terraform-parser'
 
 import type {
   TerraformFile,
@@ -79,17 +76,17 @@ const result = parsePlanJson(content)
 
 ```typescript
 type TerraformFile = {
-  path: string      // relative path used for source location display
-  content: string   // raw file content
+  path: string // relative path used for source location display
+  content: string // raw file content
 }
 
 type TerraformResource = {
-  address: string               // e.g. "aws_lambda_function.handler"
-  type: string                  // e.g. "aws_lambda_function"
-  name: string                  // e.g. "handler"
-  source: SourceLocation        // { filePath, line?, column? }
-  body: string                  // raw resource block body (HCL text)
-  refs: string[]                // resolved resource addresses this resource references
+  address: string // e.g. "aws_lambda_function.handler"
+  type: string // e.g. "aws_lambda_function"
+  name: string // e.g. "handler"
+  source: SourceLocation // { filePath, line?, column? }
+  body: string // raw resource block body (HCL text)
+  refs: string[] // resolved resource addresses this resource references
   metadata?: Record<string, unknown>
 }
 
@@ -103,10 +100,10 @@ type TerraformParseResult = {
 
 ## Diagnostics
 
-| Code | Severity | Meaning |
-|------|----------|---------|
-| `PLAN001` | error | Plan JSON is not valid JSON |
-| `PLAN002` | error | Plan JSON missing `format_version` or `planned_values` |
+| Code      | Severity | Meaning                                                |
+| --------- | -------- | ------------------------------------------------------ |
+| `PLAN001` | error    | Plan JSON is not valid JSON                            |
+| `PLAN002` | error    | Plan JSON missing `format_version` or `planned_values` |
 
 HCL parse errors surface as diagnostics with `severity: 'error'` and a source location.
 
@@ -114,13 +111,13 @@ HCL parse errors surface as diagnostics with `severity: 'error'` and a source lo
 
 ## Internals
 
-| File | Responsibility |
-|------|---------------|
-| `src/lexer.ts` | Tokenises HCL into a flat token stream |
-| `src/parser.ts` | Builds a shallow block tree from the token stream |
+| File               | Responsibility                                          |
+| ------------------ | ------------------------------------------------------- |
+| `src/lexer.ts`     | Tokenises HCL into a flat token stream                  |
+| `src/parser.ts`    | Builds a shallow block tree from the token stream       |
 | `src/extractor.ts` | Walks the block tree and extracts `TerraformResource[]` |
-| `src/plan-json.ts` | Parses `terraform show -json` output |
-| `src/index.ts` | Public re-exports |
+| `src/plan-json.ts` | Parses `terraform show -json` output                    |
+| `src/index.ts`     | Public re-exports                                       |
 
 ---
 

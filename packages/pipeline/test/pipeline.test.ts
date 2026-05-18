@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { getExampleProject } from '@iac-board/example-catalog'
-import { generateDiagramFromTerraformFiles, generateDiagramFromPlanJson } from '../src'
+import {
+  generateDiagramFromTerraformFiles,
+  generateDiagramFromPlanJson,
+} from '../src'
 
 describe('generateDiagramFromTerraformFiles', () => {
   it('generates canvas drafts from the bundled serverless example', () => {
@@ -66,8 +69,16 @@ describe('generateDiagramFromTerraformFiles', () => {
       planned_values: {
         root_module: {
           resources: [
-            { address: 'aws_lambda_function.handler', type: 'aws_lambda_function', name: 'handler' },
-            { address: 'aws_iam_role.exec', type: 'aws_iam_role', name: 'exec' },
+            {
+              address: 'aws_lambda_function.handler',
+              type: 'aws_lambda_function',
+              name: 'handler',
+            },
+            {
+              address: 'aws_iam_role.exec',
+              type: 'aws_iam_role',
+              name: 'exec',
+            },
           ],
         },
       },
@@ -79,7 +90,9 @@ describe('generateDiagramFromTerraformFiles', () => {
               type: 'aws_lambda_function',
               name: 'handler',
               expressions: {
-                role: { references: ['aws_iam_role.exec.arn', 'aws_iam_role.exec'] },
+                role: {
+                  references: ['aws_iam_role.exec.arn', 'aws_iam_role.exec'],
+                },
               },
             },
             {
@@ -95,7 +108,9 @@ describe('generateDiagramFromTerraformFiles', () => {
     const result = generateDiagramFromPlanJson(planJson)
 
     expect(result.parsed.resources).toHaveLength(2)
-    expect(result.graph.nodes.map((n) => n.id)).toContain('aws_lambda_function.handler')
+    expect(result.graph.nodes.map((n) => n.id)).toContain(
+      'aws_lambda_function.handler',
+    )
     expect(result.graph.nodes.map((n) => n.id)).toContain('aws_iam_role.exec')
     expect(result.canvasDrafts.length).toBeGreaterThan(0)
     // Edge from lambda → role (depends-on / uses-role)

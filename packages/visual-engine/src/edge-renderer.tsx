@@ -362,7 +362,9 @@ export function EdgeRenderer({
         const d = bezierPath(visualFrom.rect, visualTo.rect, obstacles)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
-        const labelText = showEdgeLabels ? RELATION_LABEL[edge.relation] : undefined
+        const labelText = showEdgeLabels
+          ? RELATION_LABEL[edge.relation]
+          : undefined
         const anchor = labelText
           ? labelAnchor(visualFrom.rect, visualTo.rect, obstacles)
           : null

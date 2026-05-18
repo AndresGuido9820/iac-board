@@ -126,7 +126,7 @@ Add the resource type to the `awsCategories` map:
 // packages/cloud-graph/src/index.ts
 const awsCategories: Record<string, CloudNode['category']> = {
   // ...existing entries...
-  aws_my_new_resource: 'compute',   // pick the right category
+  aws_my_new_resource: 'compute', // pick the right category
 }
 ```
 
@@ -175,7 +175,7 @@ export const exampleProjects: ExampleProject[] = [
   awsVpcRds,
   ecsмикросервисы,
   modularApp,
-  myExample,   // add here
+  myExample, // add here
 ]
 ```
 
@@ -196,10 +196,12 @@ import { parseTerraformFiles } from '@iac-board/terraform-parser'
 
 describe('parseTerraformFiles', () => {
   it('extracts a Lambda resource', () => {
-    const result = parseTerraformFiles([{
-      path: 'main.tf',
-      content: 'resource "aws_lambda_function" "handler" {}',
-    }])
+    const result = parseTerraformFiles([
+      {
+        path: 'main.tf',
+        content: 'resource "aws_lambda_function" "handler" {}',
+      },
+    ])
     expect(result.resources).toHaveLength(1)
     expect(result.resources[0].type).toBe('aws_lambda_function')
   })
@@ -214,13 +216,15 @@ Use `generateDiagramFromTerraformFiles` from `@iac-board/pipeline` to test the f
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 
 it('produces nodes and edges for a serverless example', () => {
-  const result = generateDiagramFromTerraformFiles([{
-    path: 'main.tf',
-    content: `
+  const result = generateDiagramFromTerraformFiles([
+    {
+      path: 'main.tf',
+      content: `
       resource "aws_lambda_function" "handler" {}
       resource "aws_api_gateway_rest_api" "api" {}
     `,
-  }])
+    },
+  ])
   expect(result.graph.nodes.length).toBeGreaterThan(0)
   expect(result.graph.edges.length).toBeGreaterThan(0)
 })
@@ -283,15 +287,15 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 <type>(<scope>): <summary>
 ```
 
-| Type | When to use |
-|------|-------------|
-| `feat` | new capability |
-| `fix` | bug fix |
-| `test` | tests or fixtures only |
+| Type       | When to use                             |
+| ---------- | --------------------------------------- |
+| `feat`     | new capability                          |
+| `fix`      | bug fix                                 |
+| `test`     | tests or fixtures only                  |
 | `refactor` | internal change, no behavior difference |
-| `docs` | documentation only |
-| `chore` | tooling, deps, config |
-| `ci` | GitHub Actions |
+| `docs`     | documentation only                      |
+| `chore`    | tooling, deps, config                   |
+| `ci`       | GitHub Actions                          |
 
 Scopes: `parser`, `graph`, `layout`, `canvas`, `visual`, `web`, `pipeline`, `docs`, `ci`.
 

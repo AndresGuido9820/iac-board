@@ -22,7 +22,7 @@ jobs:
 
       - name: Dependency review
         uses: actions/dependency-review-action@v5
-        continue-on-error: true  # Dependency graph must be enabled in repo settings; non-blocking until then
+        continue-on-error: true # Dependency graph must be enabled in repo settings; non-blocking until then
 
   audit:
     name: npm audit

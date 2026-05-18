@@ -41,7 +41,10 @@ function loadOverrides(diagramId: string): Record<string, Rect> {
   }
 }
 
-function persistOverrides(diagramId: string, overrides: Record<string, Rect>): void {
+function persistOverrides(
+  diagramId: string,
+  overrides: Record<string, Rect>,
+): void {
   try {
     localStorage.setItem(LS_PREFIX + diagramId, JSON.stringify(overrides))
   } catch {
@@ -357,7 +360,9 @@ export function ProductShell({
         <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (
             <button
-              aria-pressed={project.id === selectedExampleId && mode === 'example'}
+              aria-pressed={
+                project.id === selectedExampleId && mode === 'example'
+              }
               className="example-card"
               key={project.id}
               onClick={() => onSelectExample(project.id)}
@@ -394,14 +399,18 @@ export function ProductShell({
             <button
               aria-label={t.export_svg}
               className="export-btn"
-              onClick={() => exportSvg(mode === 'example' ? example.name : 'custom')}
+              onClick={() =>
+                exportSvg(mode === 'example' ? example.name : 'custom')
+              }
               type="button"
             >
               {t.export_svg}
             </button>
             {onToggleEdgeLabels && (
               <button
-                aria-label={showEdgeLabels ? t.edge_labels_hide : t.edge_labels_show}
+                aria-label={
+                  showEdgeLabels ? t.edge_labels_hide : t.edge_labels_show
+                }
                 aria-pressed={showEdgeLabels}
                 className="export-btn"
                 onClick={onToggleEdgeLabels}
@@ -440,8 +449,10 @@ export function ProductShell({
                 const file = e.target.files?.[0]
                 if (!file || !onLoadLayout) return
                 try {
-                  const { overrides, savedDiagramId } = await readLayoutFile(file)
-                  const mismatch = savedDiagramId !== '' && savedDiagramId !== diagramId
+                  const { overrides, savedDiagramId } =
+                    await readLayoutFile(file)
+                  const mismatch =
+                    savedDiagramId !== '' && savedDiagramId !== diagramId
                   setLayoutMismatch(mismatch)
                   onLoadLayout(overrides)
                 } catch {
@@ -465,11 +476,11 @@ export function ProductShell({
         {mode === 'example' && (
           <p className="panel-copy">{example.description}</p>
         )}
-        {mode === 'plan' && (
-          <p className="panel-copy">{t.plan_mode_hint}</p>
-        )}
+        {mode === 'plan' && <p className="panel-copy">{t.plan_mode_hint}</p>}
         {layoutMismatch && (
-          <p className="panel-copy" role="alert">{t.load_layout_mismatch}</p>
+          <p className="panel-copy" role="alert">
+            {t.load_layout_mismatch}
+          </p>
         )}
         <div className="board-with-inspector">
           <CloudBoard
@@ -496,7 +507,9 @@ export function ProductShell({
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>
-            <dd>{mode === 'example' ? example.files.length : importedFiles.length}</dd>
+            <dd>
+              {mode === 'example' ? example.files.length : importedFiles.length}
+            </dd>
           </div>
           <div>
             <dt>{t.resources}</dt>

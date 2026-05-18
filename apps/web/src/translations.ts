@@ -91,9 +91,11 @@ export const translations: Record<Lang, Translations> = {
     import_loaded_summary: (n) => `${n} file${n !== 1 ? 's' : ''} loaded`,
     save_layout: 'Save layout',
     load_layout: 'Load layout',
-    load_layout_mismatch: 'Layout was saved for a different diagram — positions may not align.',
+    load_layout_mismatch:
+      'Layout was saved for a different diagram — positions may not align.',
     plan_mode_badge: 'From plan',
-    plan_mode_hint: 'Exact dependencies from terraform show -json — no inference.',
+    plan_mode_hint:
+      'Exact dependencies from terraform show -json — no inference.',
     edge_labels_show: 'Show labels',
     edge_labels_hide: 'Hide labels',
   },
@@ -136,12 +138,15 @@ export const translations: Record<Lang, Translations> = {
     export_png: 'Exportar PNG',
     import_section_heading: 'Importar archivos .tf',
     import_clear: 'Limpiar',
-    import_loaded_summary: (n) => `${n} archivo${n !== 1 ? 's' : ''} cargado${n !== 1 ? 's' : ''}`,
+    import_loaded_summary: (n) =>
+      `${n} archivo${n !== 1 ? 's' : ''} cargado${n !== 1 ? 's' : ''}`,
     save_layout: 'Guardar layout',
     load_layout: 'Cargar layout',
-    load_layout_mismatch: 'El layout fue guardado para otro diagrama — las posiciones pueden no coincidir.',
+    load_layout_mismatch:
+      'El layout fue guardado para otro diagrama — las posiciones pueden no coincidir.',
     plan_mode_badge: 'Desde plan',
-    plan_mode_hint: 'Dependencias exactas de terraform show -json — sin inferencia.',
+    plan_mode_hint:
+      'Dependencias exactas de terraform show -json — sin inferencia.',
     edge_labels_show: 'Mostrar labels',
     edge_labels_hide: 'Ocultar labels',
   },

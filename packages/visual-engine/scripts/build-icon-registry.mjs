@@ -17,7 +17,9 @@ for (const provider of providers) {
   const dir = join(iconsDir, provider)
   let files
   try {
-    files = readdirSync(dir).filter((f) => f.endsWith('.svg')).sort()
+    files = readdirSync(dir)
+      .filter((f) => f.endsWith('.svg'))
+      .sort()
   } catch {
     continue
   }

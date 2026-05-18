@@ -42,7 +42,7 @@ type Rectangle = {
 }
 
 type PositionedCloudGraph = CloudGraph & {
-  layout: Record<string, Rectangle>  // node id / group id -> position
+  layout: Record<string, Rectangle> // node id / group id -> position
 }
 ```
 
@@ -84,14 +84,14 @@ Group rectangles are computed by taking the bounding box of all their children's
 
 ## Constants
 
-| Constant | Value | Description |
-|---|---|---|
-| `NODE_W` | 220 | Node width (px) |
-| `NODE_H` | 92 | Node height (px) |
-| `COL_GAP` | 80 | Horizontal gap between columns |
-| `ROW_GAP` | 28 | Vertical gap between rows |
-| `PAD_X` | 60 | Left/right canvas padding |
-| `PAD_Y` | 60 | Top/bottom canvas padding |
+| Constant  | Value | Description                    |
+| --------- | ----- | ------------------------------ |
+| `NODE_W`  | 220   | Node width (px)                |
+| `NODE_H`  | 92    | Node height (px)               |
+| `COL_GAP` | 80    | Horizontal gap between columns |
+| `ROW_GAP` | 28    | Vertical gap between rows      |
+| `PAD_X`   | 60    | Left/right canvas padding      |
+| `PAD_Y`   | 60    | Top/bottom canvas padding      |
 
 ---
 

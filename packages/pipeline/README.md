@@ -37,11 +37,11 @@ const result = generateDiagramFromTerraformFiles([
   },
 ])
 
-result.parsed           // TerraformParseResult
-result.graph            // CloudGraph
-result.positionedGraph  // PositionedCloudGraph  (graph + layout coordinates)
-result.canvasDrafts     // CanvasElementDraft[]
-result.diagnostics      // Diagnostic[]  (merged from parser + graph stages)
+result.parsed // TerraformParseResult
+result.graph // CloudGraph
+result.positionedGraph // PositionedCloudGraph  (graph + layout coordinates)
+result.canvasDrafts // CanvasElementDraft[]
+result.diagnostics // Diagnostic[]  (merged from parser + graph stages)
 ```
 
 ### `generateDiagramFromPlanJson(content: string): DiagramPipelineResult`
@@ -63,11 +63,11 @@ const result = generateDiagramFromPlanJson(content)
 
 ```typescript
 type DiagramPipelineResult = {
-  parsed: TerraformParseResult          // raw resources + parse diagnostics
-  graph: CloudGraph                     // nodes, edges, groups, graph diagnostics
+  parsed: TerraformParseResult // raw resources + parse diagnostics
+  graph: CloudGraph // nodes, edges, groups, graph diagnostics
   positionedGraph: PositionedCloudGraph // graph + layout: Record<id, {x,y,w,h}>
-  canvasDrafts: CanvasElementDraft[]   // flat list for the visual renderer
-  diagnostics: Diagnostic[]            // all diagnostics from all stages
+  canvasDrafts: CanvasElementDraft[] // flat list for the visual renderer
+  diagnostics: Diagnostic[] // all diagnostics from all stages
 }
 ```
 

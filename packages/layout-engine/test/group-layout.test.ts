@@ -15,7 +15,11 @@ function node(id: string, category: string = 'compute') {
   }
 }
 
-function edge(from: string, to: string, relation: 'deployed-in' | 'secured-by' | 'connects' = 'deployed-in') {
+function edge(
+  from: string,
+  to: string,
+  relation: 'deployed-in' | 'secured-by' | 'connects' = 'deployed-in',
+) {
   return {
     id: `${from}->${to}`,
     from,
@@ -26,7 +30,11 @@ function edge(from: string, to: string, relation: 'deployed-in' | 'secured-by' |
   }
 }
 
-function group(id: string, kind: 'vpc' | 'subnet', children: string[]): CloudGroup {
+function group(
+  id: string,
+  kind: 'vpc' | 'subnet',
+  children: string[],
+): CloudGroup {
   return { id, label: id, kind, children, metadata: {} }
 }
 
@@ -50,9 +58,7 @@ describe('group-constrained placement (HU-033)', () => {
         edge('subnet', 'vpc', 'deployed-in'),
         edge('instance', 'subnet', 'deployed-in'),
       ],
-      groups: [
-        group('g:subnet', 'subnet', ['subnet', 'instance']),
-      ],
+      groups: [group('g:subnet', 'subnet', ['subnet', 'instance'])],
       diagnostics: [],
     }
 
@@ -114,11 +120,21 @@ describe('group-constrained placement (HU-033)', () => {
         edge('aws_internet_gateway.edge', 'aws_vpc.main', 'deployed-in'),
         edge('aws_security_group.database', 'aws_vpc.main', 'deployed-in'),
         edge('aws_nat_gateway.egress', 'aws_subnet.public', 'deployed-in'),
-        edge('aws_db_instance.primary', 'aws_security_group.database', 'secured-by'),
+        edge(
+          'aws_db_instance.primary',
+          'aws_security_group.database',
+          'secured-by',
+        ),
       ],
       groups: [
-        group('g:subnet:public', 'subnet', ['aws_subnet.public', 'aws_nat_gateway.egress']),
-        group('g:subnet:private', 'subnet', ['aws_subnet.private', 'aws_db_instance.primary']),
+        group('g:subnet:public', 'subnet', [
+          'aws_subnet.public',
+          'aws_nat_gateway.egress',
+        ]),
+        group('g:subnet:private', 'subnet', [
+          'aws_subnet.private',
+          'aws_db_instance.primary',
+        ]),
         group('g:vpc', 'vpc', [
           'aws_vpc.main',
           'aws_subnet.public',
@@ -153,9 +169,7 @@ describe('group-constrained placement (HU-033)', () => {
         edge('subnet', 'vpc', 'deployed-in'),
         edge('standalone_a', 'standalone_b', 'connects'),
       ],
-      groups: [
-        group('g:vpc', 'vpc', ['vpc', 'subnet']),
-      ],
+      groups: [group('g:vpc', 'vpc', ['vpc', 'subnet'])],
       diagnostics: [],
     }
 

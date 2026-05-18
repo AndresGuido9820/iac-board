@@ -89,7 +89,10 @@ describe('Terraform to canvas pipeline', () => {
       }),
     )
     expect(result.canvasDrafts).toContainEqual(
-      expect.objectContaining({ id: 'aws_cognito_user_pool.users', label: 'users' }),
+      expect.objectContaining({
+        id: 'aws_cognito_user_pool.users',
+        label: 'users',
+      }),
     )
   })
 })

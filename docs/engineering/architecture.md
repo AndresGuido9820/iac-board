@@ -77,6 +77,7 @@ Thin transformation layer: converts `PositionedCloudGraph` into a flat `CanvasEl
 React SVG renderer. No dependency on any diagram library.
 
 Key components:
+
 - `CloudBoard` — interactive canvas container; owns pan/zoom state (`useViewport`), drag state, node selection, and keyboard navigation
 - `NodeRenderer` — renders a node card with AWS category icon, label, and selection ring
 - `GroupRenderer` — renders VPC/subnet group boundaries
@@ -85,6 +86,7 @@ Key components:
 - `Minimap` — thumbnail showing all nodes and groups with a viewport indicator
 
 Edge routing (`EdgeRenderer`):
+
 - Forward edges: cubic bezier from right-center to left-center
 - Obstacles: intermediate nodes **and** group boundaries (skipped when both endpoints are inside the same group)
 - When obstacles block the direct path, the arc is rerouted above all blockers
@@ -110,15 +112,16 @@ Bundled Terraform example projects (5 total). Used by `apps/web` for the example
 
 Built with React 19 + Vite. Key modules:
 
-| File | Responsibility |
-|------|---------------|
-| `App.tsx` | Root state, example selection, import handling, layout persistence, language |
-| `ProductShell` | Full page layout — hero, examples grid, metrics, diagnostics, canvas, inspector |
-| `DiagramCanvas.tsx` | Wraps `CloudBoard`; provides SVG/PNG export via `foreignObject` capture |
-| `import-zone.tsx` | Drag-and-drop and file picker for `.tf`, `.tfvars`, and `.json` plan files |
-| `translations.ts` | EN / ES string table for all UI labels |
+| File                | Responsibility                                                                  |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `App.tsx`           | Root state, example selection, import handling, layout persistence, language    |
+| `ProductShell`      | Full page layout — hero, examples grid, metrics, diagnostics, canvas, inspector |
+| `DiagramCanvas.tsx` | Wraps `CloudBoard`; provides SVG/PNG export via `foreignObject` capture         |
+| `import-zone.tsx`   | Drag-and-drop and file picker for `.tf`, `.tfvars`, and `.json` plan files      |
+| `translations.ts`   | EN / ES string table for all UI labels                                          |
 
 **State managed in `App`:**
+
 - `selectedExampleId` — currently displayed example
 - `importedFiles` — user-uploaded files (overrides example)
 - `mode: 'example' | 'imported' | 'plan'` — tracks whether plan JSON mode is active
@@ -184,12 +187,12 @@ All parsing happens in the browser's main thread using pure JavaScript.
 
 See [`docs/testing/test-strategy.md`](../testing/test-strategy.md) for the full strategy.
 
-| Layer | Tool | Location |
-|-------|------|----------|
-| Unit (parser, graph, layout, canvas) | Vitest | `packages/*/test/` or collocated `*.test.ts` |
-| Component (React) | Vitest + Testing Library | `apps/web/src/*.test.tsx`, `packages/visual-engine/src/*.test.tsx` |
-| Integration (full pipeline) | Vitest | `packages/pipeline/test/` |
-| E2E | Playwright | `tests/e2e/` |
-| Visual regression | Playwright | `tests/visual/` |
+| Layer                                | Tool                     | Location                                                           |
+| ------------------------------------ | ------------------------ | ------------------------------------------------------------------ |
+| Unit (parser, graph, layout, canvas) | Vitest                   | `packages/*/test/` or collocated `*.test.ts`                       |
+| Component (React)                    | Vitest + Testing Library | `apps/web/src/*.test.tsx`, `packages/visual-engine/src/*.test.tsx` |
+| Integration (full pipeline)          | Vitest                   | `packages/pipeline/test/`                                          |
+| E2E                                  | Playwright               | `tests/e2e/`                                                       |
+| Visual regression                    | Playwright               | `tests/visual/`                                                    |
 
 Coverage thresholds: branches >= 70%, statements/functions/lines >= 80%.

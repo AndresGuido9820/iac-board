@@ -292,7 +292,9 @@ describe('CloudBoard', () => {
     const overrides = {
       'aws_lambda_function.a': { x: 500, y: 500, width: 220, height: 92 },
     }
-    render(<CloudBoard elements={twoNodeElements} initialOverrides={overrides} />)
+    render(
+      <CloudBoard elements={twoNodeElements} initialOverrides={overrides} />,
+    )
     // The node group transform should reflect the overridden x/y position
     // We verify via the SVG viewBox being wider than default (node at x=500 + width + PAD)
     const svg = screen.getByTestId('iac-canvas')

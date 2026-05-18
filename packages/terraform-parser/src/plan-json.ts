@@ -41,7 +41,10 @@ interface ConfigResource {
 
 interface ConfigModule {
   resources?: ConfigResource[]
-  module_calls?: Record<string, { module?: ConfigModule; expressions?: ConfigExpression }>
+  module_calls?: Record<
+    string,
+    { module?: ConfigModule; expressions?: ConfigExpression }
+  >
 }
 
 interface TerraformPlan {
@@ -59,9 +62,7 @@ const PLAN_SOURCE = 'terraform.plan.json'
  * Child module resources already carry the fully-qualified address
  * (e.g. `module.vpc.aws_subnet.private`).
  */
-function flattenPlanResources(
-  mod: PlanModule | undefined,
-): PlanResource[] {
+function flattenPlanResources(mod: PlanModule | undefined): PlanResource[] {
   if (!mod) return []
   const out: PlanResource[] = [...(mod.resources ?? [])]
   for (const child of mod.child_modules ?? []) {
@@ -86,7 +87,9 @@ function flattenConfigResources(
   }))
 
   for (const [callName, call] of Object.entries(mod.module_calls ?? {})) {
-    const childPrefix = prefix ? `${prefix}.module.${callName}` : `module.${callName}`
+    const childPrefix = prefix
+      ? `${prefix}.module.${callName}`
+      : `module.${callName}`
     out.push(...flattenConfigResources(call.module, childPrefix))
   }
 
@@ -109,8 +112,9 @@ function refsFromExpressions(expressions: ConfigExpression): string[] {
         ref.startsWith('path.') ||
         ref.startsWith('each.') ||
         ref.startsWith('self.') ||
-        ref.startsWith('module.')   // module outputs — not a direct resource address
-      ) continue
+        ref.startsWith('module.') // module outputs — not a direct resource address
+      )
+        continue
 
       // data.TYPE.NAME[.ATTR…] → "data.TYPE.NAME"
       if (ref.startsWith('data.')) {
@@ -194,7 +198,10 @@ export function parsePlanJson(content: string): TerraformParseResult {
 
   // Build a map of address → refs from configuration (if present)
   const refsMap = new Map<string, string[]>()
-  const configResources = flattenConfigResources(plan.configuration?.root_module, '')
+  const configResources = flattenConfigResources(
+    plan.configuration?.root_module,
+    '',
+  )
   for (const cr of configResources) {
     if (cr.expressions) {
       refsMap.set(cr.address, refsFromExpressions(cr.expressions))

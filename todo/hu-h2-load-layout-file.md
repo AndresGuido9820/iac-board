@@ -4,10 +4,12 @@
 **Branch:** feat/fase-d-plan-json (combined with Fase D)
 
 ## Objective
+
 Close the save/load cycle: allow users to drag-drop or pick a `.iac-board.json`
 file to restore a previously saved layout into the current diagram.
 
 ## Tasks
+
 - [x] Add `loadLayoutFile(file: File): Promise<Record<string, Rect>>` util in App.tsx
 - [x] Add "Load layout" button / drop handler in import-zone or diagram panel
 - [x] Warn (non-blocking) when loaded file diagramId doesn't match current

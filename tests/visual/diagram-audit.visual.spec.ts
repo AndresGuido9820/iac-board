@@ -83,7 +83,9 @@ test('diagram: node inspector open', async ({ page }) => {
   })
 })
 
-test('diagram: VPC+RDS group layout — groups panel visible', async ({ page }) => {
+test('diagram: VPC+RDS group layout — groups panel visible', async ({
+  page,
+}) => {
   await page.goto('/')
   await page.waitForTimeout(200)
 

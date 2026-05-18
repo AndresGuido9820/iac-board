@@ -28,7 +28,12 @@ const MINIMAL_PLAN = JSON.stringify({
           type: 'aws_lambda_function',
           name: 'api',
           expressions: {
-            role: { references: ['aws_iam_role.lambda_exec.arn', 'aws_iam_role.lambda_exec'] },
+            role: {
+              references: [
+                'aws_iam_role.lambda_exec.arn',
+                'aws_iam_role.lambda_exec',
+              ],
+            },
             function_name: { constant_value: 'api' },
           },
         },
@@ -50,20 +55,28 @@ describe('parsePlanJson', () => {
     const result = parsePlanJson(MINIMAL_PLAN)
     expect(result.diagnostics).toEqual([])
     expect(result.resources).toHaveLength(2)
-    expect(result.resources.map((r) => r.address)).toContain('aws_lambda_function.api')
-    expect(result.resources.map((r) => r.address)).toContain('aws_iam_role.lambda_exec')
+    expect(result.resources.map((r) => r.address)).toContain(
+      'aws_lambda_function.api',
+    )
+    expect(result.resources.map((r) => r.address)).toContain(
+      'aws_iam_role.lambda_exec',
+    )
   })
 
   it('sets type and name correctly on each resource', () => {
     const result = parsePlanJson(MINIMAL_PLAN)
-    const lambda = result.resources.find((r) => r.address === 'aws_lambda_function.api')
+    const lambda = result.resources.find(
+      (r) => r.address === 'aws_lambda_function.api',
+    )
     expect(lambda?.type).toBe('aws_lambda_function')
     expect(lambda?.name).toBe('api')
   })
 
   it('extracts refs from configuration.expressions', () => {
     const result = parsePlanJson(MINIMAL_PLAN)
-    const lambda = result.resources.find((r) => r.address === 'aws_lambda_function.api')
+    const lambda = result.resources.find(
+      (r) => r.address === 'aws_lambda_function.api',
+    )
     // Should resolve to resource address, deduped
     expect(lambda?.refs).toContain('aws_iam_role.lambda_exec')
     // constant_value attributes produce no refs
@@ -144,7 +157,11 @@ describe('parsePlanJson', () => {
       planned_values: {
         root_module: {
           resources: [
-            { address: 'aws_lambda_function.fn', type: 'aws_lambda_function', name: 'fn' },
+            {
+              address: 'aws_lambda_function.fn',
+              type: 'aws_lambda_function',
+              name: 'fn',
+            },
           ],
         },
       },
@@ -193,7 +210,9 @@ describe('parsePlanJson', () => {
             {
               address: 'aws_instance.web',
               expressions: {
-                ami: { references: ['data.aws_ami.ubuntu.id', 'data.aws_ami.ubuntu'] },
+                ami: {
+                  references: ['data.aws_ami.ubuntu.id', 'data.aws_ami.ubuntu'],
+                },
               },
             },
           ],

@@ -18,7 +18,9 @@ export type DiagramPipelineResult = {
   diagnostics: Diagnostic[]
 }
 
-export function generateDiagramFromPlanJson(content: string): DiagramPipelineResult {
+export function generateDiagramFromPlanJson(
+  content: string,
+): DiagramPipelineResult {
   const parsed = parsePlanJson(content)
   const graph = buildCloudGraph(parsed)
   const positionedGraph = layoutCloudGraph(graph)

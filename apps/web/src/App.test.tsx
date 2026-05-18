@@ -169,59 +169,59 @@ describe('App', () => {
   })
 })
 
-  it('renders export PNG button', () => {
-    render(<App />)
-    expect(
-      screen.getByRole('button', { name: 'Export PNG' }),
-    ).toBeInTheDocument()
-  })
+it('renders export PNG button', () => {
+  render(<App />)
+  expect(screen.getByRole('button', { name: 'Export PNG' })).toBeInTheDocument()
+})
 
-  it('renders language toggle button', () => {
-    render(<App />)
-    expect(
-      screen.getByRole('button', { name: 'Español' }),
-    ).toBeInTheDocument()
-  })
+it('renders language toggle button', () => {
+  render(<App />)
+  expect(screen.getByRole('button', { name: 'Español' })).toBeInTheDocument()
+})
 
-  it('toggles interface language to Spanish', async () => {
-    const user = userEvent.setup()
-    render(<App />)
+it('toggles interface language to Spanish', async () => {
+  const user = userEvent.setup()
+  render(<App />)
 
-    await user.click(screen.getByRole('button', { name: 'Español' }))
+  await user.click(screen.getByRole('button', { name: 'Español' }))
 
-    expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Exportar SVG' })).toBeInTheDocument()
-  })
+  expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: 'Exportar SVG' }),
+  ).toBeInTheDocument()
+})
 
-  it('renders import zone drop area', () => {
-    render(<App />)
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Import .tf files' }),
-    ).toBeInTheDocument()
-  })
+it('renders import zone drop area', () => {
+  render(<App />)
+  expect(
+    screen.getByRole('heading', { level: 2, name: 'Import .tf files' }),
+  ).toBeInTheDocument()
+})
 
-  it('renders edge labels toggle button', () => {
-    render(<App />)
-    expect(
-      screen.getByRole('button', { name: 'Hide labels' }),
-    ).toBeInTheDocument()
-  })
+it('renders edge labels toggle button', () => {
+  render(<App />)
+  expect(
+    screen.getByRole('button', { name: 'Hide labels' }),
+  ).toBeInTheDocument()
+})
 
-  it('toggles edge labels off and back on', async () => {
-    const user = userEvent.setup()
-    render(<App />)
+it('toggles edge labels off and back on', async () => {
+  const user = userEvent.setup()
+  render(<App />)
 
-    const btn = screen.getByRole('button', { name: 'Hide labels' })
-    expect(btn).toHaveAttribute('aria-pressed', 'true')
+  const btn = screen.getByRole('button', { name: 'Hide labels' })
+  expect(btn).toHaveAttribute('aria-pressed', 'true')
 
-    await user.click(btn)
+  await user.click(btn)
 
-    expect(
-      screen.getByRole('button', { name: 'Show labels' }),
-    ).toHaveAttribute('aria-pressed', 'false')
+  expect(screen.getByRole('button', { name: 'Show labels' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  )
 
-    await user.click(screen.getByRole('button', { name: 'Show labels' }))
-    expect(
-      screen.getByRole('button', { name: 'Hide labels' }),
-    ).toHaveAttribute('aria-pressed', 'true')
-  })
+  await user.click(screen.getByRole('button', { name: 'Show labels' }))
+  expect(screen.getByRole('button', { name: 'Hide labels' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+})

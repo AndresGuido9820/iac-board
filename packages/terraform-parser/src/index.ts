@@ -36,7 +36,9 @@ export function parseTerraformFiles(
   for (const file of files) {
     if (!file.path.endsWith('.tf')) continue
     // Simple regex scan — avoids a full lex/parse pass
-    const moduleSources = file.content.matchAll(/module\s+"[^"]+"\s*\{[^}]*source\s*=\s*"([^"]+)"/gs)
+    const moduleSources = file.content.matchAll(
+      /module\s+"[^"]+"\s*\{[^}]*source\s*=\s*"([^"]+)"/gs,
+    )
     for (const [, src] of moduleSources) {
       if (src.startsWith('./') || src.startsWith('../')) {
         const callingDir = file.path.includes('/')
@@ -101,7 +103,8 @@ export function expandLocalModule(
 
   const prefix = moduleDirPath ? moduleDirPath + '/' : ''
   const moduleFiles = allFiles.filter(
-    (f) => f.path.endsWith('.tf') && (prefix === '' || f.path.startsWith(prefix)),
+    (f) =>
+      f.path.endsWith('.tf') && (prefix === '' || f.path.startsWith(prefix)),
   )
   if (moduleFiles.length === 0) return []
 
@@ -114,7 +117,12 @@ export function expandLocalModule(
     )
     allDiagnostics.push(...parseDiags)
 
-    const fileResources = extractFromFile(hclFile, allFiles, allDiagnostics, visited)
+    const fileResources = extractFromFile(
+      hclFile,
+      allFiles,
+      allDiagnostics,
+      visited,
+    )
     for (const r of fileResources) {
       expanded.push({
         ...r,

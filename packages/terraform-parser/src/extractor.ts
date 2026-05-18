@@ -18,12 +18,14 @@ import type { TerraformResource, TerraformFile } from './index'
 import { expandLocalModule } from './index'
 import { refsFromBody, bodyToText } from './refs'
 
-
 /**
  * Resolve a module source path (e.g. "./modules/vpc") relative to the
  * directory of the calling .tf file.
  */
-function resolveModulePath(callingFilePath: string, moduleSource: string): string {
+function resolveModulePath(
+  callingFilePath: string,
+  moduleSource: string,
+): string {
   const callingDir = callingFilePath.includes('/')
     ? callingFilePath.slice(0, callingFilePath.lastIndexOf('/'))
     : ''

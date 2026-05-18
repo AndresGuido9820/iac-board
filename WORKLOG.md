@@ -156,6 +156,7 @@ Added `ImportZone` component (`apps/web/src/import-zone.tsx`): drag-and-drop or 
 ### HU-040 — Local module expansion
 
 Implemented in `packages/terraform-parser/src/`:
+
 - `resolveModulePath()` resolves `./path` and `../path` relative to calling file
 - `expandLocalModule()` finds matching `.tf` files, parses them recursively (cycle-guarded via `visited` Set), and re-addresses resources as `module.<name>.<type>.<name>`
 - Root-level loop pre-scans module sources and skips module directory files to prevent duplication
@@ -172,12 +173,11 @@ Rewrote from "Planning stage" to production-ready documentation: feature list, p
 
 ### Test Summary
 
-| Metric | Before | After |
-|---|---|---|
-| Tests | 89 | 105 |
-| Test files | 12 | 14 |
-| Bundled examples | 3 | 5 |
-| Coverage (branches) | 71.23% | 71.46% ✅ |
+| Metric                | Before | After     |
+| --------------------- | ------ | --------- |
+| Tests                 | 89     | 105       |
+| Test files            | 12     | 14        |
+| Bundled examples      | 3      | 5         |
+| Coverage (branches)   | 71.23% | 71.46% ✅ |
 | Coverage (statements) | 82.86% | 81.46% ✅ |
-| Lint errors | 0 | 0 |
-
+| Lint errors           | 0      | 0         |

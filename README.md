@@ -80,15 +80,15 @@ Each stage is an independent npm workspace package with its own tests. See [`doc
 
 ## Supported AWS Resources
 
-| Category | Resource types |
-|---|---|
-| Compute | `aws_lambda_function`, `aws_ecs_cluster`, `aws_ecs_service`, `aws_ecs_task_definition`, `aws_eks_cluster`, `aws_autoscaling_group`, `aws_instance` |
-| Network | `aws_vpc`, `aws_subnet`, `aws_internet_gateway`, `aws_nat_gateway`, `aws_lb`, `aws_alb`, `aws_cloudfront_distribution`, `aws_route53_zone`, `aws_db_subnet_group` |
-| Storage | `aws_s3_bucket`, `aws_s3_object` |
-| Database | `aws_db_instance`, `aws_rds_cluster`, `aws_dynamodb_table`, `aws_elasticache_cluster`, `aws_elasticache_replication_group`, `aws_redshift_cluster`, `aws_athena_workgroup`, `aws_glue_catalog_database` |
+| Category    | Resource types                                                                                                                                                                                                                      |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Compute     | `aws_lambda_function`, `aws_ecs_cluster`, `aws_ecs_service`, `aws_ecs_task_definition`, `aws_eks_cluster`, `aws_autoscaling_group`, `aws_instance`                                                                                  |
+| Network     | `aws_vpc`, `aws_subnet`, `aws_internet_gateway`, `aws_nat_gateway`, `aws_lb`, `aws_alb`, `aws_cloudfront_distribution`, `aws_route53_zone`, `aws_db_subnet_group`                                                                   |
+| Storage     | `aws_s3_bucket`, `aws_s3_object`                                                                                                                                                                                                    |
+| Database    | `aws_db_instance`, `aws_rds_cluster`, `aws_dynamodb_table`, `aws_elasticache_cluster`, `aws_elasticache_replication_group`, `aws_redshift_cluster`, `aws_athena_workgroup`, `aws_glue_catalog_database`                             |
 | Integration | `aws_api_gateway_rest_api`, `aws_apigatewayv2_api`, `aws_sqs_queue`, `aws_sns_topic`, `aws_kinesis_stream`, `aws_kinesis_firehose_delivery_stream`, `aws_eventbridge_rule`, `aws_lambda_event_source_mapping`, `aws_iot_topic_rule` |
-| Security | `aws_iam_role`, `aws_iam_policy`, `aws_security_group`, `aws_cognito_user_pool`, `aws_secretsmanager_secret`, `aws_kms_key` |
-| AI/ML | `aws_sagemaker_endpoint`, `aws_sagemaker_model` |
+| Security    | `aws_iam_role`, `aws_iam_policy`, `aws_security_group`, `aws_cognito_user_pool`, `aws_secretsmanager_secret`, `aws_kms_key`                                                                                                         |
+| AI/ML       | `aws_sagemaker_endpoint`, `aws_sagemaker_model`                                                                                                                                                                                     |
 
 Resources not in the table still render with an `unknown` category and surface a parser diagnostic.
 
@@ -188,13 +188,13 @@ Commit the updated `.png` files under `tests/visual/`.
 
 Key design choices are recorded in [`docs/adr/`](docs/adr/):
 
-| ADR | Decision |
-|-----|----------|
-| [0001](docs/adr/0001-use-drawnix-plait-as-visual-engine.md) | Visual engine selection |
-| [0002](docs/adr/0002-use-typescript-first-with-parser-adapter.md) | TypeScript-first + parser adapter pattern |
-| [0003](docs/adr/0003-local-first-safe-terraform-parsing.md) | Local-only, zero-execution parsing |
-| [0004](docs/adr/0004-cloud-graph-schema-and-document-versioning.md) | Cloud graph schema + document versioning |
-| [0005](docs/adr/0005-testing-pyramid-and-fixture-contracts.md) | Testing pyramid |
+| ADR                                                                 | Decision                                  |
+| ------------------------------------------------------------------- | ----------------------------------------- |
+| [0001](docs/adr/0001-use-drawnix-plait-as-visual-engine.md)         | Visual engine selection                   |
+| [0002](docs/adr/0002-use-typescript-first-with-parser-adapter.md)   | TypeScript-first + parser adapter pattern |
+| [0003](docs/adr/0003-local-first-safe-terraform-parsing.md)         | Local-only, zero-execution parsing        |
+| [0004](docs/adr/0004-cloud-graph-schema-and-document-versioning.md) | Cloud graph schema + document versioning  |
+| [0005](docs/adr/0005-testing-pyramid-and-fixture-contracts.md)      | Testing pyramid                           |
 
 ---
 

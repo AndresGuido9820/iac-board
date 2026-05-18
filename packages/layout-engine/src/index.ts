@@ -170,7 +170,9 @@ function applyGroupConstraints(
     if (group.kind !== 'subnet') continue
     const knownChildren = group.children.filter((id) => nodeLayer.has(id))
     if (knownChildren.length === 0) continue
-    const targetLayer = Math.min(...knownChildren.map((id) => nodeLayer.get(id)!))
+    const targetLayer = Math.min(
+      ...knownChildren.map((id) => nodeLayer.get(id)!),
+    )
     for (const id of knownChildren) moveNode(id, targetLayer)
   }
 

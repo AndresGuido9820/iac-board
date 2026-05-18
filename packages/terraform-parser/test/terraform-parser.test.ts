@@ -297,18 +297,18 @@ EOF
   })
 })
 
-  it('prefixes module resource refs with module name', () => {
-    const result = parseTerraformFiles([
-      {
-        path: 'main.tf',
-        content: `module "net" {
+it('prefixes module resource refs with module name', () => {
+  const result = parseTerraformFiles([
+    {
+      path: 'main.tf',
+      content: `module "net" {
   source = "./modules/net"
 }
 `,
-      },
-      {
-        path: 'modules/net/main.tf',
-        content: `resource "aws_vpc" "main" {
+    },
+    {
+      path: 'modules/net/main.tf',
+      content: `resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
@@ -316,13 +316,13 @@ resource "aws_subnet" "pub" {
   vpc_id = aws_vpc.main.id
 }
 `,
-      },
-    ])
+    },
+  ])
 
-    expect(result.diagnostics).toHaveLength(0)
-    expect(result.resources).toHaveLength(2)
-    const subnet = result.resources.find(
-      (r) => r.address === 'module.net.aws_subnet.pub',
-    )
-    expect(subnet?.refs).toContain('module.net.aws_vpc.main')
-  })
+  expect(result.diagnostics).toHaveLength(0)
+  expect(result.resources).toHaveLength(2)
+  const subnet = result.resources.find(
+    (r) => r.address === 'module.net.aws_subnet.pub',
+  )
+  expect(subnet?.refs).toContain('module.net.aws_vpc.main')
+})

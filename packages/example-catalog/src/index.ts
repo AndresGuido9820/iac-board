@@ -148,7 +148,6 @@ resource "aws_db_instance" "primary" {
   ],
 }
 
-
 const awsEcsMicroservices: ExampleProject = {
   id: 'aws-ecs-microservices',
   name: 'ECS Microservices',
@@ -296,7 +295,6 @@ resource "aws_secretsmanager_secret" "db_password" {
     },
   ],
 }
-
 
 const awsModularApp: ExampleProject = {
   id: 'aws-modular-app',

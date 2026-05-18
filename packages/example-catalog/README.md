@@ -7,10 +7,7 @@ Bundled Terraform example projects used by the IaC Board web app. Each project i
 ## API
 
 ```typescript
-import {
-  getExampleProject,
-  exampleProjects,
-} from '@iac-board/example-catalog'
+import { getExampleProject, exampleProjects } from '@iac-board/example-catalog'
 
 import type { ExampleProject } from '@iac-board/example-catalog'
 ```
@@ -26,23 +23,23 @@ Returns the example project with the given `id`. Throws if not found.
 ```typescript
 const project = getExampleProject('aws-serverless-api')
 
-project.id           // 'aws-serverless-api'
-project.name         // 'AWS Serverless API'
-project.description  // 'API Gateway, Lambda, IAM, and DynamoDB — ...'
-project.files        // TerraformFile[]
+project.id // 'aws-serverless-api'
+project.name // 'AWS Serverless API'
+project.description // 'API Gateway, Lambda, IAM, and DynamoDB — ...'
+project.files // TerraformFile[]
 ```
 
 ---
 
 ## Bundled examples
 
-| ID | Name | Resources |
-|---|---|---|
-| `aws-serverless-api` | AWS Serverless API | API Gateway, Lambda, IAM role, DynamoDB |
-| `aws-iot-pipeline` | AWS IoT Pipeline | IoT Topic Rule, Lambda, Kinesis, S3 |
-| `aws-vpc-rds` | AWS VPC + RDS | VPC, subnets, security groups, NAT gateway, RDS |
-| `ecs-microservices` | ECS Microservices | ECS cluster/service/task, ALB, ECR, RDS |
-| `modular-app` | Modular App | Local Terraform modules with nested resources |
+| ID                   | Name               | Resources                                       |
+| -------------------- | ------------------ | ----------------------------------------------- |
+| `aws-serverless-api` | AWS Serverless API | API Gateway, Lambda, IAM role, DynamoDB         |
+| `aws-iot-pipeline`   | AWS IoT Pipeline   | IoT Topic Rule, Lambda, Kinesis, S3             |
+| `aws-vpc-rds`        | AWS VPC + RDS      | VPC, subnets, security groups, NAT gateway, RDS |
+| `ecs-microservices`  | ECS Microservices  | ECS cluster/service/task, ALB, ECR, RDS         |
+| `modular-app`        | Modular App        | Local Terraform modules with nested resources   |
 
 ---
 
@@ -53,8 +50,8 @@ type ExampleProject = {
   id: string
   name: string
   description: string
-  userStoryIds: string[]   // traceability to product backlog
-  files: TerraformFile[]   // { path: string; content: string }[]
+  userStoryIds: string[] // traceability to product backlog
+  files: TerraformFile[] // { path: string; content: string }[]
 }
 ```
 

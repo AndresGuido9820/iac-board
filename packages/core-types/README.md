@@ -25,8 +25,8 @@ import type {
 ```typescript
 type SourceLocation = {
   filePath: string
-  line?: number     // 1-based
-  column?: number   // 1-based
+  line?: number // 1-based
+  column?: number // 1-based
 }
 ```
 
@@ -45,12 +45,18 @@ type Diagnostic = {
 
 ```typescript
 type CloudNode = {
-  id: string          // resource address: "aws_lambda_function.handler"
+  id: string // resource address: "aws_lambda_function.handler"
   provider: 'aws' | 'unknown'
-  kind: string        // resource type: "aws_lambda_function"
-  label: string       // short display name: "handler"
-  category: 'network' | 'compute' | 'database' | 'storage'
-           | 'security' | 'integration' | 'unknown'
+  kind: string // resource type: "aws_lambda_function"
+  label: string // short display name: "handler"
+  category:
+    | 'network'
+    | 'compute'
+    | 'database'
+    | 'storage'
+    | 'security'
+    | 'integration'
+    | 'unknown'
   source?: SourceLocation
   metadata: Record<string, unknown>
 }
@@ -61,11 +67,20 @@ type CloudNode = {
 ```typescript
 type CloudEdge = {
   id: string
-  from: string     // source node id
-  to: string       // target node id
-  relation: 'contains' | 'connects' | 'depends-on' | 'deployed-in'
-           | 'invokes' | 'publishes-to' | 'reads-from' | 'secured-by'
-           | 'triggers' | 'uses-role' | 'writes-to'
+  from: string // source node id
+  to: string // target node id
+  relation:
+    | 'contains'
+    | 'connects'
+    | 'depends-on'
+    | 'deployed-in'
+    | 'invokes'
+    | 'publishes-to'
+    | 'reads-from'
+    | 'secured-by'
+    | 'triggers'
+    | 'uses-role'
+    | 'writes-to'
   confidence: 'exact' | 'inferred' | 'uncertain'
   metadata: Record<string, unknown>
 }
@@ -78,7 +93,7 @@ type CloudGroup = {
   id: string
   label: string
   kind: 'account' | 'region' | 'vpc' | 'subnet' | 'service'
-  children: string[]   // node ids contained in this group
+  children: string[] // node ids contained in this group
   metadata: Record<string, unknown>
 }
 ```
@@ -104,10 +119,13 @@ type IacBoardDocument = {
   source: {
     type: 'local-folder' | 'git-repo' | 'example'
     name: string
-    scannedAt: string   // ISO 8601
+    scannedAt: string // ISO 8601
   }
   graph: CloudGraph
-  layout: Record<string, { x: number; y: number; width: number; height: number }>
+  layout: Record<
+    string,
+    { x: number; y: number; width: number; height: number }
+  >
   diagnostics: Diagnostic[]
 }
 ```

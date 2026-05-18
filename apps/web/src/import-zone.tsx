@@ -110,10 +110,12 @@ export function ImportZone({ onFilesLoaded, loadedFiles }: ImportZoneProps) {
           </svg>
         </div>
         <p className="import-drop-label">
-          Drop <strong>.tf</strong>, <strong>.tfvars</strong>, or <strong>.json</strong> files here
+          Drop <strong>.tf</strong>, <strong>.tfvars</strong>, or{' '}
+          <strong>.json</strong> files here
         </p>
         <p className="import-drop-hint">
-          Terraform module files, or a single <code>terraform show -json</code> plan file
+          Terraform module files, or a single <code>terraform show -json</code>{' '}
+          plan file
         </p>
         <button
           className="import-pick-btn"
