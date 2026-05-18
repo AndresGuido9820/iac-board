@@ -10,6 +10,7 @@ import type {
 } from '@iac-board/terraform-parser'
 
 const awsCategories: Record<string, CloudNode['category']> = {
+  // Existing types
   aws_api_gateway_rest_api: 'integration',
   aws_apigatewayv2_api: 'integration',
   aws_athena_workgroup: 'database',
@@ -30,12 +31,73 @@ const awsCategories: Record<string, CloudNode['category']> = {
   aws_sqs_queue: 'integration',
   aws_subnet: 'network',
   aws_vpc: 'network',
+  // Compute
+  aws_instance: 'compute',
+  aws_autoscaling_group: 'compute',
+  aws_launch_template: 'compute',
+  aws_ecs_cluster: 'compute',
+  aws_ecs_service: 'compute',
+  aws_ecs_task_definition: 'compute',
+  aws_eks_cluster: 'compute',
+  aws_eks_node_group: 'compute',
+  // Storage
+  aws_s3_bucket_versioning: 'storage',
+  aws_s3_bucket_policy: 'storage',
+  aws_efs_file_system: 'storage',
+  aws_elasticache_cluster: 'storage',
+  aws_elasticache_replication_group: 'storage',
+  // Database
+  aws_rds_cluster: 'database',
+  aws_rds_cluster_instance: 'database',
+  aws_redshift_cluster: 'database',
+  // Network
+  aws_lb: 'network',
+  aws_alb: 'network',
+  aws_lb_listener: 'network',
+  aws_lb_target_group: 'network',
+  aws_route53_zone: 'network',
+  aws_route53_record: 'network',
+  aws_cloudfront_distribution: 'network',
+  aws_eip: 'network',
+  aws_vpc_endpoint: 'network',
+  // Integration
+  aws_cloudwatch_event_rule: 'integration',
+  aws_cloudwatch_event_target: 'integration',
+  aws_scheduler_schedule: 'integration',
+  aws_sfn_state_machine: 'integration',
+  aws_ses_email_identity: 'integration',
+  aws_kinesis_firehose_delivery_stream: 'integration',
+  // Security
+  aws_iam_policy: 'security',
+  aws_iam_role_policy_attachment: 'security',
+  aws_iam_instance_profile: 'security',
+  aws_cognito_user_pool: 'security',
+  aws_secretsmanager_secret: 'security',
+  aws_ssm_parameter: 'security',
+  aws_acm_certificate: 'security',
+  aws_wafv2_web_acl: 'security',
+  // Observability (mapped to integration for now)
+  aws_cloudwatch_metric_alarm: 'integration',
+  aws_cloudwatch_log_group: 'integration',
+  aws_cloudwatch_dashboard: 'integration',
 }
 
+/**
+ * Resource types that are pure configuration artifacts with no standalone
+ * architectural meaning. They are excluded from graph nodes and edges but
+ * are still used to propagate VPC/subnet group membership.
+ */
+const IMPLEMENTATION_DETAIL_TYPES = new Set([
+  'aws_db_subnet_group', // RDS API grouping artifact — placement is communicated by subnet group membership
+])
+
 export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
-  const nodes = parseResult.resources.map(resourceToNode)
-  const groups = buildNetworkGroups(parseResult.resources)
-  const edges = buildEdges(parseResult.resources)
+  const visibleResources = parseResult.resources.filter(
+    (r) => !IMPLEMENTATION_DETAIL_TYPES.has(r.type),
+  )
+  const nodes = visibleResources.map(resourceToNode)
+  const groups = buildNetworkGroups(parseResult.resources) // use ALL resources for VPC propagation
+  const edges = buildEdges(visibleResources)
 
   return {
     nodes,
@@ -43,7 +105,7 @@ export function buildCloudGraph(parseResult: TerraformParseResult): CloudGraph {
     groups,
     diagnostics: [
       ...parseResult.diagnostics,
-      ...parseResult.resources
+      ...visibleResources
         .filter((resource) => !awsCategories[resource.type])
         .map((resource) => ({
           code: 'GRAPH001',
@@ -178,13 +240,28 @@ function inferRelation(
   // Event-source mapping bridges a stream/queue to a Lambda
   if (fromType === 'aws_lambda_event_source_mapping') return 'triggers'
 
-  // API Gateway / IoT publish to downstream compute
+  // API Gateway / load balancer / IoT publish to downstream compute
   if (
     fromType === 'aws_api_gateway_rest_api' ||
-    fromType === 'aws_apigatewayv2_api'
+    fromType === 'aws_apigatewayv2_api' ||
+    fromType === 'aws_lb' ||
+    fromType === 'aws_alb' ||
+    fromType === 'aws_lb_listener' ||
+    fromType === 'aws_cloudfront_distribution'
   )
     return 'connects'
   if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
+
+  // EventBridge / scheduler trigger downstream
+  if (
+    fromType === 'aws_cloudwatch_event_rule' ||
+    fromType === 'aws_cloudwatch_event_target' ||
+    fromType === 'aws_scheduler_schedule'
+  )
+    return 'triggers'
+
+  // Step Functions invokes state machine targets
+  if (fromType === 'aws_sfn_state_machine') return 'invokes'
 
   // Lambda: distinguish role assumption, storage writes, and generic invocations
   if (fromType === 'aws_lambda_function') {
@@ -194,11 +271,18 @@ function inferRelation(
       toType === 'aws_dynamodb_table' ||
       toType === 'aws_kinesis_stream' ||
       toType === 'aws_sns_topic' ||
-      toType === 'aws_sqs_queue'
+      toType === 'aws_sqs_queue' ||
+      toType === 'aws_rds_cluster' ||
+      toType === 'aws_db_instance' ||
+      toType === 'aws_elasticache_cluster' ||
+      toType === 'aws_elasticache_replication_group'
     )
       return 'writes-to'
     return 'invokes'
   }
+
+  // ECS service references task definition
+  if (fromType === 'aws_ecs_service') return 'invokes'
 
   // Network resources reference VPC/subnet as placement context
   if (

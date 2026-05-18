@@ -93,4 +93,103 @@ describe('App', () => {
     )
     expect(screen.getByText('aws_db_instance.primary')).toBeInTheDocument()
   })
+
+  it('renders export SVG button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Export SVG' }),
+    ).toBeInTheDocument()
+  })
+
+  it('opens node inspector when a board node is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // Click the first iac-node element rendered inside the SVG
+    const node = screen.getAllByTestId('iac-node')[0]
+    expect(node).not.toBeNull()
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+
+    // Inspector should appear with resource type label
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+  })
+
+  it('closes node inspector with Escape key', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const node = screen.getAllByTestId('iac-node')[0]
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByLabelText('Node inspector')).not.toBeInTheDocument()
+  })
+
+  it('closes node inspector with close button', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const node = screen.getAllByTestId('iac-node')[0]
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+    expect(screen.getByLabelText('Node inspector')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Close inspector'))
+    expect(screen.queryByLabelText('Node inspector')).not.toBeInTheDocument()
+  })
+
+  it('inspector shows correct node fields', async () => {
+    const user = userEvent.setup()
+    const example = getExampleProject('aws-serverless-api')
+    const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+
+    render(
+      <ProductShell
+        example={example}
+        examples={[example]}
+        generatedDiagram={generatedDiagram}
+        onSelectExample={() => undefined}
+        selectedExampleId={example.id}
+      />,
+    )
+
+    const node = screen.getAllByTestId('iac-node')[0]
+    await user.pointer({ keys: '[MouseLeft]', target: node! })
+
+    const inspector = screen.getByLabelText('Node inspector')
+    expect(inspector).toBeInTheDocument()
+    // Should show source file reference
+    expect(inspector.textContent).toContain('examples/terraform')
+  })
 })
+
+  it('renders export PNG button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Export PNG' }),
+    ).toBeInTheDocument()
+  })
+
+  it('renders language toggle button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Español' }),
+    ).toBeInTheDocument()
+  })
+
+  it('toggles interface language to Spanish', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Español' }))
+
+    expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Exportar SVG' })).toBeInTheDocument()
+  })
+
+  it('renders import zone drop area', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Import .tf files' }),
+    ).toBeInTheDocument()
+  })

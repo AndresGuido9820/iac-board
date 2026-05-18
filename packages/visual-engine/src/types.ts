@@ -60,6 +60,7 @@ export function toBoardElements(
       return {
         type: 'node',
         id: d.id,
+        // c8 ignore next — split() always returns a string; ?? 'unknown' is unreachable
         resourceType: node?.kind ?? d.id.split('.')[0] ?? 'unknown',
         label: d.label,
         category: node?.category ?? 'unknown',
