@@ -147,11 +147,16 @@ describe('Pipeline performance benchmarks (HU-041)', () => {
       generateDiagramFromTerraformFiles([{ path: 'main.tf', content: large }]),
     )
 
+    // Floor of 1ms prevents false failures when tSmall is sub-millisecond
+    // (timer granularity makes ratios meaningless at that scale).
+    const tSmallFloor = Math.max(tSmall, 1)
+
     console.warn(
-      `[bench] scaling ratio: ${(tLarge / tSmall).toFixed(1)}× (200 vs 20 resources)`,
+      `[bench] scaling ratio: ${(tLarge / tSmallFloor).toFixed(1)}× (200 vs 20 resources, floor 1ms)`,
     )
 
-    // 200 resources (10×) should take less than 10× the time — roughly linear
-    expect(tLarge).toBeLessThan(tSmall * 20) // 20× is generous; catches quadratic regressions
+    // 200 resources (10×) should take less than 20× the time — roughly linear.
+    // 20× is generous to catch quadratic regressions while tolerating JIT warmup.
+    expect(tLarge).toBeLessThan(tSmallFloor * 20)
   })
 })
