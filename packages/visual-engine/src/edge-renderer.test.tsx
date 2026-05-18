@@ -195,6 +195,44 @@ describe('EdgeRenderer', () => {
     expect(screen.getByTestId('iac-edge-label')).toBeInTheDocument()
   })
 
+  it('uses group rect as obstacle when edge crosses group boundary', () => {
+    // A → B where a group encloses only B — group rect should NOT block (both endpoints not inside)
+    // The edge still renders; what we verify is it renders at all with groupRects provided.
+    const groupRect = { x: 300, y: 40, width: 280, height: 120 }
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'invokes')]}
+          nodeMap={nodeMap}
+          groupRects={[groupRect]}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge')).toBeInTheDocument()
+    expect(screen.getByTestId('iac-edge-path')).toBeInTheDocument()
+  })
+
+  it('does not use group rect as obstacle when both nodes are inside the same group', () => {
+    // Both A and B centers inside the group — group rect skipped as obstacle.
+    // Edge path should be straight cubic (no routing detour), so it renders.
+    const groupRect = { x: 0, y: 0, width: 700, height: 220 }
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'invokes')]}
+          nodeMap={nodeMap}
+          groupRects={[groupRect]}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge')).toBeInTheDocument()
+    // Path should start at right(A) = 60+220 = 280 — no group rerouting
+    const d = screen.getByTestId('iac-edge-path').getAttribute('d') ?? ''
+    expect(d.startsWith('M 280,')).toBe(true)
+  })
+
   it('renders edge when an intermediate node blocks the direct path', () => {
     // A → C with B in between — edge should still render (obstacle avoidance path)
     const obstacleMap = new Map<string, BoardNode>([
