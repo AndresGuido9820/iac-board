@@ -1,4 +1,4 @@
-import type { CloudGraph, CloudEdge } from '@iac-board/core-types'
+import type { CloudGraph, CloudEdge, CloudGroup } from '@iac-board/core-types'
 
 export type Rectangle = {
   x: number
@@ -66,6 +66,12 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   // Phase 2 — Barycenter crossing minimisation (Sugiyama)
   barycentreOrdering(byLayer, graph.edges)
 
+  // Phase 3 — Group-constrained placement
+  // Pull group members into adjacent columns so VPC/subnet rects stay compact.
+  if (graph.groups.length > 0) {
+    applyGroupConstraints(byLayer, graph.groups)
+  }
+
   // Find tallest column to centre shorter ones vertically
   const maxCount = Math.max(
     ...[...byLayer.values()].map((ids) => ids.length),
@@ -115,6 +121,85 @@ export function layoutCloudGraph(graph: CloudGraph): PositionedCloudGraph {
   }
 
   return { ...graph, layout }
+}
+
+// ── Group-constrained placement ───────────────────────────────────────────────
+
+/**
+ * Post-processes `byLayer` so that nodes sharing a VPC or subnet group
+ * are placed in a compact column range:
+ *
+ * - **Subnet groups** (kind='subnet'): all children forced to the minimum
+ *   layer occupied by any child.
+ * - **VPC groups** (kind='vpc'): children compressed to a span of at most 2
+ *   adjacent layers (anchored at the minimum child layer).
+ *
+ * Subnet groups are processed first (finest granularity), so VPC compression
+ * can take advantage of already-collapsed subnet members.
+ *
+ * After moving nodes, empty layers are deleted and layer numbers are
+ * renormalised to a contiguous 0-based sequence.
+ */
+function applyGroupConstraints(
+  byLayer: Map<number, string[]>,
+  groups: CloudGroup[],
+): void {
+  // Build inverse map: nodeId → current layer number
+  const nodeLayer = new Map<string, number>()
+  for (const [layer, ids] of byLayer) {
+    for (const id of ids) nodeLayer.set(id, layer)
+  }
+
+  /** Move a single node to targetLayer, updating both byLayer and nodeLayer. */
+  function moveNode(id: string, targetLayer: number): void {
+    const current = nodeLayer.get(id)
+    if (current === undefined || current === targetLayer) return
+
+    const src = byLayer.get(current)!
+    const idx = src.indexOf(id)
+    if (idx >= 0) src.splice(idx, 1)
+    if (src.length === 0) byLayer.delete(current)
+
+    if (!byLayer.has(targetLayer)) byLayer.set(targetLayer, [])
+    byLayer.get(targetLayer)!.push(id)
+    nodeLayer.set(id, targetLayer)
+  }
+
+  // 1. Subnet groups — collapse to min child layer
+  for (const group of groups) {
+    if (group.kind !== 'subnet') continue
+    const knownChildren = group.children.filter((id) => nodeLayer.has(id))
+    if (knownChildren.length === 0) continue
+    const targetLayer = Math.min(...knownChildren.map((id) => nodeLayer.get(id)!))
+    for (const id of knownChildren) moveNode(id, targetLayer)
+  }
+
+  // 2. VPC groups — compress to max 2 adjacent layers
+  for (const group of groups) {
+    if (group.kind !== 'vpc') continue
+    const knownChildren = group.children.filter((id) => nodeLayer.has(id))
+    if (knownChildren.length === 0) continue
+    const minLayer = Math.min(...knownChildren.map((id) => nodeLayer.get(id)!))
+    const maxLayer = Math.max(...knownChildren.map((id) => nodeLayer.get(id)!))
+    if (maxLayer - minLayer <= 1) continue // already compact
+    const targetMax = minLayer + 1
+    for (const id of knownChildren) {
+      const cur = nodeLayer.get(id)!
+      if (cur > targetMax) moveNode(id, targetMax)
+    }
+  }
+
+  // 3. Renormalise layer numbers to a contiguous 0-based sequence
+  const sorted = [...byLayer.keys()].sort((a, b) => a - b)
+  for (let i = 0; i < sorted.length; i++) {
+    const old = sorted[i]
+    if (old !== i) {
+      const ids = byLayer.get(old)!
+      byLayer.delete(old)
+      byLayer.set(i, ids)
+      for (const id of ids) nodeLayer.set(id, i)
+    }
+  }
 }
 
 // ── Barycenter crossing minimisation ─────────────────────────────────────────
