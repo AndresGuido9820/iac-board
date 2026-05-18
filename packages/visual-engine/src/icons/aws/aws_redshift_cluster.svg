@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#C925D1"/>
+  <!-- Redshift star/warehouse icon: layered funnel shape -->
+  <polygon points="32,8 54,20 54,26 32,38 10,26 10,20" fill="#FFFFFF"/>
+  <polygon points="32,26 54,38 54,44 32,56 10,44 10,38" fill="#FFFFFF" opacity="0.7"/>
+  <!-- Connecting waist -->
+  <polygon points="10,26 32,38 54,26 54,38 32,50 10,38" fill="#FFFFFF" opacity="0.5"/>
+</svg>

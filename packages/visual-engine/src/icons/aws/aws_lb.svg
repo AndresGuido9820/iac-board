@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- Load balancer trapezoid (wide input, distributed outputs) -->
+  <!-- Input side -->
+  <rect x="8" y="26" width="12" height="12" rx="2" fill="#FFFFFF"/>
+  <!-- Distribution body -->
+  <path d="M20,20 L44,12 L44,52 L20,44 Z" fill="#FFFFFF" opacity="0.85"/>
+  <!-- Output nodes -->
+  <rect x="44" y="10" width="12" height="10" rx="2" fill="#FFFFFF"/>
+  <rect x="44" y="27" width="12" height="10" rx="2" fill="#FFFFFF"/>
+  <rect x="44" y="44" width="12" height="10" rx="2" fill="#FFFFFF"/>
+  <!-- Connection line from input -->
+  <line x1="20" y1="32" x2="8" y2="32" stroke="#FFFFFF" stroke-width="0"/>
+</svg>

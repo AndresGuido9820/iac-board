@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Log scroll background -->
+  <rect x="12" y="10" width="40" height="44" rx="3" fill="#FFFFFF"/>
+  <!-- Scroll curl bottom -->
+  <path d="M12,50 Q12,58 20,54 Q12,54 12,50 Z" fill="#FFFFFF"/>
+  <!-- Log lines -->
+  <rect x="18" y="17" width="28" height="3" rx="1" fill="#E7157B"/>
+  <rect x="18" y="24" width="20" height="3" rx="1" fill="#E7157B"/>
+  <rect x="18" y="31" width="24" height="3" rx="1" fill="#E7157B"/>
+  <rect x="18" y="38" width="16" height="3" rx="1" fill="#E7157B"/>
+  <rect x="18" y="45" width="22" height="3" rx="1" fill="#E7157B"/>
+</svg>

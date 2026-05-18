@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#DD344C"/>
+  <!-- Policy document -->
+  <rect x="14" y="8" width="36" height="48" rx="3" fill="#FFFFFF"/>
+  <!-- Title -->
+  <rect x="19" y="15" width="26" height="4" rx="1" fill="#DD344C" opacity="0.5"/>
+  <!-- Policy statements (allow/deny lines with bullets) -->
+  <circle cx="21" cy="27" r="2.5" fill="#7AA116"/>
+  <rect x="26" y="25" width="18" height="3" rx="1" fill="#DD344C" opacity="0.4"/>
+  <circle cx="21" cy="36" r="2.5" fill="#7AA116"/>
+  <rect x="26" y="34" width="14" height="3" rx="1" fill="#DD344C" opacity="0.4"/>
+  <circle cx="21" cy="45" r="2.5" fill="#C7131F"/>
+  <rect x="26" y="43" width="20" height="3" rx="1" fill="#DD344C" opacity="0.4"/>
+</svg>

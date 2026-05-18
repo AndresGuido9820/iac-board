@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#DD344C"/>
+  <!-- Left user -->
+  <circle cx="18" cy="22" r="7" fill="#FFFFFF"/>
+  <path d="M6,46 Q6,34 18,34 Q30,34 30,46" fill="#FFFFFF"/>
+  <!-- Right user -->
+  <circle cx="46" cy="22" r="7" fill="#FFFFFF"/>
+  <path d="M34,46 Q34,34 46,34 Q58,34 58,46" fill="#FFFFFF"/>
+  <!-- Center user (front) -->
+  <circle cx="32" cy="18" r="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1"/>
+  <path d="M16,48 Q16,34 32,34 Q48,34 48,48" fill="#FFFFFF" stroke="#DD344C" stroke-width="0.5"/>
+</svg>

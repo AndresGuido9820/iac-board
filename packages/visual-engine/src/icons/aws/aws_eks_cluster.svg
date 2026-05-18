@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#ED7100"/>
+  <!-- Hexagon (Kubernetes-inspired) -->
+  <polygon points="32,8 52,19 52,45 32,56 12,45 12,19" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+  <!-- Central hub -->
+  <circle cx="32" cy="32" r="6" fill="#FFFFFF"/>
+  <!-- Spokes to nodes -->
+  <line x1="32" y1="26" x2="32" y2="14" stroke="#FFFFFF" stroke-width="2.5"/>
+  <line x1="37.2" y1="29" x2="47" y2="23" stroke="#FFFFFF" stroke-width="2.5"/>
+  <line x1="37.2" y1="35" x2="47" y2="41" stroke="#FFFFFF" stroke-width="2.5"/>
+  <line x1="32" y1="38" x2="32" y2="50" stroke="#FFFFFF" stroke-width="2.5"/>
+  <line x1="26.8" y1="35" x2="17" y2="41" stroke="#FFFFFF" stroke-width="2.5"/>
+  <line x1="26.8" y1="29" x2="17" y2="23" stroke="#FFFFFF" stroke-width="2.5"/>
+  <!-- Outer nodes -->
+  <circle cx="32" cy="12" r="4" fill="#FFFFFF"/>
+  <circle cx="49" cy="22" r="4" fill="#FFFFFF"/>
+  <circle cx="49" cy="42" r="4" fill="#FFFFFF"/>
+  <circle cx="32" cy="52" r="4" fill="#FFFFFF"/>
+  <circle cx="15" cy="42" r="4" fill="#FFFFFF"/>
+  <circle cx="15" cy="22" r="4" fill="#FFFFFF"/>
+</svg>

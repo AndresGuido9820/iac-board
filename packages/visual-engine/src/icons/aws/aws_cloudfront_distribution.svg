@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- Globe outline -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+  <!-- Meridian lines -->
+  <ellipse cx="32" cy="32" rx="9" ry="20" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <!-- Latitude lines -->
+  <line x1="12" y1="32" x2="52" y2="32" stroke="#FFFFFF" stroke-width="2"/>
+  <line x1="14" y1="22" x2="50" y2="22" stroke="#FFFFFF" stroke-width="1.5"/>
+  <line x1="14" y1="42" x2="50" y2="42" stroke="#FFFFFF" stroke-width="1.5"/>
+  <!-- Edge distribution arrows -->
+  <polygon points="56,28 62,32 56,36" fill="#FFFFFF"/>
+  <polygon points="8,28 2,32 8,36" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Dashboard grid background -->
+  <rect x="8" y="10" width="48" height="44" rx="3" fill="#FFFFFF"/>
+  <!-- Title bar -->
+  <rect x="8" y="10" width="48" height="8" rx="3" fill="#FFFFFF"/>
+  <rect x="8" y="14" width="48" height="4" fill="#FFFFFF"/>
+  <!-- Widget top-left (line chart) -->
+  <rect x="12" y="22" width="20" height="14" rx="2" fill="#E7157B" opacity="0.15"/>
+  <polyline points="14,33 18,27 22,30 26,24 30,28" fill="none" stroke="#E7157B" stroke-width="2" stroke-linecap="round"/>
+  <!-- Widget top-right (bar chart) -->
+  <rect x="36" y="22" width="16" height="14" rx="2" fill="#E7157B" opacity="0.15"/>
+  <rect x="39" y="31" width="3" height="4" rx="1" fill="#E7157B"/>
+  <rect x="44" y="28" width="3" height="7" rx="1" fill="#E7157B"/>
+  <rect x="49" y="26" width="3" height="9" rx="1" fill="#E7157B"/>
+  <!-- Widget bottom (wide metrics) -->
+  <rect x="12" y="40" width="40" height="10" rx="2" fill="#E7157B" opacity="0.15"/>
+  <polyline points="14,47 22,42 30,45 38,41 46,44 50,42" fill="none" stroke="#E7157B" stroke-width="2" stroke-linecap="round"/>
+</svg>

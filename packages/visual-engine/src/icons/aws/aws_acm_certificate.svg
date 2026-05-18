@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#DD344C"/>
+  <!-- Certificate document -->
+  <rect x="10" y="8" width="38" height="42" rx="3" fill="#FFFFFF"/>
+  <!-- Horizontal lines (text) -->
+  <rect x="15" y="15" width="28" height="3" rx="1" fill="#DD344C" opacity="0.4"/>
+  <rect x="15" y="22" width="20" height="3" rx="1" fill="#DD344C" opacity="0.4"/>
+  <!-- Certificate seal circle -->
+  <circle cx="42" cy="46" r="14" fill="#DD344C"/>
+  <circle cx="42" cy="46" r="10" fill="#FFFFFF"/>
+  <circle cx="42" cy="46" r="6" fill="#DD344C"/>
+  <!-- Ribbon tails -->
+  <rect x="37" y="56" width="4" height="8" rx="1" fill="#DD344C"/>
+  <rect x="43" y="56" width="4" height="8" rx="1" fill="#DD344C"/>
+  <polygon points="37,64 39,58 41,64" fill="#DD344C"/>
+  <polygon points="43,64 45,58 47,64" fill="#DD344C"/>
+</svg>

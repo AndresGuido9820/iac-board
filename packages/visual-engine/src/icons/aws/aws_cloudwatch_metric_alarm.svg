@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Bell shape -->
+  <path d="M32,8 C32,8 32,10 32,12 C22,13 14,20 14,32 L14,44 L50,44 L50,32 C50,20 42,13 32,12 C32,10 32,8 32,8 Z" fill="#FFFFFF"/>
+  <!-- Bell bottom -->
+  <rect x="14" y="44" width="36" height="4" rx="2" fill="#FFFFFF"/>
+  <!-- Bell clapper -->
+  <rect x="28" y="48" width="8" height="2" rx="1" fill="#FFFFFF"/>
+  <circle cx="32" cy="52" r="3" fill="#FFFFFF"/>
+  <!-- Alarm indicator dot -->
+  <circle cx="32" cy="8" r="4" fill="#FFFFFF"/>
+</svg>

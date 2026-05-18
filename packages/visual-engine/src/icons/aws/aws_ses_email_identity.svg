@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- Envelope outline -->
+  <rect x="8" y="16" width="48" height="34" rx="3" fill="#FFFFFF"/>
+  <!-- Envelope flap (V shape) -->
+  <polygon points="8,16 32,38 56,16" fill="none" stroke="#E7157B" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Bottom fold lines -->
+  <line x1="8" y1="50" x2="22" y2="36" stroke="#E7157B" stroke-width="2" opacity="0.4"/>
+  <line x1="56" y1="50" x2="42" y2="36" stroke="#E7157B" stroke-width="2" opacity="0.4"/>
+</svg>

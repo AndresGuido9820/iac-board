@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#C925D1"/>
+  <!-- Cylinder body -->
+  <rect x="14" y="22" width="36" height="28" rx="2" fill="#FFFFFF"/>
+  <!-- Cylinder top ellipse -->
+  <ellipse cx="32" cy="22" rx="18" ry="7" fill="#FFFFFF"/>
+  <!-- Inner ellipse (top face detail) -->
+  <ellipse cx="32" cy="22" rx="12" ry="4" fill="#C925D1" opacity="0.3"/>
+  <!-- Lightning bolt for speed/cache -->
+  <polygon points="36,26 28,36 33,36 28,46 36,34 31,34" fill="#C925D1"/>
+</svg>

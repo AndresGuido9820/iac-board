@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#ED7100"/>
+  <!-- Document outline -->
+  <rect x="14" y="8" width="36" height="48" rx="3" fill="#FFFFFF"/>
+  <!-- Folded corner -->
+  <polygon points="38,8 50,20 38,20" fill="#ED7100" opacity="0.4"/>
+  <!-- Task lines -->
+  <rect x="19" y="26" width="18" height="3" rx="1" fill="#ED7100"/>
+  <rect x="19" y="32" width="22" height="3" rx="1" fill="#ED7100"/>
+  <rect x="19" y="38" width="15" height="3" rx="1" fill="#ED7100"/>
+  <!-- Play / run indicator -->
+  <polygon points="36,42 44,46 36,50" fill="#ED7100"/>
+</svg>

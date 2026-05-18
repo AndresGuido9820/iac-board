@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#ED7100"/>
+  <!-- Node group: 3 server boxes in formation -->
+  <rect x="8" y="10" width="20" height="18" rx="2" fill="#FFFFFF"/>
+  <rect x="36" y="10" width="20" height="18" rx="2" fill="#FFFFFF"/>
+  <rect x="22" y="36" width="20" height="18" rx="2" fill="#FFFFFF"/>
+  <!-- Connecting lines -->
+  <line x1="18" y1="28" x2="32" y2="36" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="46" y1="28" x2="32" y2="36" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Node details -->
+  <rect x="11" y="14" width="14" height="2" rx="1" fill="#ED7100" opacity="0.5"/>
+  <rect x="11" y="19" width="10" height="2" rx="1" fill="#ED7100" opacity="0.5"/>
+  <rect x="39" y="14" width="14" height="2" rx="1" fill="#ED7100" opacity="0.5"/>
+  <rect x="39" y="19" width="10" height="2" rx="1" fill="#ED7100" opacity="0.5"/>
+</svg>

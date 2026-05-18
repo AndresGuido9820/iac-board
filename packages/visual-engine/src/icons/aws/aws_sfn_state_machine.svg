@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#E7157B"/>
+  <!-- State circles -->
+  <circle cx="32" cy="10" r="6" fill="#FFFFFF"/>
+  <circle cx="18" cy="32" r="6" fill="#FFFFFF"/>
+  <circle cx="46" cy="32" r="6" fill="#FFFFFF"/>
+  <circle cx="32" cy="54" r="6" fill="#FFFFFF"/>
+  <!-- Transition arrows -->
+  <line x1="28" y1="15" x2="21" y2="27" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="19,25 24,28 20,33" fill="#FFFFFF"/>
+  <line x1="36" y1="15" x2="43" y2="27" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="45,25 41,28 44,33" fill="#FFFFFF"/>
+  <line x1="22" y1="37" x2="29" y2="49" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="28,47 33,50 27,54" fill="#FFFFFF"/>
+  <line x1="42" y1="37" x2="35" y2="49" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="36,47 31,50 37,54" fill="#FFFFFF"/>
+</svg>

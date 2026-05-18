@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#8C4FFF"/>
+  <!-- DNS routing circle -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+  <!-- Route arrow through circle -->
+  <path d="M14,32 Q22,20 32,32 Q42,44 50,32" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <!-- Arrow head -->
+  <polygon points="46,28 54,32 46,36" fill="#FFFFFF"/>
+  <!-- DNS label dots -->
+  <circle cx="32" cy="12" r="3" fill="#FFFFFF"/>
+  <circle cx="32" cy="52" r="3" fill="#FFFFFF"/>
+  <circle cx="12" cy="32" r="3" fill="#FFFFFF"/>
+  <circle cx="52" cy="32" r="3" fill="#FFFFFF"/>
+</svg>

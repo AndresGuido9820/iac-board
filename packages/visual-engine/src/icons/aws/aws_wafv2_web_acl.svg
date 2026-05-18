@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" fill="#DD344C"/>
+  <!-- Shield outline -->
+  <path d="M32,8 L54,18 L54,36 C54,48 44,56 32,60 C20,56 10,48 10,36 L10,18 Z" fill="#FFFFFF"/>
+  <!-- Shield inner -->
+  <path d="M32,14 L48,22 L48,36 C48,45 41,51 32,54 C23,51 16,45 16,36 L16,22 Z" fill="#DD344C" opacity="0.25"/>
+  <!-- Checkmark -->
+  <polyline points="22,34 29,41 43,26" fill="none" stroke="#DD344C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
