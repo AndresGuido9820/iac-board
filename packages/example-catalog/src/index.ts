@@ -151,25 +151,26 @@ resource "aws_db_instance" "primary" {
 
 const awsEcsMicroservices: ExampleProject = {
   id: 'aws-ecs-microservices',
-  name: 'AWS ECS Microservices',
+  name: 'ECS Microservices',
   description:
-    'ECS Fargate cluster with ALB, CloudFront CDN, RDS Aurora, ElastiCache, Cognito auth, and Secrets Manager — a production-grade web app stack.',
+    'ECS Fargate cluster with CloudFront CDN, ALB, Aurora RDS, ElastiCache, Cognito auth, and Secrets Manager — a production-grade containerised web app.',
   userStoryIds: ['HU-036'],
   files: [
     {
       path: 'examples/terraform/aws-ecs-microservices/main.tf',
-      content: `resource "aws_vpc" "main" {
+      content: `# ── Network ────────────────────────────────────────────────────────────────
+resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "public_a" {
+resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
 }
 
-resource "aws_subnet" "private_a" {
+resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
@@ -184,59 +185,79 @@ resource "aws_security_group" "alb" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group" "ecs_tasks" {
+resource "aws_security_group" "tasks" {
   name   = "ecs-tasks-sg"
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_lb" "api" {
-  name               = "api-alb"
-  load_balancer_type = "application"
-  subnets            = [aws_subnet.public_a.id]
-  security_groups    = [aws_security_group.alb.id]
-}
-
-resource "aws_lb_target_group" "api" {
-  name     = "api-tg"
-  port     = 8080
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+# ── CDN + Load balancer ─────────────────────────────────────────────────────
+resource "aws_s3_bucket" "assets" {
+  bucket = "app-static-assets"
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
   origin {
-    domain_name = aws_lb.api.dns_name
+    domain_name = aws_lb.frontend.dns_name
     origin_id   = "alb-origin"
+  }
+  origin {
+    domain_name = aws_s3_bucket.assets.bucket_regional_domain_name
+    origin_id   = "s3-assets"
   }
   enabled = true
 }
 
+resource "aws_lb" "frontend" {
+  name               = "app-alb"
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.public.id]
+  security_groups    = [aws_security_group.alb.id]
+}
+
+resource "aws_lb_target_group" "backend" {
+  name        = "backend-tg"
+  port        = 8080
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.main.id
+}
+
+# ── ECS compute ─────────────────────────────────────────────────────────────
 resource "aws_ecs_cluster" "app" {
   name = "app-cluster"
 }
 
-resource "aws_ecs_task_definition" "api" {
-  family                   = "api-task"
+resource "aws_ecs_task_definition" "backend" {
+  family                   = "backend-task"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = 512
+  memory                   = 1024
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  db_endpoint              = aws_rds_cluster.db.endpoint
+  cache_endpoint           = aws_elasticache_replication_group.cache.primary_endpoint_address
+  secret_arn               = aws_secretsmanager_secret.db_password.arn
 }
 
-resource "aws_ecs_service" "api" {
-  name            = "api-service"
+resource "aws_ecs_service" "backend" {
+  name            = "backend-service"
   cluster         = aws_ecs_cluster.app.id
-  task_definition = aws_ecs_task_definition.api.arn
+  task_definition = aws_ecs_task_definition.backend.arn
   desired_count   = 2
 
+  network_configuration {
+    subnets         = [aws_subnet.private.id]
+    security_groups = [aws_security_group.tasks.id]
+  }
+
   load_balancer {
-    target_group_arn = aws_lb_target_group.api.arn
-    container_name   = "api"
+    target_group_arn = aws_lb_target_group.backend.arn
+    container_name   = "backend"
     container_port   = 8080
   }
 }
 
+# ── IAM ──────────────────────────────────────────────────────────────────────
 resource "aws_iam_role" "ecs_execution" {
   name               = "ecs-execution-role"
   assume_role_policy = "{}"
@@ -247,31 +268,29 @@ resource "aws_iam_role" "ecs_task" {
   assume_role_policy = "{}"
 }
 
+# ── Data layer ───────────────────────────────────────────────────────────────
 resource "aws_rds_cluster" "db" {
   cluster_identifier     = "app-db"
   engine                 = "aurora-postgresql"
   master_username        = "admin"
-  master_password        = aws_secretsmanager_secret.db_password.arn
-  vpc_security_group_ids = [aws_security_group.ecs_tasks.id]
+  master_password        = aws_secretsmanager_secret.db_password.name
+  vpc_security_group_ids = [aws_security_group.tasks.id]
 }
 
 resource "aws_elasticache_replication_group" "cache" {
   replication_group_id = "app-cache"
-  description          = "App session cache"
+  description          = "Session cache"
   node_type            = "cache.t3.micro"
   num_cache_clusters   = 2
 }
 
+# ── Auth + Secrets ───────────────────────────────────────────────────────────
 resource "aws_cognito_user_pool" "users" {
   name = "app-users"
 }
 
 resource "aws_secretsmanager_secret" "db_password" {
   name = "app/db/password"
-}
-
-resource "aws_s3_bucket" "assets" {
-  bucket = "app-static-assets"
 }
 `,
     },
@@ -281,15 +300,19 @@ resource "aws_s3_bucket" "assets" {
 
 const awsModularApp: ExampleProject = {
   id: 'aws-modular-app',
-  name: 'AWS Modular App',
+  name: 'Modular App',
   description:
-    'Demonstrates local Terraform module expansion: a root module calls ./modules/network and ./modules/compute, which are inlined into the diagram.',
+    'Local Terraform module expansion: root calls ./modules/network, ./modules/data, and ./modules/compute — all inlined into a single diagram showing cross-module connectivity.',
   userStoryIds: ['HU-040'],
   files: [
     {
       path: 'examples/terraform/aws-modular-app/main.tf',
       content: `module "network" {
   source = "./modules/network"
+}
+
+module "data" {
+  source = "./modules/data"
 }
 
 module "compute" {
@@ -304,12 +327,44 @@ module "compute" {
 }
 
 resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+}
+
+resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+  cidr_block = "10.0.2.0/24"
 }
 
 resource "aws_internet_gateway" "edge" {
   vpc_id = aws_vpc.main.id
+}
+
+resource "aws_nat_gateway" "egress" {
+  subnet_id = aws_subnet.public.id
+}
+
+resource "aws_security_group" "lambda" {
+  name   = "lambda-sg"
+  vpc_id = aws_vpc.main.id
+}
+`,
+    },
+    {
+      path: 'examples/terraform/aws-modular-app/modules/data/main.tf',
+      content: `resource "aws_dynamodb_table" "sessions" {
+  name         = "sessions"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+}
+
+resource "aws_s3_bucket" "uploads" {
+  bucket = "app-uploads"
+}
+
+resource "aws_sqs_queue" "jobs" {
+  name = "background-jobs"
 }
 `,
     },
@@ -321,12 +376,27 @@ resource "aws_internet_gateway" "edge" {
 }
 
 resource "aws_lambda_function" "api" {
-  function_name = "api"
-  role          = aws_iam_role.lambda_exec.arn
+  function_name     = "api-handler"
+  role              = aws_iam_role.lambda_exec.arn
+  subnet_id         = aws_subnet.private.id
+  security_group_id = aws_security_group.lambda.id
+  table_name        = aws_dynamodb_table.sessions.name
+  queue_url         = aws_sqs_queue.jobs.url
 }
 
-resource "aws_api_gateway_rest_api" "public" {
-  name            = "public-api"
+resource "aws_lambda_function" "worker" {
+  function_name = "job-worker"
+  role          = aws_iam_role.lambda_exec.arn
+  bucket        = aws_s3_bucket.uploads.bucket
+}
+
+resource "aws_lambda_event_source_mapping" "sqs_trigger" {
+  event_source_arn = aws_sqs_queue.jobs.arn
+  function_name    = aws_lambda_function.worker.arn
+}
+
+resource "aws_api_gateway_rest_api" "gateway" {
+  name            = "app-gateway"
   integration_uri = aws_lambda_function.api.invoke_arn
 }
 `,

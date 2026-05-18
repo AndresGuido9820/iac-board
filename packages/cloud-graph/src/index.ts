@@ -210,12 +210,39 @@ function buildNetworkGroups(resources: TerraformResource[]): CloudGroup[] {
 function buildEdges(resources: TerraformResource[]): CloudEdge[] {
   const addressSet = new Set(resources.map((r) => r.address))
   const typeMap = new Map(resources.map((r) => [r.address, r.type]))
-  const edges: CloudEdge[] = []
 
+  // Build suffix index for cross-module ref resolution.
+  // Maps "aws_subnet.private" -> "module.network.aws_subnet.private"
+  // so that refs prefixed with the wrong module namespace still resolve.
+  const suffixIndex = new Map<string, string>()
+  for (const addr of addressSet) {
+    const parts = addr.split('.')
+    // Strip leading "module.<name>." prefix if present
+    if (parts[0] === 'module' && parts.length >= 3) {
+      const bare = parts.slice(2).join('.')
+      if (!suffixIndex.has(bare)) suffixIndex.set(bare, addr)
+    }
+  }
+
+  const resolveRef = (ref: string): string | null => {
+    if (addressSet.has(ref)) return ref
+    // Cross-module: strip "module.<any>." prefix from ref and re-resolve
+    const parts = ref.split('.')
+    if (parts[0] === 'module' && parts.length >= 3) {
+      const bare = parts.slice(2).join('.')
+      if (addressSet.has(bare)) return bare
+      const resolved = suffixIndex.get(bare)
+      if (resolved) return resolved
+    }
+    return null
+  }
+
+  const edges: CloudEdge[] = []
   for (const resource of resources) {
-    const refs = extractReferences(resource).filter((ref) =>
-      addressSet.has(ref),
-    )
+    const refs = extractReferences(resource)
+      .map(resolveRef)
+      .filter((ref): ref is string => ref !== null && ref !== resource.address)
+
     for (const ref of refs) {
       const toType = typeMap.get(ref) ?? ''
       edges.push({
@@ -237,19 +264,45 @@ function inferRelation(
   fromType: string,
   toType: string,
 ): CloudEdge['relation'] {
+  // Placement shortcuts — checked first for all types
+  const isPlacement =
+    toType === 'aws_vpc' ||
+    toType === 'aws_subnet' ||
+    toType === 'aws_db_subnet_group'
+  const isSecurityGroup = toType === 'aws_security_group'
+  const isIamRole = toType === 'aws_iam_role'
+
   // Event-source mapping bridges a stream/queue to a Lambda
   if (fromType === 'aws_lambda_event_source_mapping') return 'triggers'
 
-  // API Gateway / load balancer / IoT publish to downstream compute
+  // API Gateway: connects to compute, deployed-in for network placement
   if (
     fromType === 'aws_api_gateway_rest_api' ||
-    fromType === 'aws_apigatewayv2_api' ||
+    fromType === 'aws_apigatewayv2_api'
+  ) {
+    if (isPlacement) return 'deployed-in'
+    if (isSecurityGroup) return 'secured-by'
+    return 'connects'
+  }
+
+  // Load balancer family: placement and security always take priority
+  if (
     fromType === 'aws_lb' ||
     fromType === 'aws_alb' ||
-    fromType === 'aws_lb_listener' ||
-    fromType === 'aws_cloudfront_distribution'
-  )
+    fromType === 'aws_lb_listener'
+  ) {
+    if (isPlacement) return 'deployed-in'
+    if (isSecurityGroup) return 'secured-by'
     return 'connects'
+  }
+
+  // CloudFront: connects to origins (S3, ALB), deployed-in for VPC
+  if (fromType === 'aws_cloudfront_distribution') {
+    if (isPlacement) return 'deployed-in'
+    return 'connects'
+  }
+
+  // IoT Rule publishes to streams/queues
   if (fromType === 'aws_iot_topic_rule') return 'publishes-to'
 
   // EventBridge / scheduler trigger downstream
@@ -263,9 +316,11 @@ function inferRelation(
   // Step Functions invokes state machine targets
   if (fromType === 'aws_sfn_state_machine') return 'invokes'
 
-  // Lambda: distinguish role assumption, storage writes, and generic invocations
+  // Lambda: role assumption, storage writes, network placement, generic invocations
   if (fromType === 'aws_lambda_function') {
-    if (toType === 'aws_iam_role') return 'uses-role'
+    if (isIamRole) return 'uses-role'
+    if (isPlacement) return 'deployed-in'
+    if (isSecurityGroup) return 'secured-by'
     if (
       toType === 'aws_s3_bucket' ||
       toType === 'aws_dynamodb_table' ||
@@ -281,18 +336,49 @@ function inferRelation(
     return 'invokes'
   }
 
-  // ECS service references task definition
-  if (fromType === 'aws_ecs_service') return 'invokes'
+  // ECS task definition: role assumption, everything else is a dependency
+  if (fromType === 'aws_ecs_task_definition') {
+    if (isIamRole) return 'uses-role'
+    if (isPlacement) return 'deployed-in'
+    if (
+      toType === 'aws_rds_cluster' ||
+      toType === 'aws_db_instance' ||
+      toType === 'aws_elasticache_cluster' ||
+      toType === 'aws_elasticache_replication_group' ||
+      toType === 'aws_s3_bucket' ||
+      toType === 'aws_dynamodb_table'
+    )
+      return 'writes-to'
+    return 'depends-on'
+  }
+
+  // ECS service: cluster placement, task invocation, ALB connectivity, role/network
+  if (fromType === 'aws_ecs_service') {
+    if (toType === 'aws_ecs_cluster') return 'deployed-in'
+    if (toType === 'aws_ecs_task_definition') return 'invokes'
+    if (
+      toType === 'aws_lb_target_group' ||
+      toType === 'aws_lb' ||
+      toType === 'aws_alb'
+    )
+      return 'connects'
+    if (isIamRole) return 'uses-role'
+    if (isPlacement) return 'deployed-in'
+    if (isSecurityGroup) return 'secured-by'
+    return 'depends-on'
+  }
+
+  // RDS cluster / instance: placement and security
+  if (fromType === 'aws_rds_cluster' || fromType === 'aws_db_instance') {
+    if (isPlacement) return 'deployed-in'
+    if (isSecurityGroup) return 'secured-by'
+    return 'depends-on'
+  }
 
   // Network resources reference VPC/subnet as placement context
-  if (
-    toType === 'aws_vpc' ||
-    toType === 'aws_subnet' ||
-    toType === 'aws_db_subnet_group'
-  )
-    return 'deployed-in'
-  if (toType === 'aws_security_group') return 'secured-by'
-  if (toType === 'aws_iam_role') return 'uses-role'
+  if (isPlacement) return 'deployed-in'
+  if (isSecurityGroup) return 'secured-by'
+  if (isIamRole) return 'uses-role'
 
   return 'depends-on'
 }

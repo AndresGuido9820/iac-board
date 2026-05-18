@@ -80,7 +80,7 @@ describe('Terraform to canvas pipeline', () => {
       expect.objectContaining({ id: 'aws_ecs_cluster.app', label: 'app' }),
     )
     expect(result.canvasDrafts).toContainEqual(
-      expect.objectContaining({ id: 'aws_lb.api', label: 'api' }),
+      expect.objectContaining({ id: 'aws_lb.frontend', label: 'frontend' }),
     )
     expect(result.canvasDrafts).toContainEqual(
       expect.objectContaining({

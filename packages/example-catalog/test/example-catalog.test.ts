@@ -33,7 +33,7 @@ describe('example catalog', () => {
   it('loads the ECS microservices example', () => {
     const example = getExampleProject('aws-ecs-microservices')
 
-    expect(example.name).toBe('AWS ECS Microservices')
+    expect(example.name).toBe('ECS Microservices')
     expect(example.userStoryIds).toContain('HU-036')
   })
 
