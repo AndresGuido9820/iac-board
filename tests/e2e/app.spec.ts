@@ -11,7 +11,7 @@ test('loads the IaC Board product shell', async ({ page }) => {
   ).toBeVisible()
   await expect(page.getByText('aws_lambda_function.handler')).toBeVisible()
   await expect(
-    page.getByText('examples/terraform/aws-serverless-api/main.tf:5'),
+    page.getByText('examples/terraform/aws-serverless-api/main.tf:12'),
   ).toBeVisible()
   await expect(page.getByLabel('Generated diagram metrics')).toContainText(
     'Canvas drafts',
