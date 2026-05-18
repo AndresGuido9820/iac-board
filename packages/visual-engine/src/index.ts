@@ -7,4 +7,5 @@ export type {
   BoardEdge,
   BoardState,
   Viewport,
+  Rect,
 } from './types'

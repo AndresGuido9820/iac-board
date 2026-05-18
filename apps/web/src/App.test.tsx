@@ -48,9 +48,12 @@ describe('App', () => {
 
     render(
       <ProductShell
+        diagramId="test:diagnostics"
         example={example}
         examples={[example]}
         generatedDiagram={generatedDiagram}
+        layoutOverrides={{}}
+        onOverridesChange={() => undefined}
         onSelectExample={() => undefined}
         selectedExampleId={example.id}
       />,
@@ -145,9 +148,12 @@ describe('App', () => {
 
     render(
       <ProductShell
+        diagramId="test:inspector"
         example={example}
         examples={[example]}
         generatedDiagram={generatedDiagram}
+        layoutOverrides={{}}
+        onOverridesChange={() => undefined}
         onSelectExample={() => undefined}
         selectedExampleId={example.id}
       />,
