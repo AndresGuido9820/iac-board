@@ -129,6 +129,8 @@ type CloudBoardProps = {
   initialOverrides?: Record<string, Rect>
   /** Called after every drag-end with the latest override map. */
   onOverridesChange?: (overrides: Record<string, Rect>) => void
+  /** Show relation labels on edges (default: true). */
+  showEdgeLabels?: boolean
 }
 
 export function CloudBoard({
@@ -137,6 +139,7 @@ export function CloudBoard({
   onNodeSelect,
   initialOverrides,
   onOverridesChange,
+  showEdgeLabels = true,
 }: CloudBoardProps) {
   const { viewport, transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useViewport()
@@ -357,7 +360,7 @@ export function CloudBoard({
             <GroupRenderer group={g} key={g.id} />
           ))}
           {/* Edges below nodes */}
-          <EdgeRenderer edges={edges} nodeMap={nodeMap} />
+          <EdgeRenderer edges={edges} nodeMap={nodeMap} showEdgeLabels={showEdgeLabels} />
           {/* Nodes on top */}
           {resolvedNodes.map((n) => (
             <NodeRenderer

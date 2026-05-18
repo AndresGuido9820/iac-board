@@ -199,3 +199,29 @@ describe('App', () => {
       screen.getByRole('heading', { level: 2, name: 'Import .tf files' }),
     ).toBeInTheDocument()
   })
+
+  it('renders edge labels toggle button', () => {
+    render(<App />)
+    expect(
+      screen.getByRole('button', { name: 'Hide labels' }),
+    ).toBeInTheDocument()
+  })
+
+  it('toggles edge labels off and back on', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const btn = screen.getByRole('button', { name: 'Hide labels' })
+    expect(btn).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(btn)
+
+    expect(
+      screen.getByRole('button', { name: 'Show labels' }),
+    ).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByRole('button', { name: 'Show labels' }))
+    expect(
+      screen.getByRole('button', { name: 'Hide labels' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+  })
