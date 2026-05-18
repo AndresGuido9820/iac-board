@@ -125,17 +125,25 @@ type CloudBoardProps = {
   elements: BoardElement[]
   className?: string
   onNodeSelect?: (id: string | null) => void
+  /** Positions from a previously saved layout (e.g. localStorage or .iac-board.json). */
+  initialOverrides?: Record<string, Rect>
+  /** Called after every drag-end with the latest override map. */
+  onOverridesChange?: (overrides: Record<string, Rect>) => void
 }
 
 export function CloudBoard({
   elements,
   className,
   onNodeSelect,
+  initialOverrides,
+  onOverridesChange,
 }: CloudBoardProps) {
   const { viewport, transform, onWheel, onMouseDown, onMouseMove, onMouseUp } =
     useViewport()
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [overrides, setOverrides] = useState<Record<string, Rect>>({})
+  const [overrides, setOverrides] = useState<Record<string, Rect>>(
+    initialOverrides ?? {},
+  )
   const [selected, setSelected] = useState<string | null>(null)
   const [svgClientSize, setSvgClientSize] = useState({ w: 0, h: 0 })
 
@@ -238,6 +246,9 @@ export function CloudBoard({
 
   const onBoardMouseUp = () => {
     onMouseUp()
+    if (dragging.current) {
+      onOverridesChange?.(overrides)
+    }
     dragging.current = null
   }
 

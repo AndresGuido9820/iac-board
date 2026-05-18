@@ -7,11 +7,67 @@ import type { ExampleProject } from '@iac-board/example-catalog'
 import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
+import type { Rect } from '@iac-board/visual-engine'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
 import { ImportZone } from './import-zone'
 import type { LoadedFile } from './import-zone'
 import './App.css'
+
+// ── Layout persistence ───────────────────────────────────────────────────────
+
+const LS_PREFIX = 'iac-board:layout:'
+
+/** FNV-1a 32-bit hash — stable identity for a set of loaded files. */
+function hashFiles(files: LoadedFile[]): string {
+  const str = files.map((f) => `${f.path}\x00${f.content}`).join('\x01')
+  let h = 2166136261
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619) >>> 0
+  }
+  return h.toString(16)
+}
+
+function loadOverrides(diagramId: string): Record<string, Rect> {
+  try {
+    const raw = localStorage.getItem(LS_PREFIX + diagramId)
+    return raw ? (JSON.parse(raw) as Record<string, Rect>) : {}
+  } catch {
+    return {}
+  }
+}
+
+function persistOverrides(diagramId: string, overrides: Record<string, Rect>): void {
+  try {
+    localStorage.setItem(LS_PREFIX + diagramId, JSON.stringify(overrides))
+  } catch {
+    // localStorage quota exceeded or unavailable — silently ignore
+  }
+}
+
+/** Download a .iac-board.json file with the current layout overrides. */
+function downloadLayoutFile(
+  diagramId: string,
+  name: string,
+  overrides: Record<string, Rect>,
+): void {
+  const data = {
+    version: 1,
+    diagramId,
+    overrides,
+    savedAt: new Date().toISOString(),
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${name.toLowerCase().replace(/\s+/g, '-')}.iac-board.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 /** Download the `.cloud-canvas` SVG as a self-contained SVG file. */
 function exportSvg(name: string): void {
@@ -145,6 +201,9 @@ type ProductShellProps = {
   onFilesLoaded?: (files: LoadedFile[]) => void
   onClearImport?: () => void
   mode?: 'example' | 'imported'
+  diagramId: string
+  layoutOverrides: Record<string, Rect>
+  onOverridesChange: (overrides: Record<string, Rect>) => void
 }
 
 export function ProductShell({
@@ -159,6 +218,9 @@ export function ProductShell({
   onFilesLoaded,
   onClearImport,
   mode = 'example',
+  diagramId,
+  layoutOverrides,
+  onOverridesChange,
 }: ProductShellProps) {
   const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null)
 
@@ -304,6 +366,22 @@ export function ProductShell({
             >
               {t.export_svg}
             </button>
+            {Object.keys(layoutOverrides).length > 0 && (
+              <button
+                aria-label={t.save_layout}
+                className="export-btn"
+                onClick={() =>
+                  downloadLayoutFile(
+                    diagramId,
+                    mode === 'imported' ? 'custom' : example.name,
+                    layoutOverrides,
+                  )
+                }
+                type="button"
+              >
+                {t.save_layout}
+              </button>
+            )}
             <span className="status-pill">
               {mode === 'imported' ? 'Imported' : t.bundled_example}
             </span>
@@ -320,7 +398,10 @@ export function ProductShell({
               generatedDiagram.graph.nodes,
               generatedDiagram.graph.edges,
             )}
+            initialOverrides={layoutOverrides}
+            key={diagramId}
             onNodeSelect={handleNodeSelect}
+            onOverridesChange={onOverridesChange}
           />
           {selectedNode && (
             <NodeInspector
@@ -428,6 +509,30 @@ function App() {
     [activeFiles],
   )
 
+  // Stable identity for the current diagram — used as localStorage key and CloudBoard key.
+  const diagramId =
+    mode === 'imported'
+      ? `imported:${hashFiles(importedFiles)}`
+      : `example:${example.id}`
+
+  // Track previous diagramId to detect switches and reload overrides from localStorage.
+  // Updating state during render (not inside an effect) is the React-idiomatic way to
+  // derive state from a changing prop without triggering a cascading effect.
+  const [activeDiagramId, setActiveDiagramId] = useState(diagramId)
+  const [layoutOverrides, setLayoutOverrides] = useState<Record<string, Rect>>(
+    () => loadOverrides(diagramId),
+  )
+
+  if (activeDiagramId !== diagramId) {
+    setActiveDiagramId(diagramId)
+    setLayoutOverrides(loadOverrides(diagramId))
+  }
+
+  const handleOverridesChange = (overrides: Record<string, Rect>) => {
+    setLayoutOverrides(overrides)
+    persistOverrides(diagramId, overrides)
+  }
+
   const handleFilesLoaded = (files: LoadedFile[]) => {
     setImportedFiles(files)
     setMode('imported')
@@ -435,16 +540,19 @@ function App() {
 
   return (
     <ProductShell
+      diagramId={diagramId}
       example={example}
       examples={examples}
       generatedDiagram={generatedDiagram}
       importedFiles={importedFiles}
+      layoutOverrides={layoutOverrides}
       mode={mode}
       onClearImport={() => {
         setImportedFiles([])
         setMode('example')
       }}
       onFilesLoaded={handleFilesLoaded}
+      onOverridesChange={handleOverridesChange}
       onSelectExample={(id) => {
         setSelectedExampleId(id)
         setMode('example')

@@ -287,4 +287,38 @@ describe('CloudBoard', () => {
     const board = screen.getByRole('application')
     expect(() => fireEvent.keyDown(board, { key: 'ArrowRight' })).not.toThrow()
   })
+
+  it('initializes node position from initialOverrides', () => {
+    const overrides = {
+      'aws_lambda_function.a': { x: 500, y: 500, width: 220, height: 92 },
+    }
+    const { container } = render(
+      <CloudBoard elements={twoNodeElements} initialOverrides={overrides} />,
+    )
+    // The node group transform should reflect the overridden x/y position
+    // We verify via the SVG viewBox being wider than default (node at x=500 + width + PAD)
+    const svg = container.querySelector('[data-testid="iac-canvas"]')!
+    const vb = svg.getAttribute('viewBox') ?? ''
+    const [, , w] = vb.split(' ').map(Number)
+    // Default layout has node at x=60 → viewBox width ~360. With override at x=500 → much wider.
+    expect(w).toBeGreaterThan(400)
+  })
+
+  it('calls onOverridesChange after a drag', () => {
+    const onOverridesChange = vi.fn()
+    render(
+      <CloudBoard
+        elements={twoNodeElements}
+        onOverridesChange={onOverridesChange}
+      />,
+    )
+    const nodes = screen.getAllByTestId('iac-node')
+    const board = screen.getByRole('application')
+    fireEvent.mouseDown(nodes[0], { clientX: 100, clientY: 100 })
+    fireEvent.mouseMove(board, { clientX: 160, clientY: 130 })
+    fireEvent.mouseUp(board)
+    expect(onOverridesChange).toHaveBeenCalledOnce()
+    const [result] = onOverridesChange.mock.calls[0]
+    expect(result).toHaveProperty('aws_lambda_function.a')
+  })
 })
