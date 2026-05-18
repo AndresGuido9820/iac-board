@@ -104,6 +104,24 @@ describe('generateDiagramFromTerraformFiles', () => {
     expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([])
   })
 
+  it('VPC group spans at most 2 columns after group-constrained layout (HU-033)', () => {
+    const example = getExampleProject('aws-vpc-rds')
+    const result = generateDiagramFromTerraformFiles(example.files)
+
+    const vpcGroup = result.graph.groups.find((g) => g.kind === 'vpc')
+    expect(vpcGroup).toBeDefined()
+
+    const layout = result.positionedGraph.layout
+    const COL_W = 300 // NODE_W(220) + COL_GAP(80)
+    const childCols = vpcGroup!.children
+      .filter((id) => layout[id] !== undefined)
+      .map((id) => Math.round((layout[id]!.x - 60) / COL_W))
+    const minCol = Math.min(...childCols)
+    const maxCol = Math.max(...childCols)
+
+    expect(maxCol - minCol).toBeLessThanOrEqual(1)
+  })
+
   it('generates network groups for the VPC and RDS example', () => {
     const example = getExampleProject('aws-vpc-rds')
     const result = generateDiagramFromTerraformFiles(example.files)
