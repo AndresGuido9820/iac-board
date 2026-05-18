@@ -360,7 +360,12 @@ export function CloudBoard({
             <GroupRenderer group={g} key={g.id} />
           ))}
           {/* Edges below nodes */}
-          <EdgeRenderer edges={edges} nodeMap={nodeMap} showEdgeLabels={showEdgeLabels} />
+          <EdgeRenderer
+            edges={edges}
+            nodeMap={nodeMap}
+            showEdgeLabels={showEdgeLabels}
+            groupRects={groups.map((g) => g.rect)}
+          />
           {/* Nodes on top */}
           {resolvedNodes.map((n) => (
             <NodeRenderer
