@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   getExampleProject,
   listExampleProjects,
@@ -9,7 +9,129 @@ import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
 import { translations } from './translations'
 import type { Lang, Translations } from './translations'
+import { ImportZone } from './import-zone'
+import type { LoadedFile } from './import-zone'
 import './App.css'
+
+/** Download the `.cloud-canvas` SVG as a self-contained SVG file. */
+function exportSvg(name: string): void {
+  const svg = document.querySelector<SVGSVGElement>('.cloud-canvas')
+  if (!svg) return
+  const serializer = new XMLSerializer()
+  let src = serializer.serializeToString(svg)
+  if (!src.startsWith('<?xml')) {
+    src = '<?xml version="1.0" encoding="utf-8"?>\n' + src
+  }
+  const blob = new Blob([src], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${name.toLowerCase().replace(/\s+/g, '-')}-diagram.svg`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+/** Download the `.cloud-canvas` SVG rendered as a 2× PNG. */
+async function exportPng(name: string): Promise<void> {
+  const svg = document.querySelector<SVGSVGElement>('.cloud-canvas')
+  if (!svg) return
+  const serializer = new XMLSerializer()
+  let src = serializer.serializeToString(svg)
+  if (!src.startsWith('<?xml')) {
+    src = '<?xml version="1.0" encoding="utf-8"?>\n' + src
+  }
+  const svgBlob = new Blob([src], { type: 'image/svg+xml;charset=utf-8' })
+  const svgUrl = URL.createObjectURL(svgBlob)
+  const vb = svg.viewBox.baseVal
+  const scale = 2
+  const w = (vb.width || svg.clientWidth) * scale
+  const h = (vb.height || svg.clientHeight) * scale
+  const img = new Image()
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve()
+    img.onerror = reject
+    img.src = svgUrl
+  })
+  URL.revokeObjectURL(svgUrl)
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(img, 0, 0, w, h)
+  const pngUrl = canvas.toDataURL('image/png')
+  const a = document.createElement('a')
+  a.href = pngUrl
+  a.download = `${name.toLowerCase().replace(/\s+/g, '-')}-diagram.png`
+  a.click()
+}
+
+type SelectedNode = {
+  id: string
+  label: string
+  resourceType: string
+  category: string
+  sourceRef?: string
+  edgesOut: number
+  edgesIn: number
+}
+
+type NodeInspectorProps = {
+  node: SelectedNode
+  onClose: () => void
+  t: Translations
+}
+
+function NodeInspector({ node, onClose, t }: NodeInspectorProps) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return (
+    <aside className="node-inspector" aria-label={t.aria_node_inspector}>
+      <div className="node-inspector-header">
+        <strong>{node.label}</strong>
+        <button
+          aria-label={t.close_inspector}
+          className="inspector-close"
+          onClick={onClose}
+          type="button"
+        >
+          ✕
+        </button>
+      </div>
+      <dl className="inspector-fields">
+        <div>
+          <dt>{t.inspector_type}</dt>
+          <dd>{node.resourceType}</dd>
+        </div>
+        <div>
+          <dt>{t.inspector_category}</dt>
+          <dd>{node.category}</dd>
+        </div>
+        {node.sourceRef && (
+          <div>
+            <dt>{t.inspector_source}</dt>
+            <dd>
+              <code>{node.sourceRef}</code>
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt>{t.inspector_edges_out}</dt>
+          <dd>{node.edgesOut}</dd>
+        </div>
+        <div>
+          <dt>{t.inspector_edges_in}</dt>
+          <dd>{node.edgesIn}</dd>
+        </div>
+      </dl>
+    </aside>
+  )
+}
 
 type ProductShellProps = {
   examples: ExampleProject[]
@@ -19,6 +141,10 @@ type ProductShellProps = {
   selectedExampleId: string
   t?: Translations
   onToggleLang?: () => void
+  importedFiles?: LoadedFile[]
+  onFilesLoaded?: (files: LoadedFile[]) => void
+  onClearImport?: () => void
+  mode?: 'example' | 'imported'
 }
 
 export function ProductShell({
@@ -29,7 +155,13 @@ export function ProductShell({
   selectedExampleId,
   t = translations.en,
   onToggleLang,
+  importedFiles = [],
+  onFilesLoaded,
+  onClearImport,
+  mode = 'example',
 }: ProductShellProps) {
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null)
+
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
   )
@@ -39,6 +171,35 @@ export function ProductShell({
   const groupDrafts = generatedDiagram.canvasDrafts.filter(
     (draft) => draft.type === 'group',
   )
+
+  const handleNodeSelect = (id: string | null) => {
+    if (!id) {
+      setSelectedNode(null)
+      return
+    }
+    const graphNode = nodesById.get(id)
+    if (!graphNode) {
+      setSelectedNode(null)
+      return
+    }
+    const edgesOut = generatedDiagram.graph.edges.filter(
+      (e) => e.from === id,
+    ).length
+    const edgesIn = generatedDiagram.graph.edges.filter(
+      (e) => e.to === id,
+    ).length
+    setSelectedNode({
+      id,
+      label: graphNode.label,
+      resourceType: graphNode.kind,
+      category: graphNode.category,
+      sourceRef: graphNode.source
+        ? `${graphNode.source.filePath}:${graphNode.source.line ?? 1}`
+        : undefined,
+      edgesOut,
+      edgesIn,
+    })
+  }
 
   return (
     <main className="app-shell">
@@ -61,6 +222,33 @@ export function ProductShell({
         </div>
       </section>
 
+      <section className="panel" aria-labelledby="import-title">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Your infrastructure</p>
+            <h2 id="import-title">{t.import_section_heading}</h2>
+          </div>
+          {mode === 'imported' && (
+            <button
+              className="export-btn"
+              onClick={onClearImport}
+              type="button"
+            >
+              {t.import_clear}
+            </button>
+          )}
+        </div>
+        {mode === 'imported' && (
+          <p className="panel-copy">
+            {t.import_loaded_summary(importedFiles.length)}
+          </p>
+        )}
+        <ImportZone
+          loadedFiles={importedFiles}
+          onFilesLoaded={onFilesLoaded ?? (() => {})}
+        />
+      </section>
+
       <section className="panel" aria-labelledby="examples-title">
         <div className="panel-header">
           <div>
@@ -74,7 +262,7 @@ export function ProductShell({
         <div className="example-grid" aria-label={t.aria_example_grid}>
           {examples.map((project) => (
             <button
-              aria-pressed={project.id === selectedExampleId}
+              aria-pressed={project.id === selectedExampleId && mode === 'example'}
               className="example-card"
               key={project.id}
               onClick={() => onSelectExample(project.id)}
@@ -92,23 +280,60 @@ export function ProductShell({
         <div className="panel-header">
           <div>
             <p className="eyebrow">{t.eyebrow_generated}</p>
-            <h2 id="example-title">{example.name}</h2>
+            <h2 id="example-title">
+              {mode === 'imported' ? 'Your infrastructure' : example.name}
+            </h2>
           </div>
-          <span className="status-pill">{t.bundled_example}</span>
+          <div className="panel-header-actions">
+            <button
+              aria-label={t.export_png}
+              className="export-btn"
+              onClick={() => {
+                const name = mode === 'imported' ? 'custom' : example.name
+                exportPng(name).catch(() => {})
+              }}
+              type="button"
+            >
+              {t.export_png}
+            </button>
+            <button
+              aria-label={t.export_svg}
+              className="export-btn"
+              onClick={() => exportSvg(mode === 'imported' ? 'custom' : example.name)}
+              type="button"
+            >
+              {t.export_svg}
+            </button>
+            <span className="status-pill">
+              {mode === 'imported' ? 'Imported' : t.bundled_example}
+            </span>
+          </div>
         </div>
-        <p className="panel-copy">{example.description}</p>
-        <CloudBoard
-          className="cloud-board"
-          elements={toBoardElements(
-            generatedDiagram.canvasDrafts,
-            generatedDiagram.graph.nodes,
-            generatedDiagram.graph.edges,
+        {mode !== 'imported' && (
+          <p className="panel-copy">{example.description}</p>
+        )}
+        <div className="board-with-inspector">
+          <CloudBoard
+            className="cloud-board"
+            elements={toBoardElements(
+              generatedDiagram.canvasDrafts,
+              generatedDiagram.graph.nodes,
+              generatedDiagram.graph.edges,
+            )}
+            onNodeSelect={handleNodeSelect}
+          />
+          {selectedNode && (
+            <NodeInspector
+              node={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              t={t}
+            />
           )}
-        />
+        </div>
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>
-            <dd>{example.files.length}</dd>
+            <dd>{mode === 'imported' ? importedFiles.length : example.files.length}</dd>
           </div>
           <div>
             <dt>{t.resources}</dt>
@@ -193,15 +418,37 @@ function App() {
   const examples = useMemo(() => listExampleProjects(), [])
   const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
   const [lang, setLang] = useState<Lang>('en')
+  const [importedFiles, setImportedFiles] = useState<LoadedFile[]>([])
+  const [mode, setMode] = useState<'example' | 'imported'>('example')
+
   const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
-  const generatedDiagram = generateDiagramFromTerraformFiles(example.files)
+  const activeFiles = mode === 'imported' ? importedFiles : example.files
+  const generatedDiagram = useMemo(
+    () => generateDiagramFromTerraformFiles(activeFiles),
+    [activeFiles],
+  )
+
+  const handleFilesLoaded = (files: LoadedFile[]) => {
+    setImportedFiles(files)
+    setMode('imported')
+  }
 
   return (
     <ProductShell
       example={example}
       examples={examples}
       generatedDiagram={generatedDiagram}
-      onSelectExample={setSelectedExampleId}
+      importedFiles={importedFiles}
+      mode={mode}
+      onClearImport={() => {
+        setImportedFiles([])
+        setMode('example')
+      }}
+      onFilesLoaded={handleFilesLoaded}
+      onSelectExample={(id) => {
+        setSelectedExampleId(id)
+        setMode('example')
+      }}
       onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
       t={translations[lang]}

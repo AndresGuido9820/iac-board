@@ -30,6 +30,11 @@ export function GroupRenderer({ group }: GroupRendererProps) {
   const { rect, label, kind } = group
   const c = GROUP_COLORS[kind] ?? DEFAULT_COLOR
 
+  // Subnet labels render at the bottom to avoid overlapping the parent VPC label.
+  const labelAtBottom = kind === 'subnet'
+  const labelY = labelAtBottom ? rect.y + rect.height - 18 : rect.y + 10
+  const labelBaseline = labelAtBottom ? 'auto' : 'hanging'
+
   return (
     <g>
       <rect
@@ -44,13 +49,14 @@ export function GroupRenderer({ group }: GroupRendererProps) {
         y={rect.y}
       />
       <text
-        dominantBaseline="hanging"
+        dominantBaseline={labelBaseline}
         fill={c.text}
         fontSize={10}
+        fontFamily="system-ui, sans-serif"
         fontWeight={700}
         letterSpacing="0.08em"
         x={rect.x + 12}
-        y={rect.y + 10}
+        y={labelY}
       >
         {label.toUpperCase()}
       </text>

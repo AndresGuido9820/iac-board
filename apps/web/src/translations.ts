@@ -27,6 +27,18 @@ export interface Translations {
   aria_resources: string
   aria_diagnostics_list: string
   lang_toggle: string
+  aria_node_inspector: string
+  close_inspector: string
+  inspector_type: string
+  inspector_category: string
+  inspector_source: string
+  inspector_edges_out: string
+  inspector_edges_in: string
+  export_svg: string
+  export_png: string
+  import_section_heading: string
+  import_clear: string
+  import_loaded_summary: (n: number) => string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -58,6 +70,18 @@ export const translations: Record<Lang, Translations> = {
     aria_resources: 'Generated resources',
     aria_diagnostics_list: 'Parser diagnostics',
     lang_toggle: 'Español',
+    aria_node_inspector: 'Node inspector',
+    close_inspector: 'Close inspector',
+    inspector_type: 'Resource type',
+    inspector_category: 'Category',
+    inspector_source: 'Source',
+    inspector_edges_out: 'Edges out',
+    inspector_edges_in: 'Edges in',
+    export_svg: 'Export SVG',
+    export_png: 'Export PNG',
+    import_section_heading: 'Import .tf files',
+    import_clear: 'Clear',
+    import_loaded_summary: (n) => `${n} file${n !== 1 ? 's' : ''} loaded`,
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -87,5 +111,17 @@ export const translations: Record<Lang, Translations> = {
     aria_resources: 'Recursos generados',
     aria_diagnostics_list: 'Diagnósticos del parser',
     lang_toggle: 'English',
+    aria_node_inspector: 'Inspector de nodo',
+    close_inspector: 'Cerrar inspector',
+    inspector_type: 'Tipo de recurso',
+    inspector_category: 'Categoría',
+    inspector_source: 'Fuente',
+    inspector_edges_out: 'Edges salientes',
+    inspector_edges_in: 'Edges entrantes',
+    export_svg: 'Exportar SVG',
+    export_png: 'Exportar PNG',
+    import_section_heading: 'Importar archivos .tf',
+    import_clear: 'Limpiar',
+    import_loaded_summary: (n) => `${n} archivo${n !== 1 ? 's' : ''} cargado${n !== 1 ? 's' : ''}`,
   },
 }
