@@ -39,6 +39,7 @@ export interface Translations {
   import_section_heading: string
   import_clear: string
   import_loaded_summary: (n: number) => string
+  save_layout: string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -82,6 +83,7 @@ export const translations: Record<Lang, Translations> = {
     import_section_heading: 'Import .tf files',
     import_clear: 'Clear',
     import_loaded_summary: (n) => `${n} file${n !== 1 ? 's' : ''} loaded`,
+    save_layout: 'Save layout',
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -123,5 +125,6 @@ export const translations: Record<Lang, Translations> = {
     import_section_heading: 'Importar archivos .tf',
     import_clear: 'Limpiar',
     import_loaded_summary: (n) => `${n} archivo${n !== 1 ? 's' : ''} cargado${n !== 1 ? 's' : ''}`,
+    save_layout: 'Guardar layout',
   },
 }
