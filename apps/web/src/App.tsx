@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   getExampleProject,
   listExampleProjects,
 } from '@iac-board/example-catalog'
 import type { ExampleProject } from '@iac-board/example-catalog'
-import { generateDiagramFromTerraformFiles } from '@iac-board/pipeline'
+import {
+  generateDiagramFromTerraformFiles,
+  generateDiagramFromPlanJson,
+} from '@iac-board/pipeline'
 import type { DiagramPipelineResult } from '@iac-board/pipeline'
 import { CloudBoard, toBoardElements } from '@iac-board/visual-engine'
 import type { Rect } from '@iac-board/visual-engine'
@@ -67,6 +70,28 @@ function downloadLayoutFile(
   a.download = `${name.toLowerCase().replace(/\s+/g, '-')}.iac-board.json`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+type IacBoardLayoutFile = {
+  version: number
+  diagramId: string
+  overrides: Record<string, Rect>
+}
+
+/**
+ * Read a .iac-board.json file chosen by the user.
+ * Returns the overrides and the saved diagramId (for mismatch detection).
+ * Throws if the file is not a valid layout file.
+ */
+async function readLayoutFile(
+  file: File,
+): Promise<{ overrides: Record<string, Rect>; savedDiagramId: string }> {
+  const text = await file.text()
+  const data = JSON.parse(text) as IacBoardLayoutFile
+  if (!data.version || !data.overrides || typeof data.overrides !== 'object') {
+    throw new Error('Invalid .iac-board.json file')
+  }
+  return { overrides: data.overrides, savedDiagramId: data.diagramId ?? '' }
 }
 
 /** Download the `.cloud-canvas` SVG as a self-contained SVG file. */
@@ -200,10 +225,11 @@ type ProductShellProps = {
   importedFiles?: LoadedFile[]
   onFilesLoaded?: (files: LoadedFile[]) => void
   onClearImport?: () => void
-  mode?: 'example' | 'imported'
+  mode?: 'example' | 'imported' | 'plan'
   diagramId: string
   layoutOverrides: Record<string, Rect>
   onOverridesChange: (overrides: Record<string, Rect>) => void
+  onLoadLayout?: (overrides: Record<string, Rect>) => void
 }
 
 export function ProductShell({
@@ -221,8 +247,11 @@ export function ProductShell({
   diagramId,
   layoutOverrides,
   onOverridesChange,
+  onLoadLayout,
 }: ProductShellProps) {
   const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null)
+  const [layoutMismatch, setLayoutMismatch] = useState(false)
+  const layoutFileRef = useRef<HTMLInputElement>(null)
 
   const nodesById = new Map(
     generatedDiagram.graph.nodes.map((node) => [node.id, node]),
@@ -290,7 +319,7 @@ export function ProductShell({
             <p className="eyebrow">Your infrastructure</p>
             <h2 id="import-title">{t.import_section_heading}</h2>
           </div>
-          {mode === 'imported' && (
+          {(mode === 'imported' || mode === 'plan') && (
             <button
               className="export-btn"
               onClick={onClearImport}
@@ -300,7 +329,7 @@ export function ProductShell({
             </button>
           )}
         </div>
-        {mode === 'imported' && (
+        {(mode === 'imported' || mode === 'plan') && (
           <p className="panel-copy">
             {t.import_loaded_summary(importedFiles.length)}
           </p>
@@ -343,7 +372,7 @@ export function ProductShell({
           <div>
             <p className="eyebrow">{t.eyebrow_generated}</p>
             <h2 id="example-title">
-              {mode === 'imported' ? 'Your infrastructure' : example.name}
+              {mode === 'example' ? example.name : 'Your infrastructure'}
             </h2>
           </div>
           <div className="panel-header-actions">
@@ -351,7 +380,7 @@ export function ProductShell({
               aria-label={t.export_png}
               className="export-btn"
               onClick={() => {
-                const name = mode === 'imported' ? 'custom' : example.name
+                const name = mode === 'example' ? example.name : 'custom'
                 exportPng(name).catch(() => {})
               }}
               type="button"
@@ -361,7 +390,7 @@ export function ProductShell({
             <button
               aria-label={t.export_svg}
               className="export-btn"
-              onClick={() => exportSvg(mode === 'imported' ? 'custom' : example.name)}
+              onClick={() => exportSvg(mode === 'example' ? example.name : 'custom')}
               type="button"
             >
               {t.export_svg}
@@ -382,13 +411,50 @@ export function ProductShell({
                 {t.save_layout}
               </button>
             )}
+            <button
+              aria-label={t.load_layout}
+              className="export-btn"
+              onClick={() => layoutFileRef.current?.click()}
+              type="button"
+            >
+              {t.load_layout}
+            </button>
+            <input
+              accept=".json"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file || !onLoadLayout) return
+                try {
+                  const { overrides, savedDiagramId } = await readLayoutFile(file)
+                  const mismatch = savedDiagramId !== '' && savedDiagramId !== diagramId
+                  setLayoutMismatch(mismatch)
+                  onLoadLayout(overrides)
+                } catch {
+                  // invalid file — ignore silently
+                }
+                e.target.value = ''
+              }}
+              ref={layoutFileRef}
+              style={{ display: 'none' }}
+              type="file"
+            />
             <span className="status-pill">
-              {mode === 'imported' ? 'Imported' : t.bundled_example}
+              {mode === 'plan'
+                ? t.plan_mode_badge
+                : mode === 'imported'
+                  ? 'Imported'
+                  : t.bundled_example}
             </span>
           </div>
         </div>
-        {mode !== 'imported' && (
+        {mode === 'example' && (
           <p className="panel-copy">{example.description}</p>
+        )}
+        {mode === 'plan' && (
+          <p className="panel-copy">{t.plan_mode_hint}</p>
+        )}
+        {layoutMismatch && (
+          <p className="panel-copy" role="alert">{t.load_layout_mismatch}</p>
         )}
         <div className="board-with-inspector">
           <CloudBoard
@@ -414,7 +480,7 @@ export function ProductShell({
         <dl className="metrics" aria-label={t.aria_metrics}>
           <div>
             <dt>{t.tf_files}</dt>
-            <dd>{mode === 'imported' ? importedFiles.length : example.files.length}</dd>
+            <dd>{mode === 'example' ? example.files.length : importedFiles.length}</dd>
           </div>
           <div>
             <dt>{t.resources}</dt>
@@ -500,20 +566,25 @@ function App() {
   const [selectedExampleId, setSelectedExampleId] = useState(examples[0]?.id)
   const [lang, setLang] = useState<Lang>('en')
   const [importedFiles, setImportedFiles] = useState<LoadedFile[]>([])
-  const [mode, setMode] = useState<'example' | 'imported'>('example')
+  const [planContent, setPlanContent] = useState<string | null>(null)
+  const [mode, setMode] = useState<'example' | 'imported' | 'plan'>('example')
 
   const example = getExampleProject(selectedExampleId ?? 'aws-serverless-api')
-  const activeFiles = mode === 'imported' ? importedFiles : example.files
-  const generatedDiagram = useMemo(
-    () => generateDiagramFromTerraformFiles(activeFiles),
-    [activeFiles],
-  )
+  const generatedDiagram = useMemo(() => {
+    if (mode === 'plan' && planContent !== null) {
+      return generateDiagramFromPlanJson(planContent)
+    }
+    const activeFiles = mode === 'imported' ? importedFiles : example.files
+    return generateDiagramFromTerraformFiles(activeFiles)
+  }, [mode, planContent, importedFiles, example.files])
 
   // Stable identity for the current diagram — used as localStorage key and CloudBoard key.
   const diagramId =
-    mode === 'imported'
-      ? `imported:${hashFiles(importedFiles)}`
-      : `example:${example.id}`
+    mode === 'plan'
+      ? `plan:${hashFiles(importedFiles)}`
+      : mode === 'imported'
+        ? `imported:${hashFiles(importedFiles)}`
+        : `example:${example.id}`
 
   // Track previous diagramId to detect switches and reload overrides from localStorage.
   // Updating state during render (not inside an effect) is the React-idiomatic way to
@@ -533,9 +604,21 @@ function App() {
     persistOverrides(diagramId, overrides)
   }
 
+  const handleLoadLayout = (overrides: Record<string, Rect>) => {
+    setLayoutOverrides(overrides)
+    persistOverrides(diagramId, overrides)
+  }
+
   const handleFilesLoaded = (files: LoadedFile[]) => {
     setImportedFiles(files)
-    setMode('imported')
+    // A single .json file is treated as a terraform show -json plan.
+    if (files.length === 1 && files[0].path.endsWith('.json')) {
+      setPlanContent(files[0].content)
+      setMode('plan')
+    } else {
+      setPlanContent(null)
+      setMode('imported')
+    }
   }
 
   return (
@@ -549,9 +632,11 @@ function App() {
       mode={mode}
       onClearImport={() => {
         setImportedFiles([])
+        setPlanContent(null)
         setMode('example')
       }}
       onFilesLoaded={handleFilesLoaded}
+      onLoadLayout={handleLoadLayout}
       onOverridesChange={handleOverridesChange}
       onSelectExample={(id) => {
         setSelectedExampleId(id)

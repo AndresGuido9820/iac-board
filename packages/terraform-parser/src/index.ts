@@ -2,6 +2,7 @@ import type { Diagnostic, SourceLocation } from '@iac-board/core-types'
 import { tokenize } from './lexer'
 import { parseHclFile } from './parser'
 import { extractFromFile } from './extractor'
+export { parsePlanJson } from './plan-json'
 
 export type TerraformResource = {
   address: string
@@ -10,6 +11,7 @@ export type TerraformResource = {
   source: SourceLocation
   body: string
   refs: string[]
+  metadata?: Record<string, unknown>
 }
 
 export type TerraformParseResult = {

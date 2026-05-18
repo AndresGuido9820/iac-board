@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getExampleProject } from '@iac-board/example-catalog'
-import { generateDiagramFromTerraformFiles } from '../src'
+import { generateDiagramFromTerraformFiles, generateDiagramFromPlanJson } from '../src'
 
 describe('generateDiagramFromTerraformFiles', () => {
   it('generates canvas drafts from the bundled serverless example', () => {
@@ -58,6 +58,50 @@ describe('generateDiagramFromTerraformFiles', () => {
         },
       },
     ])
+  })
+
+  it('generates a valid DiagramPipelineResult from a plan JSON string', () => {
+    const planJson = JSON.stringify({
+      format_version: '1.1',
+      planned_values: {
+        root_module: {
+          resources: [
+            { address: 'aws_lambda_function.handler', type: 'aws_lambda_function', name: 'handler' },
+            { address: 'aws_iam_role.exec', type: 'aws_iam_role', name: 'exec' },
+          ],
+        },
+      },
+      configuration: {
+        root_module: {
+          resources: [
+            {
+              address: 'aws_lambda_function.handler',
+              type: 'aws_lambda_function',
+              name: 'handler',
+              expressions: {
+                role: { references: ['aws_iam_role.exec.arn', 'aws_iam_role.exec'] },
+              },
+            },
+            {
+              address: 'aws_iam_role.exec',
+              type: 'aws_iam_role',
+              name: 'exec',
+            },
+          ],
+        },
+      },
+    })
+
+    const result = generateDiagramFromPlanJson(planJson)
+
+    expect(result.parsed.resources).toHaveLength(2)
+    expect(result.graph.nodes.map((n) => n.id)).toContain('aws_lambda_function.handler')
+    expect(result.graph.nodes.map((n) => n.id)).toContain('aws_iam_role.exec')
+    expect(result.canvasDrafts.length).toBeGreaterThan(0)
+    // Edge from lambda → role (depends-on / uses-role)
+    expect(result.graph.edges.length).toBeGreaterThan(0)
+    // No diagnostics — exact plan input
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([])
   })
 
   it('generates network groups for the VPC and RDS example', () => {

@@ -8,7 +8,7 @@ import type {
   TerraformFile,
   TerraformParseResult,
 } from '@iac-board/terraform-parser'
-import { parseTerraformFiles } from '@iac-board/terraform-parser'
+import { parseTerraformFiles, parsePlanJson } from '@iac-board/terraform-parser'
 
 export type DiagramPipelineResult = {
   parsed: TerraformParseResult
@@ -16,6 +16,21 @@ export type DiagramPipelineResult = {
   positionedGraph: PositionedCloudGraph
   canvasDrafts: CanvasElementDraft[]
   diagnostics: Diagnostic[]
+}
+
+export function generateDiagramFromPlanJson(content: string): DiagramPipelineResult {
+  const parsed = parsePlanJson(content)
+  const graph = buildCloudGraph(parsed)
+  const positionedGraph = layoutCloudGraph(graph)
+  const canvasDrafts = toCanvasElementDrafts(positionedGraph)
+
+  return {
+    parsed,
+    graph,
+    positionedGraph,
+    canvasDrafts,
+    diagnostics: [...parsed.diagnostics, ...graph.diagnostics],
+  }
 }
 
 export function generateDiagramFromTerraformFiles(
