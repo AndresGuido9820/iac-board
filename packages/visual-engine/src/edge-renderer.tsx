@@ -266,6 +266,7 @@ function EdgeLabel({ text, anchor, color }: EdgeLabelProps) {
 type EdgeRendererProps = {
   edges: BoardEdge[]
   nodeMap: Map<string, BoardNode>
+  showEdgeLabels?: boolean
 }
 
 export function ArrowMarker() {
@@ -299,7 +300,7 @@ export function ArrowMarker() {
   )
 }
 
-export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
+export function EdgeRenderer({ edges, nodeMap, showEdgeLabels = true }: EdgeRendererProps) {
   // Precompute all node rects for obstacle detection
   const allNodeRects = Array.from(nodeMap.values()).map((n) => n.rect)
 
@@ -329,7 +330,7 @@ export function EdgeRenderer({ edges, nodeMap }: EdgeRendererProps) {
         const d = bezierPath(visualFrom.rect, visualTo.rect, obstacles)
         const markerId = style.dash ? MARKER_ID_DASHED : MARKER_ID
 
-        const labelText = RELATION_LABEL[edge.relation]
+        const labelText = showEdgeLabels ? RELATION_LABEL[edge.relation] : undefined
         const anchor = labelText
           ? labelAnchor(visualFrom.rect, visualTo.rect, obstacles)
           : null

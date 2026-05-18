@@ -166,6 +166,35 @@ describe('EdgeRenderer', () => {
     expect(path.startsWith('M 280,')).toBe(true) // starts at right face of B (dependency)
   })
 
+  it('hides edge label when showEdgeLabels=false', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'triggers')]}
+          nodeMap={nodeMap}
+          showEdgeLabels={false}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge')).toBeInTheDocument()
+    expect(screen.queryByTestId('iac-edge-label')).not.toBeInTheDocument()
+    expect(screen.queryByText('triggers')).not.toBeInTheDocument()
+  })
+
+  it('shows edge labels by default (showEdgeLabels defaults to true)', () => {
+    render(
+      <svg>
+        <ArrowMarker />
+        <EdgeRenderer
+          edges={[edge('e1', 'A', 'B', 'invokes')]}
+          nodeMap={nodeMap}
+        />
+      </svg>,
+    )
+    expect(screen.getByTestId('iac-edge-label')).toBeInTheDocument()
+  })
+
   it('renders edge when an intermediate node blocks the direct path', () => {
     // A → C with B in between — edge should still render (obstacle avoidance path)
     const obstacleMap = new Map<string, BoardNode>([

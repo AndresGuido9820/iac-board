@@ -230,6 +230,8 @@ type ProductShellProps = {
   layoutOverrides: Record<string, Rect>
   onOverridesChange: (overrides: Record<string, Rect>) => void
   onLoadLayout?: (overrides: Record<string, Rect>) => void
+  showEdgeLabels?: boolean
+  onToggleEdgeLabels?: () => void
 }
 
 export function ProductShell({
@@ -248,6 +250,8 @@ export function ProductShell({
   layoutOverrides,
   onOverridesChange,
   onLoadLayout,
+  showEdgeLabels = true,
+  onToggleEdgeLabels,
 }: ProductShellProps) {
   const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null)
   const [layoutMismatch, setLayoutMismatch] = useState(false)
@@ -395,6 +399,17 @@ export function ProductShell({
             >
               {t.export_svg}
             </button>
+            {onToggleEdgeLabels && (
+              <button
+                aria-label={showEdgeLabels ? t.edge_labels_hide : t.edge_labels_show}
+                aria-pressed={showEdgeLabels}
+                className="export-btn"
+                onClick={onToggleEdgeLabels}
+                type="button"
+              >
+                {showEdgeLabels ? t.edge_labels_hide : t.edge_labels_show}
+              </button>
+            )}
             {Object.keys(layoutOverrides).length > 0 && (
               <button
                 aria-label={t.save_layout}
@@ -468,6 +483,7 @@ export function ProductShell({
             key={diagramId}
             onNodeSelect={handleNodeSelect}
             onOverridesChange={onOverridesChange}
+            showEdgeLabels={showEdgeLabels}
           />
           {selectedNode && (
             <NodeInspector
@@ -593,6 +609,7 @@ function App() {
   const [layoutOverrides, setLayoutOverrides] = useState<Record<string, Rect>>(
     () => loadOverrides(diagramId),
   )
+  const [showEdgeLabels, setShowEdgeLabels] = useState(true)
 
   if (activeDiagramId !== diagramId) {
     setActiveDiagramId(diagramId)
@@ -642,8 +659,10 @@ function App() {
         setSelectedExampleId(id)
         setMode('example')
       }}
+      onToggleEdgeLabels={() => setShowEdgeLabels((v) => !v)}
       onToggleLang={() => setLang((l) => (l === 'en' ? 'es' : 'en'))}
       selectedExampleId={example.id}
+      showEdgeLabels={showEdgeLabels}
       t={translations[lang]}
     />
   )

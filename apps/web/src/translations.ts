@@ -44,6 +44,8 @@ export interface Translations {
   load_layout_mismatch: string
   plan_mode_badge: string
   plan_mode_hint: string
+  edge_labels_show: string
+  edge_labels_hide: string
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -92,6 +94,8 @@ export const translations: Record<Lang, Translations> = {
     load_layout_mismatch: 'Layout was saved for a different diagram — positions may not align.',
     plan_mode_badge: 'From plan',
     plan_mode_hint: 'Exact dependencies from terraform show -json — no inference.',
+    edge_labels_show: 'Show labels',
+    edge_labels_hide: 'Hide labels',
   },
   es: {
     eyebrow_hero: 'Diagramas de arquitectura desde Terraform',
@@ -138,5 +142,7 @@ export const translations: Record<Lang, Translations> = {
     load_layout_mismatch: 'El layout fue guardado para otro diagrama — las posiciones pueden no coincidir.',
     plan_mode_badge: 'Desde plan',
     plan_mode_hint: 'Dependencias exactas de terraform show -json — sin inferencia.',
+    edge_labels_show: 'Mostrar labels',
+    edge_labels_hide: 'Ocultar labels',
   },
 }
