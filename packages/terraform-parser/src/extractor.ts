@@ -17,6 +17,7 @@ import { isAttribute, isBlock, bodyAttr, exprToString } from './ast'
 import type { TerraformResource, TerraformFile } from './index'
 import { expandLocalModule } from './index'
 import { refsFromBody, bodyToText } from './refs'
+import { configurationFromBody } from './configuration'
 
 /**
  * Resolve a module source path (e.g. "./modules/vpc") relative to the
@@ -184,6 +185,7 @@ function buildResource(
     source: { filePath, line: block.line },
     body: bodyText,
     refs,
+    metadata: { configuration: configurationFromBody(resolvedBody) },
   }
 }
 

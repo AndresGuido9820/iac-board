@@ -13,7 +13,6 @@ The top-level interactive diagram component.
 ```tsx
 import { CloudBoard } from '@iac-board/visual-engine'
 import type { BoardElement } from '@iac-board/visual-engine'
-
 ;<CloudBoard
   elements={boardElements} // BoardElement[] — nodes, edges, groups
   className="my-board"
@@ -47,7 +46,6 @@ Renders SVG paths for all edges. Used internally by `CloudBoard`.
 
 ```tsx
 import { EdgeRenderer, ArrowMarker } from '@iac-board/visual-engine'
-
 ;<svg>
   <ArrowMarker /> {/* defs — must appear before EdgeRenderer */}
   <EdgeRenderer
@@ -78,7 +76,6 @@ Renders a single board node with AWS category icon, label, and selection ring.
 
 ```tsx
 import { NodeRenderer } from '@iac-board/visual-engine'
-
 ;<NodeRenderer
   node={boardNode}
   selected={isSelected}
@@ -94,7 +91,6 @@ Renders a VPC or subnet group boundary.
 
 ```tsx
 import { GroupRenderer } from '@iac-board/visual-engine'
-
 ;<GroupRenderer group={boardGroup} />
 ```
 

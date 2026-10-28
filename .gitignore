@@ -25,3 +25,7 @@ test-results
 *.njsproj
 *.sln
 *.sw?
+
+# Browser verification artifacts
+.playwright-cli/
+output/playwright/

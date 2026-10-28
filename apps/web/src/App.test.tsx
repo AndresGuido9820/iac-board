@@ -225,3 +225,33 @@ it('toggles edge labels off and back on', async () => {
     'true',
   )
 })
+
+it('exports the current diagram even when a comparison diagram is also visible', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(screen.getByRole('button', { name: 'Try comparison demo' }))
+  let exported: Blob | undefined
+  Object.defineProperty(URL, 'createObjectURL', {
+    configurable: true,
+    value: vi.fn((blob: Blob) => {
+      exported = blob
+      return 'blob:test'
+    }),
+  })
+  Object.defineProperty(URL, 'revokeObjectURL', {
+    configurable: true,
+    value: vi.fn(),
+  })
+  const click = vi
+    .spyOn(HTMLAnchorElement.prototype, 'click')
+    .mockImplementation(() => {})
+  await user.click(screen.getByRole('button', { name: 'Export SVG' }))
+  const svg = await new Promise<string>((resolve) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.readAsText(exported!)
+  })
+  expect(svg).toContain('public_api')
+  expect(svg).not.toContain('legacy')
+  click.mockRestore()
+})

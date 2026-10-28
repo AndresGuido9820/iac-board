@@ -5,6 +5,7 @@ export type Rect = { x: number; y: number; width: number; height: number }
 
 export type BoardNode = {
   type: 'node'
+  changeStatus?: 'added' | 'removed' | 'changed' | 'unchanged'
   id: string
   resourceType: string
   label: string

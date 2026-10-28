@@ -19,6 +19,7 @@ IaC Board parses `.tf` files, builds a semantic cloud resource graph, lays it ou
 - **Minimap** — thumbnail overview for large diagrams
 - **Export** — SVG (lossless) and PNG (2x resolution)
 - **Save / load layout** — positions persist in `.iac-board.json`; load a saved file to restore a layout
+- **Architecture comparison** — pin a baseline or load previous `.tf` / plan JSON files, inspect added/modified/removed resources in a combined diagram, and export a value-free JSON summary
 - **Parser diagnostics** — unsupported resources surface with file and line references
 - **EN / ES interface** — full bilingual UI
 
@@ -38,6 +39,19 @@ Open **http://localhost:5173**.
 Drop any `.tf` file onto the import zone, or click one of the bundled example buttons to get a diagram immediately.
 
 ---
+
+## Compare two versions
+
+1. Load the previous `.tf` files using the import zone, then choose **Use current as baseline**. Alternatively, choose **Load baseline files** to select previous `.tf` files or one plan JSON.
+2. Import the updated version in the main import zone. The baseline remains fixed while the current diagram changes.
+3. Review the `+ Added`, `~ Modified`, and `− Removed` cards and node markers. Removed nodes retain their old connections in the combined diagram.
+4. Select a resource in the list or diagram to inspect before/after configuration and connections. Choose **Export change summary** to download `architecture-diff.json` without attribute values.
+
+**Try comparison demo** supplies a complete example without requiring files. The comparison UI supports English and Spanish.
+
+Comparison is based on parsed resource configuration, connections, and group membership. It ignores comments, source locations, attribute order and object-key order; list and repeated-block order remain significant. It does not execute Terraform or predict create/update/replace actions. Plan inputs compare known `planned_values`; unknown values are not evaluated. Comparing HCL against plan JSON uses different representations and may report configuration changes even when they describe the same infrastructure. Use matching input formats for meaningful results.
+
+Parser coverage limits apply: `.tfvars`, remote modules, unresolved expressions and dependencies outside the imported files are not fully evaluated. Preserve local-module paths when using the parser API; the browser file picker currently provides file names only. A renamed resource appears as removed plus added. Baselines stay in memory for the current session. Cloud graph JSON import and CI/PR integration are future work.
 
 ## Using `terraform show -json`
 

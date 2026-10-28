@@ -39,6 +39,23 @@ export function NodeRenderer({
       ? (category as AwsCategory)
       : 'unknown'
   const color = categoryColors[cat]
+  const change = node.changeStatus
+  const changeColor =
+    change === 'added'
+      ? '#15803d'
+      : change === 'removed'
+        ? '#b91c1c'
+        : change === 'changed'
+          ? '#a16207'
+          : undefined
+  const marker =
+    change === 'added'
+      ? '+'
+      : change === 'removed'
+        ? '−'
+        : change === 'changed'
+          ? '~'
+          : ''
   const iconSvg = getIcon(resourceType)
   const iconX = rect.x + ICON_PAD
   const iconY = rect.y + (rect.height - ICON_SIZE) / 2
@@ -50,8 +67,11 @@ export function NodeRenderer({
     <g
       cursor="grab"
       data-testid="iac-node"
+      data-change-status={change}
+      data-resource-id={node.id}
       onMouseDown={(e) => onMouseDown?.(e, node.id)}
     >
+      {change && <title>{`${node.id} (${change})`}</title>}
       {/* Drop shadow */}
       <rect
         fill="rgba(0,0,0,0.06)"
@@ -66,8 +86,9 @@ export function NodeRenderer({
         fill="white"
         height={rect.height}
         rx={10}
-        stroke={selected ? color : '#e2e8f0'}
-        strokeWidth={selected ? 2 : 1}
+        stroke={changeColor ?? (selected ? color : '#e2e8f0')}
+        strokeDasharray={change === 'removed' ? '6 3' : undefined}
+        strokeWidth={changeColor || selected ? 2 : 1}
         width={rect.width}
         x={rect.x}
         y={rect.y}
@@ -81,6 +102,18 @@ export function NodeRenderer({
         x={rect.x + 1}
         y={rect.y + 2}
       />
+      {marker && (
+        <text
+          x={rect.x + rect.width - 16}
+          y={rect.y + 18}
+          fill={changeColor}
+          fontWeight={800}
+          fontSize={18}
+          textAnchor="middle"
+        >
+          {marker}
+        </text>
+      )}
       {/* Service icon */}
       {iconSvg ? (
         <foreignObject height={ICON_SIZE} width={ICON_SIZE} x={iconX} y={iconY}>

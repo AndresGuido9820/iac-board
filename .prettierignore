@@ -4,3 +4,7 @@ node_modules
 playwright-report
 test-results
 package-lock.json
+
+# Browser verification artifacts
+.playwright-cli/
+output/playwright/

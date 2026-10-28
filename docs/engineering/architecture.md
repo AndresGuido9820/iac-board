@@ -97,6 +97,10 @@ Edge routing (`EdgeRenderer`):
 
 Orchestrates all stages in one function call. Merges diagnostics from parser and graph stages.
 
+`compareArchitectures(before, after)` compares two pipeline results by Terraform address. Parser metadata retains canonical resolved HCL bodies (without source lines) or plan known values. The comparison ignores object key order, flags configuration/connection/group changes, and lays out a union graph that preserves removed nodes and edges. Renames are represented as removal plus addition. It does not infer Terraform action types or evaluate unknown values.
+
+`ArchitectureComparison.tsx` owns the browser-session baseline and comparison selection. The visual engine accepts optional resource change statuses without importing parser or comparison logic. JSON summary export includes addresses/status/reasons, excluding attribute values.
+
 ```typescript
 generateDiagramFromTerraformFiles(files: TerraformFile[]): DiagramPipelineResult
 generateDiagramFromPlanJson(content: string): DiagramPipelineResult

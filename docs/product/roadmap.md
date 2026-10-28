@@ -149,6 +149,18 @@ The current regex breaks on nested blocks and misses variables/locals.
 
 ---
 
+## Architecture comparison — implemented 2026-10-28
+
+- [x] Pin the current diagram as a baseline or import baseline HCL/plan JSON.
+- [x] Compare parsed configuration, connections and group membership.
+- [x] Combined diagram with added, modified and removed resource markers.
+- [x] Before/after details, bundled comparison example, EN/ES copy.
+- [x] Export a JSON change summary without resource attribute values.
+- [ ] Cloud graph JSON import (remaining HU-021 acceptance criterion).
+- [ ] GitHub Actions / pull request integration.
+
+Earlier phase checklists below/above may lag the implemented features; consult README for current behavior.
+
 ## Phase 8: Advanced (after tool is solid)
 
 - GitHub repo import (URL → files via GitHub API)
