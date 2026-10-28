@@ -16,6 +16,7 @@ interface PlanResource {
   address: string
   type: string
   name: string
+  values?: Record<string, unknown>
 }
 
 interface PlanModule {
@@ -181,7 +182,12 @@ export function parsePlanJson(content: string): TerraformParseResult {
     }
   }
 
-  if (!plan.format_version || !plan.planned_values) {
+  if (
+    !plan ||
+    typeof plan !== 'object' ||
+    !plan.format_version ||
+    !plan.planned_values
+  ) {
     return {
       resources: [],
       diagnostics: [
@@ -217,7 +223,7 @@ export function parsePlanJson(content: string): TerraformParseResult {
     source: { filePath: PLAN_SOURCE },
     body: '',
     refs: refsMap.get(pr.address) ?? [],
-    metadata: { confidence: 'exact' },
+    metadata: { confidence: 'exact', configuration: pr.values ?? {} },
   }))
 
   return { resources, diagnostics: [] }

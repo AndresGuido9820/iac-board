@@ -51,3 +51,6 @@ export function generateDiagramFromTerraformFiles(
     diagnostics: [...parsed.diagnostics, ...graph.diagnostics],
   }
 }
+
+export { compareArchitectures } from './comparison'
+export type { ChangeStatus, ResourceChange } from './comparison'

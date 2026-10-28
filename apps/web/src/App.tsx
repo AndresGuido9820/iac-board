@@ -15,6 +15,7 @@ import { translations } from './translations'
 import type { Lang, Translations } from './translations'
 import { ImportZone } from './import-zone'
 import type { LoadedFile } from './import-zone'
+import { ArchitectureComparison } from './ArchitectureComparison'
 import './App.css'
 
 // ── Layout persistence ───────────────────────────────────────────────────────
@@ -99,7 +100,9 @@ async function readLayoutFile(
 
 /** Download the `.cloud-canvas` SVG as a self-contained SVG file. */
 function exportSvg(name: string): void {
-  const svg = document.querySelector<SVGSVGElement>('.cloud-canvas')
+  const svg = document.querySelector<SVGSVGElement>(
+    '#current-architecture .cloud-canvas',
+  )
   if (!svg) return
   const serializer = new XMLSerializer()
   let src = serializer.serializeToString(svg)
@@ -117,7 +120,9 @@ function exportSvg(name: string): void {
 
 /** Download the `.cloud-canvas` SVG rendered as a 2× PNG. */
 async function exportPng(name: string): Promise<void> {
-  const svg = document.querySelector<SVGSVGElement>('.cloud-canvas')
+  const svg = document.querySelector<SVGSVGElement>(
+    '#current-architecture .cloud-canvas',
+  )
   if (!svg) return
   const serializer = new XMLSerializer()
   let src = serializer.serializeToString(svg)
@@ -376,7 +381,13 @@ export function ProductShell({
         </div>
       </section>
 
-      <section className="panel" aria-labelledby="example-title">
+      <ArchitectureComparison current={generatedDiagram} t={t} />
+
+      <section
+        id="current-architecture"
+        className="panel"
+        aria-labelledby="example-title"
+      >
         <div className="panel-header">
           <div>
             <p className="eyebrow">{t.eyebrow_generated}</p>

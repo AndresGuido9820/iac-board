@@ -288,6 +288,10 @@ Acceptance criteria:
 
 ### HU-021: Architecture Diff
 
+Implementation note (2026-10-28): baseline snapshots and HCL/plan JSON import,
+combined change diagram, details, EN/ES copy and JSON summary export are
+implemented. Previous/current cloud graph JSON import remains outstanding.
+
 As a platform engineer, I want to compare two IaC states, so that I can see how a
 pull request changes the architecture.
 

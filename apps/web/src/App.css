@@ -1,4 +1,5 @@
 .app-shell {
+  grid-template-columns: minmax(0, 1fr);
   display: grid;
   gap: 32px;
   margin: 0 auto;
@@ -79,6 +80,7 @@
 }
 
 .panel-header {
+  flex-wrap: wrap;
   align-items: flex-start;
   display: flex;
   gap: 16px;
@@ -98,9 +100,11 @@
 }
 
 .panel-header-actions {
+  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
   display: flex;
-  flex-shrink: 0;
+  flex-shrink: 1;
   gap: 8px;
 }
 
@@ -456,4 +460,112 @@
   color: var(--muted);
   font-size: 0.75rem;
   white-space: nowrap;
+}
+
+/* Architecture review */
+.diff-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.diff-heading p {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.diff-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.diff-summary > div {
+  padding: 16px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: #fff;
+}
+.diff-summary dt {
+  font-weight: 600;
+}
+.diff-summary dd {
+  margin: 8px 0 0;
+  font-size: 28px;
+  font-weight: 750;
+}
+.diff-added {
+  color: #15803d;
+}
+.diff-changed {
+  color: #854d0e;
+}
+.diff-removed {
+  color: #b91c1c;
+}
+.diff-unchanged {
+  color: #475569;
+}
+.diff-resources {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.diff-resource {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.diff-resource[aria-pressed='true'] {
+  outline: 2px solid currentColor;
+}
+.diff-resource code {
+  overflow-wrap: anywhere;
+}
+.diff-resource small {
+  margin-left: auto;
+}
+.diff-detail {
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+}
+.diff-code-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.diff-code-pair pre {
+  padding: 12px;
+  background: #f1f5f9;
+  color: #0f172a;
+  overflow: auto;
+  max-height: 320px;
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  .diff-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .diff-code-pair {
+    grid-template-columns: 1fr;
+  }
+}
+.diff-limits {
+  margin-top: 12px;
+  font-size: 0.875rem;
+}
+.diff-limits summary {
+  cursor: pointer;
 }
