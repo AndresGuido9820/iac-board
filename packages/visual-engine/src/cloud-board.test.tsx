@@ -213,10 +213,30 @@ describe('CloudBoard', () => {
     const nodes = screen.getAllByTestId('iac-node')
     fireEvent.mouseDown(nodes[0])
     expect(onNodeSelect).toHaveBeenCalledWith('aws_lambda_function.a')
+    fireEvent.mouseUp(nodes[0])
+    fireEvent.click(nodes[0])
     // Click the SVG background — should deselect
     const svg = screen.getByTestId('iac-canvas')
+    fireEvent.mouseDown(svg)
+    fireEvent.mouseUp(svg)
     fireEvent.click(svg)
     expect(onNodeSelect).toHaveBeenLastCalledWith(null)
+  })
+
+  it('keeps the selection when the press on a node ends over the background', () => {
+    // Opening the inspector can resize the board between mousedown and
+    // mouseup, so the browser dispatches that click on the SVG itself.
+    const onNodeSelect = vi.fn()
+    render(
+      <CloudBoard elements={twoNodeElements} onNodeSelect={onNodeSelect} />,
+    )
+    const nodes = screen.getAllByTestId('iac-node')
+    const svg = screen.getByTestId('iac-canvas')
+    fireEvent.mouseDown(nodes[0])
+    fireEvent.mouseUp(svg)
+    fireEvent.click(svg)
+    expect(onNodeSelect).toHaveBeenLastCalledWith('aws_lambda_function.a')
+    expect(onNodeSelect).not.toHaveBeenCalledWith(null)
   })
 
   it('drags a node with mouse events', () => {

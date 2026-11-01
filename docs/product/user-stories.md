@@ -589,9 +589,9 @@ Acceptance criteria:
 
 ### HU-042: Expanded Visual Regression Harness
 
-As a developer using AI-assisted workflows, I want automated screenshots of each
-example in multiple states (default, zoomed, after drag), so that Claude can
-evaluate visual quality after every code change.
+As a developer, I want automated screenshots of each example in multiple states
+(default, zoomed, after drag), so that visual quality can be reviewed after
+every code change.
 
 Acceptance criteria:
 

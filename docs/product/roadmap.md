@@ -1,7 +1,5 @@
 # Roadmap
 
-> Detailed execution plan: `todo/core-plan.md`
-
 ## Phase 0: Foundation ✅
 
 Repo structure, license, docs, contribution guide, CI, demo deploy.

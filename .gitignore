@@ -29,3 +29,7 @@ test-results
 # Browser verification artifacts
 .playwright-cli/
 output/playwright/
+
+# Local working notes and editor tooling (not part of the project)
+.claude/
+todo/

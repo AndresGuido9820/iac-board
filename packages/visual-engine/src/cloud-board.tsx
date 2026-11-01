@@ -172,6 +172,8 @@ export function CloudBoard({
     startRectY: number
   } | null>(null)
 
+  const pressStartedOnNode = useRef(false)
+
   const nodes = elements.filter((e): e is BoardNode => e.type === 'node')
   const groups = elements.filter((e): e is BoardGroup => e.type === 'group')
   const edges = elements.filter((e): e is BoardEdge => e.type === 'edge')
@@ -182,7 +184,19 @@ export function CloudBoard({
   }))
   const nodeMap = new Map(resolvedNodes.map((n) => [n.id, n]))
 
+  const onBoardMouseDown = (e: React.MouseEvent) => {
+    pressStartedOnNode.current = false
+    onMouseDown(e)
+  }
+
   const onBoardClick = (e: React.MouseEvent) => {
+    // Selecting a node can open the inspector and resize the board, so the
+    // mouseup of that same press may land on the background. Only a press
+    // that started on the background deselects.
+    if (pressStartedOnNode.current) {
+      pressStartedOnNode.current = false
+      return
+    }
     // Deselect when clicking on the background (not on a node — nodes stopPropagation)
     if ((e.target as Element).closest('[data-testid="iac-node"]')) return
     setSelected(null)
@@ -210,6 +224,7 @@ export function CloudBoard({
 
   const onNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
+    pressStartedOnNode.current = true
     setSelected(id)
     onNodeSelect?.(id)
     const node = resolvedNodes.find((n) => n.id === id)
@@ -283,7 +298,7 @@ export function CloudBoard({
       className={className}
       data-pannable="true"
       onKeyDown={onKeyDown}
-      onMouseDown={onMouseDown}
+      onMouseDown={onBoardMouseDown}
       onMouseLeave={onBoardMouseUp}
       onMouseMove={onBoardMouseMove}
       onMouseUp={onBoardMouseUp}
